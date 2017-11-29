@@ -8,25 +8,97 @@ public class BattlePrototyper : MonoBehaviour
 {
     private void Start()
     {
-        UnitState swordsmanTemplate = UnitTemplates.GetSwordsman();
-        //swordsmanTemplate.Attributes.MaxHitpoints += 50;
-        
-        UnitState knightTemplate = UnitTemplates.GetKnight();
-        UnitState trollTemplate = UnitTemplates.GetTroll();
-        UnitState archerTemplate = UnitTemplates.GetArcher();
+        List<UnitStateBuilder> attackingUnits = GetPrototypeAttackers();
+        List<UnitStateBuilder> defendingUnits = GetPrototypeDefenders();
+        BattleRound battleRound = GetBattleRound(attackingUnits, defendingUnits);
+        DisplayBattleRound(battleRound);
+    }
 
-        List<UnitState> attackingUnits = new List<UnitState>();
-        List<UnitState> defendingUnits = new List<UnitState>();
+    private void DisplayBattleRound(BattleRound battleRound)
+    {
+        foreach (UnitState state in battleRound.AttackingUnits.Concat(battleRound.DefendingUnits))
+        {
+            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            obj.transform.position = new Vector3(state.Attributes.Position.XPos, 0, state.Attributes.Position.YPos);
+            obj.name = state.Description.Name;
+        }
+    }
+
+    private BattleRound GetBattleRound(List<UnitStateBuilder> attackingUnits, List<UnitStateBuilder> defendingUnits)
+    {
+        UnitState[] attackingState = attackingUnits.Select(item => item.AsReadonly()).ToArray();
+        UnitState[] defendingState = defendingUnits.Select(item => item.AsReadonly()).ToArray();
+        BattleStatus status = GetBattleStatus(attackingState, defendingState);
+        return new BattleRound(attackingState, defendingState, status);
+    }
+
+    private BattleStatus GetBattleStatus(UnitState[] attackingState, UnitState[] defendingState)
+    {
+        if(attackingState.Any())
+        {
+            if(defendingState.Any())
+            {
+                return BattleStatus.Ongoing;
+            }
+            return BattleStatus.AttackersVictorious;
+        }
+        {
+            return BattleStatus.DefendersVictorious;
+        }
+    }
+
+    private List<UnitStateBuilder> GetPrototypeDefenders()
+    {
+        List<UnitStateBuilder> ret = new List<UnitStateBuilder>();
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10));
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            ret.Add(UnitTemplates.GetKnight(10, i * 3));
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100));
+        }
+        return ret;
+    }
+
+    private List<UnitStateBuilder> GetPrototypeAttackers()
+    {
+        List<UnitStateBuilder> ret = new List<UnitStateBuilder>();
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40));
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60));
+        }
+        return ret;
     }
 }
 
 public class BattleRound
 {
     private readonly IEnumerable<UnitState> _attackingUnits;
-    public IEnumerable<UnitState> AttackingUnits;
+    public IEnumerable<UnitState> AttackingUnits { get{ return _attackingUnits; } }
 
-    private readonly IEnumerable<UnitState> _defendingUnit;
-    public IEnumerable<UnitState> DefendingUnits;
+    private readonly IEnumerable<UnitState> _defendingUnits;
+    public IEnumerable<UnitState> DefendingUnits { get{ return _defendingUnits; } }
 
     private readonly BattleStatus _status;
     public BattleStatus Status { get{ return _status; } }
@@ -34,7 +106,7 @@ public class BattleRound
     public BattleRound(IEnumerable<UnitState> attackingUnits, IEnumerable<UnitState> defendingUnits, BattleStatus status)
     {
         _attackingUnits = attackingUnits;
-        _defendingUnit = defendingUnits;
+        _defendingUnits = defendingUnits;
         _status = status;
     }
 
@@ -53,42 +125,156 @@ public enum BattleStatus
 
 public static class UnitTemplates
 {
-    public static UnitState GetSwordsman()
+    public static UnitStateBuilder GetSwordsman(int xPos, int yPos)
     {
         string name = "Swordsman";
-        string longDescription = "It's a man with a sword and a shield.";
+        string longDescription = "A man with a sword and a shield.";
         UnitDescription description = new UnitDescription(name, longDescription);
 
-        UnitAttributesBuilder attributes = new UnitAttributesBuilder();
-        attributes.Shield = 1;
+        UnitStateBuilder ret = new UnitStateBuilder(description);
+        ret.Attributes.Size = 2;
+        ret.Attributes.Movement = 4;
+        ret.Attributes.HitPoints.Max = 100;
+        ret.Attributes.HitPoints.Current = 100;
+        ret.Attributes.Moral.Max = 100;
+        ret.Attributes.Moral.Current = 100;
+        ret.Attributes.Endurance.Max = 100;
+        ret.Attributes.Endurance.Current = 100;
 
-        MeleeAttack swordAttack = new MeleeAttack();
+        MeleeAttackBuilder swordAttack = new MeleeAttackBuilder();
+        swordAttack.AttackPower = 50;
         swordAttack.DamageType = DamageType.Slashing;
+        swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        ret.MeleeAttacks.Add(swordAttack);
 
-        return new UnitState(description, attributes, new[] { swordAttack }, new RangedAttack[0]);
+        ret.Attributes.Defense.Armor = 40;
+        ret.Attributes.Defense.Shield = ShieldStatus.Medium;
+
+        ret.Attributes.Position.XPos = xPos;
+        ret.Attributes.Position.YPos = yPos;
+
+        return ret;
     }
 
-    public static UnitState GetArcher()
+    public static UnitStateBuilder GetArcher(int xPos, int yPos)
+    {
+        string name = "Archer";
+        string longDescription = "A man with a bow and a arrows.";
+        UnitDescription description = new UnitDescription(name, longDescription);
+
+        UnitStateBuilder ret = new UnitStateBuilder(description);
+        ret.Attributes.Size = 2;
+        ret.Attributes.Movement = 4;
+        ret.Attributes.HitPoints.Max = 100;
+        ret.Attributes.HitPoints.Current = 100;
+        ret.Attributes.Moral.Max = 100;
+        ret.Attributes.Moral.Current = 80;
+        ret.Attributes.Endurance.Max = 80;
+        ret.Attributes.Endurance.Current = 100;
+
+        ret.Attributes.Offense.AttackAccuracy = -20;
+
+        MeleeAttackBuilder daggerAttack = new MeleeAttackBuilder();
+        daggerAttack.AttackPower = 30;
+        daggerAttack.DamageType = DamageType.Piercing;
+        daggerAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        ret.MeleeAttacks.Add(daggerAttack);
+
+        RangedAttackBuilder bowAttack = new RangedAttackBuilder();
+        bowAttack.Ammunition = 20;
+        bowAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        bowAttack.AttackPower = 50;
+        bowAttack.MaximumRange = 100;
+        bowAttack.MaximumRange = 20;
+        ret.RangedAttacks.Add(bowAttack);
+
+        ret.Attributes.Defense.Armor = 20;
+
+        ret.Attributes.Position.XPos = xPos;
+        ret.Attributes.Position.YPos = yPos;
+
+        return ret;
+    }
+
+    public static UnitStateBuilder GetKnight(int xPos, int yPos)
+    {
+        string name = "Knight";
+        string longDescription = "A knight in shining armor.";
+        UnitDescription description = new UnitDescription(name, longDescription);
+
+        UnitStateBuilder ret = new UnitStateBuilder(description);
+        ret.Attributes.Size = 3;
+        ret.Attributes.Movement = 16;
+        ret.Attributes.HitPoints.Max = 100;
+        ret.Attributes.HitPoints.Current = 100;
+        ret.Attributes.Moral.Max = 200;
+        ret.Attributes.Moral.Current = 250;
+        ret.Attributes.Endurance.Max = 250;
+        ret.Attributes.Endurance.Current = 200;
+
+        ret.Attributes.Offense.AttackAccuracy = 150;
+        ret.Attributes.Defense.Dodging = 150;
+
+        MeleeAttackBuilder swordAttack = new MeleeAttackBuilder();
+        swordAttack.AttackPower = 50;
+        swordAttack.DamageType = DamageType.Slashing;
+        swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        ret.MeleeAttacks.Add(swordAttack);
+
+        MeleeAttackBuilder lanceAttack = new MeleeAttackBuilder();
+        swordAttack.AttackPower = 150;
+        swordAttack.DamageType = DamageType.Piercing;
+        swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        swordAttack.ChargeAttack = true;
+        ret.MeleeAttacks.Add(swordAttack);
+
+        ret.Attributes.Defense.Armor = 100;
+        ret.Attributes.Defense.Shield = ShieldStatus.Medium;
+
+        ret.Attributes.Position.XPos = xPos;
+        ret.Attributes.Position.YPos = yPos;
+
+        return ret;
+    }
+
+    public static UnitStateBuilder GetTroll(int xPos, int yPos)
+    {
+        string name = "Troll";
+        string longDescription = "A nasty green troll.";
+        UnitDescription description = new UnitDescription(name, longDescription);
+
+        UnitStateBuilder ret = new UnitStateBuilder(description);
+        ret.Attributes.Size = 4;
+        ret.Attributes.Movement = 3;
+        ret.Attributes.HitPoints.Max = 300;
+        ret.Attributes.HitPoints.Current = 300;
+        ret.Attributes.Moral.Max = 250;
+        ret.Attributes.Moral.Current = 250;
+        ret.Attributes.Endurance.Max = 200;
+        ret.Attributes.Endurance.Current = 200;
+
+        ret.Attributes.Defense.RegenerationPercent = 20;
+
+        MeleeAttackBuilder swipeAttack = new MeleeAttackBuilder();
+        swipeAttack.AttackPower = 200;
+        swipeAttack.DamageType = DamageType.Slashing;
+        swipeAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
+        ret.MeleeAttacks.Add(swipeAttack);
+
+        ret.Attributes.Defense.Armor = 20;
+        
+        ret.Attributes.Position.XPos = xPos;
+        ret.Attributes.Position.YPos = yPos;
+
+        return ret;
+    }
+
+    public static UnitState GetRedMage(int xPos, int yPos)
     {
         throw new NotImplementedException();
     }
 
-    public static UnitState GetKnight()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static UnitState GetTroll()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static UnitState GetRedMage()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static UnitState GetGrayMage()
+    public static UnitState GetGrayMage(int xPos, int yPos)
     {
         throw new NotImplementedException();
     }
@@ -134,59 +320,71 @@ public class UnitStateBuilder
     private readonly List<RangedAttackBuilder> _rangedAttacks;
     public List<RangedAttackBuilder> RangedAttacks { get { return _rangedAttacks; } }
 
-    public UnitStateBuilder(UnitDescription description,
-        UnitAttributesBuilder attributes,
-        List<MeleeAttackBuilder> meleAttacks,
-        List<RangedAttackBuilder> rangedAttacks)
+    public UnitStateBuilder(UnitDescription description)
     {
         _description = description;
-        _attributes = attributes;
-        _meleeAttacks = meleAttacks;
-        _rangedAttacks = rangedAttacks;
+        _attributes = new UnitAttributesBuilder();
+        _meleeAttacks = new List<MeleeAttackBuilder>();
+        _rangedAttacks = new List<RangedAttackBuilder>();
     }
 
-    public UnitState ToReadonly()
+    public UnitState AsReadonly()
     {
         return new UnitState(Description,
-            Attributes.ToReadonly(),
-            MeleeAttacks.Select(item => item.ToReadonly()).ToArray(),
-            RangedAttacks.Select(item => item.ToReadonly()).ToArray())
+            Attributes.AsReadonly(),
+            MeleeAttacks.Select(item => item.AsReadonly()).ToArray(),
+            RangedAttacks.Select(item => item.AsReadonly()).ToArray());
     }
 }
 
-public struct UnitAdvancedDefenses
+public struct UnitDefenses
 {
+    private readonly int _dodging;
+    public int Dodging { get { return _dodging; } }
+
+    private readonly int _armor;
+    public int Armor { get { return _armor; } }
+
     private readonly ShieldStatus _shield;
     public ShieldStatus Shield { get { return _shield; } }
 
     private readonly int _regenerationPercent;
     public int RegenerationPercent { get{ return _regenerationPercent; } }
 
-    public UnitAdvancedDefenses(ShieldStatus shield, int regenerationPercent)
+    public UnitDefenses(int defense,
+        int armor,
+        ShieldStatus shield, 
+        int regenerationPercent)
     {
+        _dodging = defense;
+        _armor = armor;
         _shield = shield;
         _regenerationPercent = regenerationPercent;
     }
 }
 
-public class UnitAdvancedDefensesBuilder
+public class UnitDefensesBuilder
 {
+    public int Dodging { get; set; }
+
+    public int Armor { get; set; }
+
     public ShieldStatus Shield { get; set; }
 
     public int RegenerationPercent { get; set; }
     
-    public UnitAdvancedDefenses AsReadonly()
+    public UnitDefenses AsReadonly()
     {
-        return new UnitAdvancedDefenses(Shield, RegenerationPercent);
+        return new UnitDefenses(Dodging, Armor, Shield, RegenerationPercent);
     }
 }
 
 public enum ShieldStatus
 {
-    NoShield,
-    Buckler,
-    Shield,
-    LargeShield
+    None,
+    Small,
+    Medium,
+    Large
 }
 
 public struct UnitPosition
@@ -210,13 +408,7 @@ public class UnitPositionBuilder
     
     public int YPos { get; set; }
 
-    public UnitPositionBuilder(int xPos, int yPos)
-    {
-        XPos = xPos;
-        YPos = yPos;
-    }
-
-    public UnitPosition ToReadonly()
+    public UnitPosition AsReadonly()
     {
         return new UnitPosition(XPos, YPos);
     }
@@ -243,19 +435,13 @@ public class UnitMeteredAttributeBuilder
 
     public int Current { get; set; }
 
-    public UnitMeteredAttributeBuilder(int max, int current)
-    {
-        Max = max;
-        Current = current;
-    }
-
-    public UnitMeteredAttribute ToReadonly()
+    public UnitMeteredAttribute AsReadonly()
     {
         return new UnitMeteredAttribute(Max, Current);
     }
 }
 
-public struct UnitFightBasics
+public class UnitOffense
 {
     private readonly int _strength;
     public int Strength { get { return _strength; } }
@@ -263,42 +449,28 @@ public struct UnitFightBasics
     private readonly int _precision;
     public int Precision { get { return _precision; } }
 
-    private readonly int _attack;
-    public int Attack { get { return _attack; } }
+    private readonly int _attackAccuracy;
+    public int AttackAccuracy { get { return _attackAccuracy; } }
 
-    private readonly int _defense;
-    public int Defense { get { return _defense; } }
-
-    public UnitFightBasics(int strength, int precision, int attack, int defense)
+    public UnitOffense(int strength, int precision, int attackAccuracy)
     {
         _strength = strength;
         _precision = precision;
-        _attack = attack;
-        _defense = defense;
+        _attackAccuracy = attackAccuracy;
     }
 }
 
-public class UnitFightBasicsBuilder
+public class UnitOffenseBuilder
 {
     public int Strength { get; set; }
 
     public int Precision { get; set; }
 
-    public int Attack { get; set; }
+    public int AttackAccuracy { get; set; }
 
-    public int Defense { get; set; }
-
-    public UnitFightBasicsBuilder(int strength, int precision, int attack, int defense)
+    public UnitOffense AsReadonly()
     {
-        Strength = strength;
-        Precision = precision;
-        Attack = attack;
-        Defense = defense;
-    }
-
-    public UnitFightBasics ToReadonly()
-    {
-        return new UnitFightBasics(Strength, Precision, Attack, Defense);
+        return new UnitOffense(Strength, Precision, AttackAccuracy);
     }
 }
 
@@ -321,9 +493,12 @@ public struct UnitAttributes
 
     private readonly UnitMeteredAttribute _moral;
     public UnitMeteredAttribute Moral { get{ return _moral; } }
+    
+    private readonly UnitOffense _offense;
+    public UnitOffense Offense { get { return _offense; } }
 
-    private readonly UnitFightBasics _fightBasics;
-    public UnitFightBasics FightBasics{ get{ return _fightBasics; } }
+    private readonly UnitDefenses _defense;
+    public UnitDefenses Defense { get { return _defense; } }
 
     public UnitAttributes(UnitPosition position,
         int size,
@@ -331,7 +506,8 @@ public struct UnitAttributes
         UnitMeteredAttribute hitPoints,
         UnitMeteredAttribute endurance,
         UnitMeteredAttribute moral,
-        UnitFightBasics fightBasics)
+        UnitOffense offense,
+        UnitDefenses defenses)
     {
         _position = position;
         _size = size;
@@ -339,7 +515,8 @@ public struct UnitAttributes
         _hitPoints = hitPoints;
         _endurance = endurance;
         _moral = moral;
-        _fightBasics = fightBasics;
+        _offense = offense;
+        _defense = defenses;
     }
 }
 
@@ -361,36 +538,33 @@ public class UnitAttributesBuilder
     private readonly UnitMeteredAttributeBuilder _moral;
     public UnitMeteredAttributeBuilder Moral { get { return _moral; } }
 
-    private readonly UnitFightBasicsBuilder _fightBasics;
-    public UnitFightBasicsBuilder FightBasics { get { return _fightBasics; } }
+    private readonly UnitOffenseBuilder _offense;
+    public UnitOffenseBuilder Offense { get { return _offense; } }
 
-    public UnitAttributesBuilder(UnitPositionBuilder position,
-        int size,
-        int movement,
-        UnitMeteredAttributeBuilder hitPoints,
-        UnitMeteredAttributeBuilder endurance,
-        UnitMeteredAttributeBuilder moral,
-        UnitFightBasicsBuilder fightBasics)
+    private readonly UnitDefensesBuilder _defense;
+    public UnitDefensesBuilder Defense { get { return _defense; } }
+
+    public UnitAttributesBuilder()
     {
-        _position = position;
-        Size = size;
-        Movement = movement;
-        _hitPoints = hitPoints;
-        _endurance = endurance;
-        _moral = moral;
-        _fightBasics = fightBasics;
+        _position = new UnitPositionBuilder();
+        _hitPoints = new UnitMeteredAttributeBuilder();
+        _endurance = new UnitMeteredAttributeBuilder();
+        _moral = new UnitMeteredAttributeBuilder();
+        _offense = new UnitOffenseBuilder();
+        _defense = new UnitDefensesBuilder();
     }
 
 
-    public UnitAttributes ToReadonly()
+    public UnitAttributes AsReadonly()
     {
-        return new UnitAttributes(Position.ToReadonly(),
+        return new UnitAttributes(Position.AsReadonly(),
             Size,
             Movement,
-            HitPoints.ToReadonly(),
-            Endurance.ToReadonly(),
-            Moral.ToReadonly(),
-            FightBasics.ToReadonly()
+            HitPoints.AsReadonly(),
+            Endurance.AsReadonly(),
+            Moral.AsReadonly(),
+            Offense.AsReadonly(),
+            Defense.AsReadonly()
             );
     }
 }
@@ -454,23 +628,8 @@ public class RangedAttackBuilder
     public int MaximumRange { get; set; }
     public AreaOfEffectType AreaOfEffect { get; set; }
     public int Ammunition { get; set; }
-
-    public RangedAttackBuilder(int attackPower,
-        DamageType damageType,
-        int minimumRange,
-        int maximumRange,
-        AreaOfEffectType areaOfEffect,
-        int ammunition)
-    {
-        AttackPower = attackPower;
-        DamageType = damageType;
-        MinimumRange = minimumRange;
-        MaximumRange = maximumRange;
-        AreaOfEffect = areaOfEffect;
-        Ammunition = ammunition;
-    }
     
-    public RangedAttack ToReadonly()
+    public RangedAttack AsReadonly()
     {
         return new RangedAttack(AttackPower,
             DamageType,
@@ -507,13 +666,18 @@ public struct MeleeAttack
     private readonly AreaOfEffectType _areaOfAffect;
     public AreaOfEffectType AreaOfEffect { get{ return _areaOfAffect; } }
 
+    private readonly bool _chargeAttack;
+    public bool ChargeAttack { get{ return _chargeAttack; } }
+
     public MeleeAttack(int attackPower,
         DamageType damageType,
-        AreaOfEffectType areaOfEffect)
+        AreaOfEffectType areaOfEffect,
+        bool chargeAttack)
     {
         _attackPower = attackPower;
         _damageType = damageType;
         _areaOfAffect = areaOfEffect;
+        _chargeAttack = true;
     }
 }
 
@@ -522,18 +686,10 @@ public class MeleeAttackBuilder
     public int AttackPower { get; set; }
     public DamageType DamageType { get; set; }
     public AreaOfEffectType AreaOfEffect { get; set; }
+    public bool ChargeAttack { get; set; }
 
-    public MeleeAttackBuilder(int attackPower,
-        DamageType damageType,
-        AreaOfEffectType areaOfEffect)
+    public MeleeAttack AsReadonly()
     {
-        AttackPower = attackPower;
-        DamageType = damageType;
-        AreaOfEffect = areaOfEffect;
-    }
-
-    public MeleeAttack ToReadonly()
-    {
-        return new MeleeAttack(AttackPower, DamageType, AreaOfEffect);
+        return new MeleeAttack(AttackPower, DamageType, AreaOfEffect, ChargeAttack);
     }
 }
