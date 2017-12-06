@@ -3,4 +3,5 @@
     Ongoing,
     AttackersVictorious,
     DefendersVictorious,
+    Draw
 }

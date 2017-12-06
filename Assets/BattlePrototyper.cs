@@ -2,47 +2,44 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 public class BattlePrototyper : MonoBehaviour 
 {
+    public ComputeShader MapCompute;
+    [Range(0, 1)]
+    public float Timeline;
+
+    private BattleResolver _battleResolver;
+    private BattleDisplay _battleDisplay;
+    
     private void Start()
     {
-        List<UnitStateBuilder> attackingUnits = GetPrototypeAttackers();
-        List<UnitStateBuilder> defendingUnits = GetPrototypeDefenders();
-        BattleRound battleRound = GetBattleRound(attackingUnits, defendingUnits);
-        DisplayBattleRound(battleRound);
+        _battleResolver = GetBattleResolver();
+        List<BattleRound> rounds = _battleResolver.ResolveBattle();
+        _battleDisplay = new BattleDisplay(rounds);
     }
 
+    private void Update()
+    {
+        _battleDisplay.DisplayTime(Timeline);
+    }
+
+    private BattleResolver GetBattleResolver()
+    {
+        Battlefield battlefield = new Battlefield(1024, 1024, MapCompute);
+        IEnumerable<UnitStateBuilder> attackers = GetPrototypeAttackers();
+        IEnumerable<UnitStateBuilder> defenders = GetPrototypeDefenders();
+        return new BattleResolver(attackers, defenders, battlefield);
+    }
+    
     private void DisplayBattleRound(BattleRound battleRound)
     {
         foreach (UnitState state in battleRound.AttackingUnits.Concat(battleRound.DefendingUnits))
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             obj.transform.position = new Vector3(state.Attributes.Position.XPos, 0, state.Attributes.Position.YPos);
-            obj.name = state.Description.Name;
-        }
-    }
-
-    private BattleRound GetBattleRound(List<UnitStateBuilder> attackingUnits, List<UnitStateBuilder> defendingUnits)
-    {
-        UnitState[] attackingState = attackingUnits.Select(item => item.AsReadonly()).ToArray();
-        UnitState[] defendingState = defendingUnits.Select(item => item.AsReadonly()).ToArray();
-        BattleStatus status = GetBattleStatus(attackingState, defendingState);
-        return new BattleRound(attackingState, defendingState, status);
-    }
-
-    private BattleStatus GetBattleStatus(UnitState[] attackingState, UnitState[] defendingState)
-    {
-        if(attackingState.Any())
-        {
-            if(defendingState.Any())
-            {
-                return BattleStatus.Ongoing;
-            }
-            return BattleStatus.AttackersVictorious;
-        }
-        {
-            return BattleStatus.DefendersVictorious;
+            obj.name = state.Identification.Name;
         }
     }
 

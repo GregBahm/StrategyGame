@@ -5,7 +5,7 @@ public static class UnitTemplates
     {
         string name = "Swordsman";
         string longDescription = "A man with a sword and a shield.";
-        UnitDescription description = new UnitDescription(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription);
 
         UnitStateBuilder ret = new UnitStateBuilder(description);
         ret.Attributes.Size = 2;
@@ -36,7 +36,7 @@ public static class UnitTemplates
     {
         string name = "Archer";
         string longDescription = "A man with a bow and a arrows.";
-        UnitDescription description = new UnitDescription(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription);
 
         UnitStateBuilder ret = new UnitStateBuilder(description);
         ret.Attributes.Size = 2;
@@ -76,7 +76,7 @@ public static class UnitTemplates
     {
         string name = "Knight";
         string longDescription = "A knight in shining armor.";
-        UnitDescription description = new UnitDescription(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription);
 
         UnitStateBuilder ret = new UnitStateBuilder(description);
         ret.Attributes.Size = 3;
@@ -117,7 +117,7 @@ public static class UnitTemplates
     {
         string name = "Troll";
         string longDescription = "A nasty green troll.";
-        UnitDescription description = new UnitDescription(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription);
 
         UnitStateBuilder ret = new UnitStateBuilder(description);
         ret.Attributes.Size = 4;
