@@ -46,8 +46,8 @@ public class BattleResolver
 
     private void ApplyUnitAction(UnitStateBuilder unit, List<UnitStateBuilder> allies, List<UnitStateBuilder> enemies)
     {
-        // TODO: Apply unit action
-        throw new NotImplementedException();
+        // TODO: Apply Unit Action
+
     }
 
     private BattleRound GetBattleRound()

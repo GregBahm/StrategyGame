@@ -12,11 +12,8 @@
     private readonly UnitMeteredAttribute _hitPoints;
     public UnitMeteredAttribute HitPoints{ get{ return _hitPoints; } }
 
-    private readonly UnitMeteredAttribute _endurance;
-    public UnitMeteredAttribute Endurance { get { return _endurance; } }
-
-    private readonly UnitMeteredAttribute _moral;
-    public UnitMeteredAttribute Moral { get{ return _moral; } }
+    private readonly UnitEmotions _emotions;
+    public UnitEmotions Emotions { get{ return _emotions; } }
     
     private readonly UnitOffense _offense;
     public UnitOffense Offense { get { return _offense; } }
@@ -28,8 +25,7 @@
         int size,
         int movement,
         UnitMeteredAttribute hitPoints,
-        UnitMeteredAttribute endurance,
-        UnitMeteredAttribute moral,
+        UnitEmotions emotions,
         UnitOffense offense,
         UnitDefenses defenses)
     {
@@ -37,8 +33,7 @@
         _size = size;
         _movement = movement;
         _hitPoints = hitPoints;
-        _endurance = endurance;
-        _moral = moral;
+        _emotions = emotions;
         _offense = offense;
         _defense = defenses;
     }
