@@ -1,14 +1,11 @@
-﻿public struct UnitMeteredAttribute
+﻿public class UnitMeteredAttribute
 {
-    private readonly int _max;
-    public int Max { get{ return _max; } }
+    public int Max { get; set; }
 
-    private readonly int _current;
-    public int Current{ get{ return _current; } }
+    public int Current { get; set; }
 
-    public UnitMeteredAttribute(int max, int current)
+    public UnitMeteredAttributeRecord AsReadonly()
     {
-        _max = max;
-        _current = current;
+        return new UnitMeteredAttributeRecord(Max, Current);
     }
 }

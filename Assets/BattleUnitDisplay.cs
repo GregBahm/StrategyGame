@@ -4,11 +4,11 @@ public class BattleUnitDisplay
 {
     private GameObject _unitGameobject;
 
-    private readonly List<UnitState> _states;
+    private readonly List<UnitStateRecord> _states;
     public int StatesCount { get{ return _states.Count; } }
     private readonly bool _attacker;
 
-    public BattleUnitDisplay(List<UnitState> states, bool attacker)
+    public BattleUnitDisplay(List<UnitStateRecord> states, bool attacker)
     {
         _states = states;
         _attacker = attacker;
@@ -27,8 +27,8 @@ public class BattleUnitDisplay
             return;
         }
 
-        UnitState priorState = _states[priorIndex];
-        UnitState nextState = _states[nextIndex];
+        UnitStateRecord priorState = _states[priorIndex];
+        UnitStateRecord nextState = _states[nextIndex];
         if (priorState == nextState || priorState == null || nextState == null || nextIndex > (_states.Count - 1))
         {
             DisplaySimpleState(priorState);
@@ -39,7 +39,7 @@ public class BattleUnitDisplay
         }
     }
 
-    private void DisplaySimpleState(UnitState unitState)
+    private void DisplaySimpleState(UnitStateRecord unitState)
     {
         if(unitState == null || unitState.IsDefeated)
         {
@@ -47,11 +47,11 @@ public class BattleUnitDisplay
             return;
         }
         _unitGameobject.SetActive(true);
-        Vector3 pos = new Vector3(unitState.Attributes.Position.XPos, 0, unitState.Attributes.Position.YPos);
+        Vector3 pos = new Vector3(unitState.Position.XPos, 0, unitState.Position.YPos);
         _unitGameobject.transform.position = pos;
     }
 
-    private void DisplayLerpedState(UnitState prior, UnitState next, float normalTime)
+    private void DisplayLerpedState(UnitStateRecord prior, UnitStateRecord next, float normalTime)
     {
         if (prior == null || prior.IsDefeated)
         {
@@ -60,8 +60,8 @@ public class BattleUnitDisplay
         }
 
         _unitGameobject.SetActive(true);
-        UnitPosition priorPosition = prior.Attributes.Position;
-        UnitPosition nextPosition = prior.Attributes.Position;
+        UnitPositionRecord priorPosition = prior.Position;
+        UnitPositionRecord nextPosition = prior.Position;
         float xPos = Mathf.Lerp(priorPosition.XPos, nextPosition.XPos, normalTime);
         float yPos = Mathf.Lerp(priorPosition.YPos, nextPosition.YPos, normalTime);
         Vector3 pos = new Vector3(xPos, 0, yPos);

@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class BattleRound
 {
-    private readonly IEnumerable<UnitState> _attackingUnits;
-    public IEnumerable<UnitState> AttackingUnits { get{ return _attackingUnits; } }
+    private readonly IEnumerable<UnitStateRecord> _attackingUnits;
+    public IEnumerable<UnitStateRecord> AttackingUnits { get{ return _attackingUnits; } }
 
-    private readonly IEnumerable<UnitState> _defendingUnits;
-    public IEnumerable<UnitState> DefendingUnits { get{ return _defendingUnits; } }
+    private readonly IEnumerable<UnitStateRecord> _defendingUnits;
+    public IEnumerable<UnitStateRecord> DefendingUnits { get{ return _defendingUnits; } }
 
     private readonly BattleStatus _status;
     public BattleStatus Status { get{ return _status; } }
     
-    public BattleRound(IEnumerable<UnitState> attackingUnits, IEnumerable<UnitState> defendingUnits, BattleStatus status)
+    public BattleRound(IEnumerable<UnitStateRecord> attackingUnits, IEnumerable<UnitStateRecord> defendingUnits, BattleStatus status)
     {
         _attackingUnits = attackingUnits;
         _defendingUnits = defendingUnits;
@@ -48,7 +48,7 @@ public class Battlefield
 
     }
 
-    public void UpdatePositions(IEnumerable<UnitStateBuilder> attackers, IEnumerable<UnitStateBuilder> defenders)
+    public void UpdatePositions(IEnumerable<UnitState> attackers, IEnumerable<UnitState> defenders)
     {
         // TODO: Position Updating System
 

@@ -1,25 +1,15 @@
-﻿public struct UnitDefenses
+﻿public class UnitDefenses
 {
-    private readonly int _dodging;
-    public int Dodging { get { return _dodging; } }
+    public int Dodging { get; set; }
 
-    private readonly int _armor;
-    public int Armor { get { return _armor; } }
+    public int Armor { get; set; }
 
-    private readonly ShieldStatus _shield;
-    public ShieldStatus Shield { get { return _shield; } }
+    public ShieldStatus Shield { get; set; }
 
-    private readonly int _regenerationPercent;
-    public int RegenerationPercent { get{ return _regenerationPercent; } }
-
-    public UnitDefenses(int defense,
-        int armor,
-        ShieldStatus shield, 
-        int regenerationPercent)
+    public int RegenerationPercent { get; set; }
+    
+    public UnitDefensesRecord AsReadonly()
     {
-        _dodging = defense;
-        _armor = armor;
-        _shield = shield;
-        _regenerationPercent = regenerationPercent;
+        return new UnitDefensesRecord(Dodging, Armor, Shield, RegenerationPercent);
     }
 }

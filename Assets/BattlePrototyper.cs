@@ -28,24 +28,24 @@ public class BattlePrototyper : MonoBehaviour
     private BattleResolver GetBattleResolver()
     {
         Battlefield battlefield = new Battlefield(1024, 1024, MapCompute);
-        IEnumerable<UnitStateBuilder> attackers = GetPrototypeAttackers();
-        IEnumerable<UnitStateBuilder> defenders = GetPrototypeDefenders();
+        IEnumerable<UnitState> attackers = GetPrototypeAttackers();
+        IEnumerable<UnitState> defenders = GetPrototypeDefenders();
         return new BattleResolver(attackers, defenders, battlefield);
     }
     
     private void DisplayBattleRound(BattleRound battleRound)
     {
-        foreach (UnitState state in battleRound.AttackingUnits.Concat(battleRound.DefendingUnits))
+        foreach (UnitStateRecord state in battleRound.AttackingUnits.Concat(battleRound.DefendingUnits))
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obj.transform.position = new Vector3(state.Attributes.Position.XPos, 0, state.Attributes.Position.YPos);
+            obj.transform.position = new Vector3(state.Position.XPos, 0, state.Position.YPos);
             obj.name = state.Identification.Name;
         }
     }
 
-    private List<UnitStateBuilder> GetPrototypeDefenders()
+    private List<UnitState> GetPrototypeDefenders()
     {
-        List<UnitStateBuilder> ret = new List<UnitStateBuilder>();
+        List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
             ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40));
@@ -65,9 +65,9 @@ public class BattlePrototyper : MonoBehaviour
         return ret;
     }
 
-    private List<UnitStateBuilder> GetPrototypeAttackers()
+    private List<UnitState> GetPrototypeAttackers()
     {
-        List<UnitStateBuilder> ret = new List<UnitStateBuilder>();
+        List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
             ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40));

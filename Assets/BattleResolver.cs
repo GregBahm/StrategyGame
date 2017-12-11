@@ -3,12 +3,12 @@ using System.Linq;
 using System;
 public class BattleResolver
 {
-    private readonly List<UnitStateBuilder> _attackingUnits;
-    private readonly List<UnitStateBuilder> _defendingUnits;
+    private readonly List<UnitState> _attackingUnits;
+    private readonly List<UnitState> _defendingUnits;
     private readonly Battlefield _battlefield;
 
-    public BattleResolver(IEnumerable<UnitStateBuilder> attackingUnits,
-        IEnumerable<UnitStateBuilder> defendingUnits,
+    public BattleResolver(IEnumerable<UnitState> attackingUnits,
+        IEnumerable<UnitState> defendingUnits,
         Battlefield battlefield)
     {
         _attackingUnits = attackingUnits.ToList();
@@ -33,18 +33,18 @@ public class BattleResolver
     public BattleRound AdvanceBattle()
     {
         _battlefield.UpdatePositions(_attackingUnits, _defendingUnits);
-        foreach (UnitStateBuilder unit in _attackingUnits)
+        foreach (UnitState unit in _attackingUnits)
         {
             ApplyUnitAction(unit, _attackingUnits, _defendingUnits);
         }
-        foreach (UnitStateBuilder unit in _defendingUnits)
+        foreach (UnitState unit in _defendingUnits)
         {
             ApplyUnitAction(unit, _defendingUnits, _attackingUnits);
         }
         return GetBattleRound();
     }
 
-    private void ApplyUnitAction(UnitStateBuilder unit, List<UnitStateBuilder> allies, List<UnitStateBuilder> enemies)
+    private void ApplyUnitAction(UnitState unit, List<UnitState> allies, List<UnitState> enemies)
     {
         // TODO: Apply Unit Action
 
@@ -52,8 +52,8 @@ public class BattleResolver
 
     private BattleRound GetBattleRound()
     {
-        UnitState[] attackingState = _attackingUnits.Select(item => item.AsReadonly()).ToArray();
-        UnitState[] defendingState = _defendingUnits.Select(item => item.AsReadonly()).ToArray();
+        UnitStateRecord[] attackingState = _attackingUnits.Select(item => item.AsReadonly()).ToArray();
+        UnitStateRecord[] defendingState = _defendingUnits.Select(item => item.AsReadonly()).ToArray();
         BattleStatus status = GetBattleStatus();
         return new BattleRound(attackingState, defendingState, status);
     }

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+
 public class BattleDisplay
 {
     private readonly int _battleRoundsCount;
@@ -8,16 +10,16 @@ public class BattleDisplay
     public BattleDisplay(List<BattleRound> battleRounds)
     {
         _battleRoundsCount = battleRounds.Count;
-        var attackersDictionary = new Dictionary<UnitIdentification, List<UnitState>>();
-        var defendersDictionary = new Dictionary<UnitIdentification, List<UnitState>>();
+        var attackersDictionary = new Dictionary<UnitIdentification, List<UnitStateRecord>>();
+        var defendersDictionary = new Dictionary<UnitIdentification, List<UnitStateRecord>>();
         for (int i = 0; i < _battleRoundsCount; i++)
         {
             BattleRound round = battleRounds[i];
-            foreach (UnitState unit in round.AttackingUnits)
+            foreach (UnitStateRecord unit in round.AttackingUnits)
             {
                 FilterUnit(i, unit, attackersDictionary);
             }
-            foreach (UnitState unit in round.DefendingUnits)
+            foreach (UnitStateRecord unit in round.DefendingUnits)
             {
                 FilterUnit(i, unit, defendersDictionary);
             }
@@ -26,8 +28,8 @@ public class BattleDisplay
         _battleLength = _units.Max(item => item.StatesCount);
     }
 
-    private IEnumerable<BattleUnitDisplay> InitializeDisplayUnits(Dictionary<UnitIdentification, List<UnitState>> attackersDictionary, 
-        Dictionary<UnitIdentification, List<UnitState>> defendersDictionary)
+    private IEnumerable<BattleUnitDisplay> InitializeDisplayUnits(Dictionary<UnitIdentification, List<UnitStateRecord>> attackersDictionary, 
+        Dictionary<UnitIdentification, List<UnitStateRecord>> defendersDictionary)
     {
         List<BattleUnitDisplay> ret = new List<BattleUnitDisplay>();
         foreach (var item in attackersDictionary)
@@ -44,8 +46,8 @@ public class BattleDisplay
     }
 
     private void FilterUnit(int index, 
-        UnitState unit,
-        Dictionary<UnitIdentification, List<UnitState>> dictionary)
+        UnitStateRecord unit,
+        Dictionary<UnitIdentification, List<UnitStateRecord>> dictionary)
     {
         if(dictionary.ContainsKey(unit.Identification))
         {
@@ -53,7 +55,7 @@ public class BattleDisplay
         }
         else
         {
-            List<UnitState> stateList = new List<UnitState>();
+            List<UnitStateRecord> stateList = new List<UnitStateRecord>();
             for (int i = 0; i < index - 1; i++)
             {
                 stateList.Add(null);

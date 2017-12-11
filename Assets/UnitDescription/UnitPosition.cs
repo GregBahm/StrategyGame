@@ -1,14 +1,11 @@
-﻿public struct UnitPosition
+﻿public class UnitPosition
 {
-    private readonly int _xPos;
-    public int XPos { get { return _xPos; } }
+    public int XPos { get; set; }
+    
+    public int YPos { get; set; }
 
-    private readonly int _yPos;
-    public int YPos { get { return _yPos; } }
-
-    public UnitPosition(int xPos, int yPos)
+    public UnitPositionRecord AsReadonly()
     {
-        _xPos = xPos;
-        _yPos = yPos;
+        return new UnitPositionRecord(XPos, YPos);
     }
 }
