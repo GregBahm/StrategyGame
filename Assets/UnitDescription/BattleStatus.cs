@@ -3,5 +3,6 @@
     Ongoing,
     AttackersVictorious,
     DefendersVictorious,
-    Draw
+    NoSurvivors,
+    Stalemate
 }

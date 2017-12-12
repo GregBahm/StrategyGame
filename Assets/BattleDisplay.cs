@@ -10,37 +10,25 @@ public class BattleDisplay
     public BattleDisplay(List<BattleRound> battleRounds)
     {
         _battleRoundsCount = battleRounds.Count;
-        var attackersDictionary = new Dictionary<UnitIdentification, List<UnitStateRecord>>();
-        var defendersDictionary = new Dictionary<UnitIdentification, List<UnitStateRecord>>();
+        var unitDictionary = new Dictionary<UnitIdentification, List<UnitStateRecord>>();
         for (int i = 0; i < _battleRoundsCount; i++)
         {
             BattleRound round = battleRounds[i];
-            foreach (UnitStateRecord unit in round.AttackingUnits)
+            foreach (UnitStateRecord unit in round.Units)
             {
-                FilterUnit(i, unit, attackersDictionary);
-            }
-            foreach (UnitStateRecord unit in round.DefendingUnits)
-            {
-                FilterUnit(i, unit, defendersDictionary);
+                FilterUnit(i, unit, unitDictionary);
             }
         }
-        _units = InitializeDisplayUnits(attackersDictionary, defendersDictionary);
+        _units = InitializeDisplayUnits(unitDictionary);
         _battleLength = _units.Max(item => item.StatesCount);
     }
 
-    private IEnumerable<BattleUnitDisplay> InitializeDisplayUnits(Dictionary<UnitIdentification, List<UnitStateRecord>> attackersDictionary, 
-        Dictionary<UnitIdentification, List<UnitStateRecord>> defendersDictionary)
+    private static IEnumerable<BattleUnitDisplay> InitializeDisplayUnits(Dictionary<UnitIdentification, List<UnitStateRecord>> unitsDictionary)
     {
         List<BattleUnitDisplay> ret = new List<BattleUnitDisplay>();
-        foreach (var item in attackersDictionary)
+        foreach (var item in unitsDictionary)
         {
-            BattleUnitDisplay newUnit = new BattleUnitDisplay(item.Value, true);
-            ret.Add(newUnit);
-        }
-        foreach (var item in defendersDictionary)
-        {
-            BattleUnitDisplay newUnit = new BattleUnitDisplay(item.Value, false);
-            ret.Add(newUnit);
+            ret.Add(new BattleUnitDisplay(item.Value));
         }
         return ret;
     }

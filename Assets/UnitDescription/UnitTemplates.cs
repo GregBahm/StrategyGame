@@ -1,7 +1,7 @@
 ﻿using System;
 public static class UnitTemplates
 {
-    public static UnitState GetSwordsman(int xPos, int yPos)
+    public static UnitState GetSwordsman(int xPos, int yPos, UnitAllegiance allegiance)
     {
         string name = "Swordsman";
         string longDescription = "A man with a sword and a shield.";
@@ -29,10 +29,12 @@ public static class UnitTemplates
         ret.Position.XPos = xPos;
         ret.Position.YPos = yPos;
 
+        ret.Allegiance = allegiance;
+
         return ret;
     }
 
-    public static UnitState GetArcher(int xPos, int yPos)
+    public static UnitState GetArcher(int xPos, int yPos, UnitAllegiance allegiance)
     {
         string name = "Archer";
         string longDescription = "A man with a bow and a arrows.";
@@ -69,10 +71,12 @@ public static class UnitTemplates
         ret.Position.XPos = xPos;
         ret.Position.YPos = yPos;
 
+        ret.Allegiance = allegiance;
+
         return ret;
     }
 
-    public static UnitState GetKnight(int xPos, int yPos)
+    public static UnitState GetKnight(int xPos, int yPos, UnitAllegiance allegiance)
     {
         string name = "Knight";
         string longDescription = "A knight in shining armor.";
@@ -110,10 +114,12 @@ public static class UnitTemplates
         ret.Position.XPos = xPos;
         ret.Position.YPos = yPos;
 
+        ret.Allegiance = allegiance;
+
         return ret;
     }
 
-    public static UnitState GetTroll(int xPos, int yPos)
+    public static UnitState GetTroll(int xPos, int yPos, UnitAllegiance allegiance)
     {
         string name = "Troll";
         string longDescription = "A nasty green troll.";
@@ -142,15 +148,17 @@ public static class UnitTemplates
         ret.Position.XPos = xPos;
         ret.Position.YPos = yPos;
 
+        ret.Allegiance = allegiance;
+
         return ret;
     }
 
-    public static UnitStateRecord GetRedMage(int xPos, int yPos)
+    public static UnitStateRecord GetRedMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
         throw new NotImplementedException();
     }
 
-    public static UnitStateRecord GetGrayMage(int xPos, int yPos)
+    public static UnitStateRecord GetGrayMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
         throw new NotImplementedException();
     }

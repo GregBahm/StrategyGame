@@ -6,12 +6,10 @@ public class BattleUnitDisplay
 
     private readonly List<UnitStateRecord> _states;
     public int StatesCount { get{ return _states.Count; } }
-    private readonly bool _attacker;
 
-    public BattleUnitDisplay(List<UnitStateRecord> states, bool attacker)
+    public BattleUnitDisplay(List<UnitStateRecord> states)
     {
         _states = states;
-        _attacker = attacker;
         _unitGameobject = GameObject.CreatePrimitive(PrimitiveType.Cube);
     }
 
@@ -60,8 +58,8 @@ public class BattleUnitDisplay
         }
 
         _unitGameobject.SetActive(true);
-        UnitPositionRecord priorPosition = prior.Position;
-        UnitPositionRecord nextPosition = prior.Position;
+        UnitLocation priorPosition = prior.Position;
+        UnitLocation nextPosition = prior.Position;
         float xPos = Mathf.Lerp(priorPosition.XPos, nextPosition.XPos, normalTime);
         float yPos = Mathf.Lerp(priorPosition.YPos, nextPosition.YPos, normalTime);
         Vector3 pos = new Vector3(xPos, 0, yPos);

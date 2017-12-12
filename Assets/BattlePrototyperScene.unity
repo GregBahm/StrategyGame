@@ -285,6 +285,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f85f41f4c1f7ec443901a5f9c9adb282, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MapCompute: {fileID: 7200000, guid: ad799cc0636539d4ebdca77f45c5ab35, type: 3}
+  Timeline: 0
 --- !u!4 &1863960736
 Transform:
   m_ObjectHideFlags: 0

@@ -4,8 +4,8 @@
     
     public int YPos { get; set; }
 
-    public UnitPositionRecord AsReadonly()
+    public UnitLocation AsReadonly()
     {
-        return new UnitPositionRecord(XPos, YPos);
+        return new UnitLocation(XPos, YPos);
     }
 }

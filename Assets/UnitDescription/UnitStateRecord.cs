@@ -11,8 +11,8 @@ public class UnitStateRecord
     private readonly IEnumerable<RangedAttackRecord> _rangedAttacks;
     public IEnumerable<RangedAttackRecord> RangedAttacks { get { return _rangedAttacks; } }
 
-    private readonly UnitPositionRecord _position;
-    public UnitPositionRecord Position { get { return _position; } }
+    private readonly UnitLocation _position;
+    public UnitLocation Position { get { return _position; } }
 
     private readonly int _size;
     public int Size { get { return _size; } }
@@ -35,8 +35,11 @@ public class UnitStateRecord
     private bool _isDefeated;
     public bool IsDefeated { get { return _isDefeated; } }
 
+    private UnitAllegiance _allegiance;
+    public UnitAllegiance Allegiance { get{ return _allegiance; } }
+
     public UnitStateRecord(UnitIdentification identification, 
-    UnitPositionRecord position,
+    UnitLocation position,
         int size,
         int movement,
         UnitMeteredAttributeRecord hitPoints,
@@ -45,6 +48,7 @@ public class UnitStateRecord
         UnitDefensesRecord defenses,
         IEnumerable<MeleeAttackRecord> meleAttacks, 
         IEnumerable<RangedAttackRecord> rangedAttacks,
+        UnitAllegiance allegiance,
         bool isDefeated)
     {
         _identification = identification;
@@ -57,6 +61,7 @@ public class UnitStateRecord
         _defense = defenses;
         _meleeAttacks = meleAttacks;
         _rangedAttacks = rangedAttacks;
+        _allegiance = allegiance;
         _isDefeated = isDefeated;
     }
 }

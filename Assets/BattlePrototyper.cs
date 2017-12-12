@@ -30,12 +30,15 @@ public class BattlePrototyper : MonoBehaviour
         Battlefield battlefield = new Battlefield(1024, 1024, MapCompute);
         IEnumerable<UnitState> attackers = GetPrototypeAttackers();
         IEnumerable<UnitState> defenders = GetPrototypeDefenders();
-        return new BattleResolver(attackers, defenders, battlefield);
+        List<UnitState> units = new List<UnitState>();
+        units.AddRange(attackers);
+        units.AddRange(defenders);
+        return new BattleResolver(units, battlefield);
     }
     
     private void DisplayBattleRound(BattleRound battleRound)
     {
-        foreach (UnitStateRecord state in battleRound.AttackingUnits.Concat(battleRound.DefendingUnits))
+        foreach (UnitStateRecord state in battleRound.Units)
         {
             GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
             obj.transform.position = new Vector3(state.Position.XPos, 0, state.Position.YPos);
@@ -48,19 +51,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40));
+            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defenders));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10));
+            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defenders));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defenders));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defenders));
         }
         return ret;
     }
@@ -70,19 +73,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40));
+            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attackers));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40));
+            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attackers));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40));
+            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attackers));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60));
+            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attackers));
         }
         return ret;
     }

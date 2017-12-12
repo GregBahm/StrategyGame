@@ -29,7 +29,8 @@ public class UnitState
 
     private readonly UnitDefenses _defense;
     public UnitDefenses Defense { get { return _defense; } }
-
+    
+    public UnitAllegiance Allegiance { get; set; }
 
     public bool IsDefeated { get; set; }
 
@@ -57,6 +58,7 @@ public class UnitState
             Defense.AsReadonly(),
             MeleeAttacks.Select(item => item.AsReadonly()).ToArray(),
             RangedAttacks.Select(item => item.AsReadonly()).ToArray(),
+            Allegiance,
             IsDefeated);
     }
 }
