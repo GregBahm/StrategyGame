@@ -4,10 +4,8 @@
 
     public int Precision { get; set; }
 
-    public int AttackAccuracy { get; set; }
-
     public UnitOffenseRecord AsReadonly()
     {
-        return new UnitOffenseRecord(Strength, Precision, AttackAccuracy);
+        return new UnitOffenseRecord(Strength, Precision);
     }
 }

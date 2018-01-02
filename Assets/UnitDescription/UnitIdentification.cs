@@ -11,4 +11,9 @@
         _name = name;
         _longDescription = longDescription;
     }
+
+    public override string ToString()
+    {
+        return Name;
+    }
 }

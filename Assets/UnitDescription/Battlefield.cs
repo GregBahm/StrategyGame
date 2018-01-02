@@ -54,4 +54,9 @@ public class Battlefield
     {
         return GetUnitAt(pos.XPos, pos.YPos);
     }
+    
+    internal IEnumerable<UnitState> GetRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
+    {
+        throw new NotImplementedException();
+    }
 }

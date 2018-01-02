@@ -7,10 +7,14 @@ public class BattleRound
 
     private readonly BattleStatus _status;
     public BattleStatus Status { get{ return _status; } }
+
+    private readonly IEnumerable<CombatLogItem> _combatLog;
+    public IEnumerable<CombatLogItem> CombatLog { get{ return _combatLog; } }
     
-    public BattleRound(IEnumerable<UnitStateRecord> units, BattleStatus status)
+    public BattleRound(IEnumerable<UnitStateRecord> units, BattleStatus status, IEnumerable<CombatLogItem> combatLog)
     {
         _units = units;
         _status = status;
+        _combatLog = combatLog;
     }
 }

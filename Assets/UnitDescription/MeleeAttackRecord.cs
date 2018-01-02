@@ -12,14 +12,19 @@
     private readonly bool _chargeAttack;
     public bool ChargeAttack { get{ return _chargeAttack; } }
 
+    private readonly UnitMeteredAttributeRecord _cooldown;
+    public UnitMeteredAttributeRecord Cooldown { get{ return _cooldown; } }
+
     public MeleeAttackRecord(int attackPower,
         DamageType damageType,
         AreaOfEffectType areaOfEffect,
-        bool chargeAttack)
+        bool chargeAttack,
+        UnitMeteredAttributeRecord cooldown)
     {
         _attackPower = attackPower;
         _damageType = damageType;
         _areaOfAffect = areaOfEffect;
         _chargeAttack = true;
+        _cooldown = cooldown;
     }
 }

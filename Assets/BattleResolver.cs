@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
+using UnityEngine;
+
 public class BattleResolver
 {
     private readonly List<UnitState> _units;
@@ -42,18 +44,20 @@ public class BattleResolver
     public BattleRound AdvanceBattle()
     {
         _battlefield.UpdatePositions(_units);
+        List<CombatLogItem> logItems = new List<CombatLogItem>(); 
         foreach (UnitState unit in _units)
         {
-            UnitBattleApplication.DoUnit(unit, _battlefield);
+            IEnumerable<CombatLogItem> unitCombatItems = UnitBattleApplication.DoUnit(unit, _battlefield);
+            logItems.AddRange(unitCombatItems);
         }
-        return GetBattleRound();
+        return GetBattleRound(logItems);
     }
 
-    private BattleRound GetBattleRound()
+    private BattleRound GetBattleRound(List<CombatLogItem> logItems)
     {
         UnitStateRecord[] unitsRecord = _units.Select(item => item.AsReadonly()).ToArray();
         BattleStatus status = GetBattleStatus();
-        return new BattleRound(unitsRecord, status);
+        return new BattleRound(unitsRecord, status, logItems);
     }
 
     private BattleStatus GetBattleStatus()
@@ -85,73 +89,195 @@ public class BattleResolver
 
 public static class UnitBattleApplication
 {
+    public const int MeleeAttackEnduranceCost = 10;
+    public const int RangedAttackEnduranceCost = 10;
 
-    public static void DoUnit(UnitState unit, Battlefield battlefield)
+    public static IEnumerable<CombatLogItem> DoUnit(UnitState unit, Battlefield battlefield)
     {
-        if(unit.IsDefeated)
+        IEnumerable<CombatLogItem> ret = new CombatLogItem[0];
+        if (unit.IsDefeated)
         {
-            return;
+            return ret;
         }
-        
+
+        CooldownCooldowns(unit);
+
         if(!unit.Emotions.IsRouting && !GetIsExhausted(unit))
         {
-            IEnumerable<UnitState> adjacentEnemies = GetAdjacentEnemies(unit, battlefield);
+            IEnumerable<UnitState> adjacentEnemies = GetAdjacentUnits(unit, battlefield).Where(adjacentUnit => !unit.IsDefeated && GetIsEnemy(unit, adjacentUnit));
             if(adjacentEnemies.Any())
             {
-                foreach (MeleeAttack attack in unit.MeleeAttacks)
+                foreach (MeleeAttack attack in unit.MeleeAttacks.Where(attack => attack.Cooldown.Current < 1))
                 {
-                    DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
+                    IEnumerable<CombatLogItem> meleeAttackLogs = DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
+                    ret.Concat(meleeAttackLogs);
                 }
             }
             else
             {
                 foreach (RangedAttack rangedAttackttack in unit.RangedAttacks.Where(attack => attack.Ammunition > 0))
                 {
-                    DoRangedAttack(unit, rangedAttackttack, battlefield);
+                    IEnumerable<CombatLogItem> rangedAttackLogs = DoRangedAttack(unit, rangedAttackttack, battlefield);
+                    ret.Concat(rangedAttackLogs);
                 }
             }
         }
         RecoverExhaustion(unit);
-        Regenerate(unit);
-        HandleMoral(unit);
+
+        HandleRegeneration(unit);
+        
+        HandleMoral(unit, battlefield);
+
         HandleDamageOverTime();
+
+        return ret;
+    }
+
+    private static void CooldownCooldowns(UnitState unit)
+    {
+        foreach (MeleeAttack attack in unit.MeleeAttacks)
+        {
+            if (attack.Cooldown.Current > 0)
+            {
+                attack.Cooldown.Current--;
+            }
+        }
     }
 
     private static void HandleDamageOverTime()
     {
-        throw new NotImplementedException();
+        // TODO: Put burning here
+        // TODO: Put bleeding here
+        // TODO: Put freezing here
+        // TODO: Put poisons heres
     }
 
-    private static void DoMeleeAttack(UnitState unit, MeleeAttack attack, IEnumerable<UnitState> adjacentEnemies, Battlefield battlefield)
+    private static IEnumerable<CombatLogItem> DoMeleeAttack(UnitState unit, 
+        MeleeAttack attack, 
+        IEnumerable<UnitState> adjacentEnemies, 
+        Battlefield battlefield)
     {
-        throw new NotImplementedException();
+        // Incure endurance cost
+        unit.Emotions.Endurance.Current -= MeleeAttackEnduranceCost;
+
+        // Reset cooldown
+        attack.Cooldown.Current = attack.Cooldown.Max;
+
+        // Figure out who to attack exactly
+        IEnumerable<UnitState> allTargets = GetAllTargets(attack.AreaOfEffect, adjacentEnemies, battlefield);
+        
+        foreach (UnitState target in allTargets)
+        {
+            yield return ApplyMeleeAttackOn(target, unit, attack, battlefield);
+        }
     }
 
-    private static void DoRangedAttack(UnitState unit, RangedAttack rangedAttackttack, Battlefield battlefield)
+    private static CombatLogItem ApplyMeleeAttackOn(UnitState target, 
+        UnitState attacker, 
+        MeleeAttack attack, 
+        Battlefield battlefield)
     {
-        throw new NotImplementedException();
+        // Do the damage
+        int baseDamage = attack.AttackPower + attacker.Offense.Strength;
+        int armor = target.Defense.Armor;
+
+        int actualDamage = baseDamage - armor;
+        ApplyDamageTo(target, actualDamage, battlefield);
+        return new CombatLogItem(attacker, target, actualDamage);
     }
 
-    private static IEnumerable<UnitState> GetAdjacentEnemies(UnitState unit, Battlefield battlefield)
+    private static IEnumerable<UnitState> GetAllTargets(AreaOfEffectType areaOfEffect, 
+        IEnumerable<UnitState> adjacentEnemies, 
+        Battlefield battlefield)
+    {
+        switch (areaOfEffect)
+        {
+            //TODO: Handle other area of effects
+            case AreaOfEffectType.RingAroundUnit:
+                return adjacentEnemies;
+            case AreaOfEffectType.SingleTarget:
+            default:
+                return new UnitState[] { adjacentEnemies.First() };
+        }
+    }
+
+    private static IEnumerable<CombatLogItem> DoRangedAttack(UnitState unit, 
+        RangedAttack rangedAttack, 
+        Battlefield battlefield)
+    {
+        // Incure endurance cost
+        unit.Emotions.Endurance.Current -= RangedAttackEnduranceCost;
+
+        rangedAttack.Ammunition -= 1;
+        IEnumerable<UnitState> targets = battlefield.GetRangedTargetFor(unit, rangedAttack);
+        foreach (UnitState target in targets)
+        {
+            yield return ApplyRangedAttackOn(target, unit, rangedAttack, battlefield);
+        }
+    }
+
+    private static CombatLogItem ApplyRangedAttackOn(UnitState target, 
+        UnitState attacker, 
+        RangedAttack rangedAttack, 
+        Battlefield battlefield)
+    {
+        int actualDamage = rangedAttack.AttackPower - target.Defense.Armor;
+        ApplyDamageTo(target, actualDamage, battlefield);
+        return new CombatLogItem(attacker, target, actualDamage);
+    }
+
+    private static void ApplyDamageTo(UnitState target, int damage, Battlefield battlefield)
+    {
+        target.HitPoints.Current -= damage;
+
+        // If this kills the unit, eleminate them
+        if (target.HitPoints.Current < 1)
+        {
+            target.IsDefeated = true;
+            IEnumerable<UnitState> adjacentAllies = 
+                GetAdjacentUnits(target, battlefield).Where(adjacentUnit => !adjacentUnit.IsDefeated && GetIsAlly(target, adjacentUnit));
+            foreach (UnitState deathWitness in adjacentAllies)
+            {
+                deathWitness.Emotions.Moral.Current -= 1;
+            }
+        }
+
+        // Otherwise, reduce the moral
+        if (damage > 0)
+        {
+            target.Emotions.Moral.Current -= 1;
+        }
+    }
+
+    private static IEnumerable<UnitState> GetAdjacentUnits(UnitState unit, Battlefield battlefield)
     {
         IEnumerable<UnitLocation> adjacentLocations = AdjacencyFinder.GetAdjacentPositions(unit);
         foreach (UnitLocation pos in adjacentLocations)
         {
             UnitState unitAtPos = battlefield.GetUnitAt(pos);
-            if(unitAtPos != null && GetIsEnemy(unit, unitAtPos))
+            if(unitAtPos != null)
             {
                 yield return unitAtPos;
             }
         }
     }
 
-    private static bool GetIsEnemy(UnitState unit, UnitState unitAtPos)
+    public static bool GetIsAlly(UnitState unit, UnitState possibleAlly)
+    {
+        if (unit.Allegiance == UnitAllegiance.AttacksAll)
+        {
+            return false;
+        }
+        return unit.Allegiance == possibleAlly.Allegiance;
+    }
+
+    public static bool GetIsEnemy(UnitState unit, UnitState possibleEnemy)
     {
         if(unit.Allegiance == UnitAllegiance.AttacksAll)
         {
             return true;
         }
-        return unit.Allegiance != unitAtPos.Allegiance;
+        return unit.Allegiance != possibleEnemy.Allegiance;
     }
     
     private static bool GetIsExhausted(UnitState unit)
@@ -159,21 +285,45 @@ public static class UnitBattleApplication
         return unit.Emotions.Endurance.Current <= 0;
     }
 
-    private static void HandleMoral(UnitState unit)
+    private static void HandleMoral(UnitState unit, Battlefield battlefield)
     {
-        throw new NotImplementedException();
+        if(unit.Emotions.Moral.Current <= 0)
+        {
+            unit.Emotions.IsRouting = true;
+            IEnumerable<UnitState> adjacentAllies =
+                GetAdjacentUnits(unit, battlefield).Where(adjacentUnit => !adjacentUnit.IsDefeated && GetIsAlly(unit, adjacentUnit));
+            foreach (UnitState adjacentAlly in adjacentAllies)
+            {
+                unit.Emotions.Moral.Current -= 1;
+            }
+        }
     }
 
-    private static void Regenerate(UnitState unit)
+    private static void HandleRegeneration(UnitState unit)
     {
-        throw new NotImplementedException();
+        unit.HitPoints.Current = Mathf.Max(unit.HitPoints.Current + unit.Defense.Regeneration, unit.HitPoints.Max);
     }
 
     private static void RecoverExhaustion(UnitState unit)
     {
-        throw new NotImplementedException();
+        unit.Emotions.Endurance.Current = Mathf.Max(unit.Emotions.Endurance.Current + 1, unit.Emotions.Endurance.Max);
     }
 }
+
+public struct CombatLogItem
+{
+    private readonly UnitState _attacker;
+    private readonly UnitState _attackee;
+    private readonly int _damage;
+
+    public CombatLogItem(UnitState attacker, UnitState attackee, int damage)
+    {
+        _attacker = attacker;
+        _attackee = attackee;
+        _damage = damage;
+    }
+}
+
 
 class AdjacencyFinder
 {

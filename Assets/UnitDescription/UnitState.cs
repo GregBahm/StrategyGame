@@ -61,4 +61,9 @@ public class UnitState
             Allegiance,
             IsDefeated);
     }
+
+    public override string ToString()
+    {
+        return "State for " + Identification.ToString() + " at " + Position.XPos + "," + Position.YPos;
+    }
 }
