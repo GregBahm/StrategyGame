@@ -9,11 +9,11 @@
 
     public MeleeAttack()
     {
-        Cooldown = new UnitMeteredAttribute();
+        _cooldown = new UnitMeteredAttribute();
     }
 
     public MeleeAttackRecord AsReadonly()
     {
-        return new MeleeAttackRecord(AttackPower, DamageType, AreaOfEffect, ChargeAttack);
+        return new MeleeAttackRecord(AttackPower, DamageType, AreaOfEffect, ChargeAttack, Cooldown.AsReadonly());
     }
 }

@@ -313,8 +313,13 @@ public static class UnitBattleApplication
 public struct CombatLogItem
 {
     private readonly UnitState _attacker;
+    public UnitState Attacker{ get{ return _attacker; } }
+
     private readonly UnitState _attackee;
+    public UnitState Attackee { get{ return _attackee; } }
+
     private readonly int _damage;
+    public int Damage { get{ return _damage; } }
 
     public CombatLogItem(UnitState attacker, UnitState attackee, int damage)
     {

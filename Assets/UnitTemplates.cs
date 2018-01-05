@@ -108,6 +108,7 @@ public static class UnitTemplates
         swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         swordAttack.ChargeAttack = true;
         ret.MeleeAttacks.Add(swordAttack);
+        ret.MeleeAttacks.Add(lanceAttack);
 
         ret.HitPoints.Current = ret.HitPoints.Max;
         ret.Emotions.Moral.Current = ret.Emotions.Moral.Max;
