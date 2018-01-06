@@ -36,7 +36,12 @@ public class Battlefield
 
     internal void UpdatePositions(List<UnitState> units)
     {
-        // TODO: Position Updating System
+        // - Set the _MapSource buffer
+        // - Roll through map distances horizontally, finding the closest dude
+        // - Roll through map distances vertically, finding any closer dudes there
+        // - Have each dude travel towards the closest enemy
+        // - Convert map distances back to C#
+
         throw new NotImplementedException();
     }
 
