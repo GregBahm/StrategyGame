@@ -1,5 +1,8 @@
 /Library/
 /Temp/
+/obj/Debug/
+/UnityPackageManager/
+/Assembly-CSharp.csproj
 /StrategyGame.csproj
 /StrategyGame.Editor.csproj
 /StrategyGame.Plugins.csproj
