@@ -1,7 +1,7 @@
 ﻿#pragma kernel BlurHorizontal
 #pragma kernel BlurVertical
 
-Buffer<bool4> _SourceBuffer;
+Buffer<int4> _SourceBuffer;
 RWBuffer<int4> _HorizontalBuffer;
 RWBuffer<int4> _OutputBuffer;
 
@@ -16,35 +16,35 @@ uint UvToIndex(uint x, uint y)
 [numthreads(128,1,1)] 
 void BlurHorizontal (uint3 id : SV_DispatchThreadID)
 {
-	int4 distances = HorizontalResolution.xxxx;
+	int4 distances = HorizontalResolution + VerticalResolution;
 
 	for(uint i = 0; i < VerticalResolution; i++) 
 	{
 		uint bufferIndex = UvToIndex(id.x, i);
 		bool4 sourceData = _SourceBuffer[bufferIndex];
-		distances *= (1 - sourceData);
+		distances *= 1- sourceData;
 		distances = distances + 1;
 		_HorizontalBuffer[bufferIndex] = distances;
 	}
-	 
-	distances = HorizontalResolution.xxxx;
+
+	distances = HorizontalResolution + VerticalResolution;
 	for(uint i = 0; i < VerticalResolution; i++) 
 	{
 		uint reverseI = VerticalResolution - i - 1;
 		uint bufferIndex = UvToIndex(id.x, reverseI);
 		bool4 sourceData = _SourceBuffer[bufferIndex];
 		int4 currentData = _HorizontalBuffer[bufferIndex];
-		distances *= (1 - sourceData);
+		distances *= 1 - sourceData;
 		distances = distances + 1;
 		distances = min(distances, currentData);
 		_HorizontalBuffer[bufferIndex] = distances;
 	}
 }
-
+ 
 [numthreads(128,1,1)]
 void BlurVertical (uint3 id : SV_DispatchThreadID)
 {
-	int4 distances = VerticalResolution.xxxx;
+	int4 distances = HorizontalResolution + VerticalResolution;
 	for(uint i = 0; i < HorizontalResolution; i++) 
 	{
 		uint bufferIndex = UvToIndex(i, id.x);
@@ -53,8 +53,8 @@ void BlurVertical (uint3 id : SV_DispatchThreadID)
 		distances = min(distances, currentData);
 		_OutputBuffer[bufferIndex] = distances;
 	}
-
-	distances = VerticalResolution.xxxx;
+	
+	distances = HorizontalResolution + VerticalResolution;
 	for(uint i = 0; i < HorizontalResolution; i++) 
 	{
 		uint reverseI = HorizontalResolution - i - 1;
