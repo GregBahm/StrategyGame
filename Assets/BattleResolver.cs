@@ -43,7 +43,7 @@ public class BattleResolver
 
     public BattleRound AdvanceBattle()
     {
-        _battlefield.UpdatePositions(_units);
+        //_battlefield.UpdatePositions(_units); TODO: Sort this out
         List<CombatLogItem> logItems = new List<CombatLogItem>(); 
         foreach (UnitState unit in _units)
         {

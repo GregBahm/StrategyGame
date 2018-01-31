@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+
 public static class AdjacencyFinder
 {
     private struct PositionOffset
@@ -72,6 +75,8 @@ public static class AdjacencyFinder
     public static IEnumerable<UnitLocation> GetAdjacentPositions(int xPos, int yPos, int size)
     {
         IEnumerable<PositionOffset> offsets = GetOffsetsForSize(size);
-        return offsets.Select(item => item.Offset(xPos, yPos));
+        IEnumerable<UnitLocation> surroundingLocations = offsets.Select(item => item.Offset(xPos, yPos));
+        IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(Battlefield.IsWithinBounds);
+        return withinBounds;
     }
 }

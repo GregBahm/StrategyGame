@@ -27,7 +27,7 @@ public class BattlePrototyper : MonoBehaviour
 
     private BattleResolver GetBattleResolver()
     {
-        Battlefield battlefield = new Battlefield(1024, 1024, MapCompute);
+        Battlefield battlefield = new Battlefield(MapCompute);
         IEnumerable<UnitState> attackers = GetPrototypeAttackers();
         IEnumerable<UnitState> defenders = GetPrototypeDefenders();
         List<UnitState> units = new List<UnitState>();
