@@ -53,12 +53,12 @@ public class BlurShaderResultViewer : MonoBehaviour
     {
         BattlefieldDistances distances = _main.GetNextState(_currentState);
         DisplayDistanceBoxes(distances);
-        if(MoveUnits)
-        {
-            MoveUnits = false;
+        //if(MoveUnits)
+        //{
+        //    MoveUnits = false;
             BattlefieldState nextState = _main.MoveUnits(_currentState, distances);
             _currentState = nextState;
-        }
+        //}
     }
 
     private void DisplayDistanceBoxes(BattlefieldDistances distances)
