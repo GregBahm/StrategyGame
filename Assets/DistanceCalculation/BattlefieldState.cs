@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-public struct BattlefieldState
+﻿using System;
+using System.Collections.Generic;
+
+public class BattlefieldState
 {
     private readonly UnitLocation[] _attackerPositions;
     public UnitLocation[] AttackerPositions { get{ return _attackerPositions; } }
@@ -42,5 +44,15 @@ public struct BattlefieldState
         _defenderPositions = defenderPositions;
         _neutralPositions = neutralPositions;
         _berzerkerPositions = berzerkerPositions;
+    }
+
+    internal UnitState GetUnitAt(UnitLocation pos)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal IEnumerable<UnitState> GetRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
+    {
+        throw new NotImplementedException();
     }
 }

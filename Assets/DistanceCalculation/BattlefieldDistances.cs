@@ -13,7 +13,7 @@ public class BattlefieldDistances
     }
     public BattlefieldDistance GetDistanceAt(int x, int y)
     {
-        int index = Battlefield.UvToIndex(x, y);
+        int index = BattlefieldMover.UvToIndex(x, y);
         return Distances[index];
     }
     public UnitLocation GetNextPosition(UnitLocation current, UnitAllegiance alligence, BitArray collisionBitarray, BattlefieldDistances distances)
@@ -57,7 +57,7 @@ public class BattlefieldDistances
 
     private static bool PositionOccupied(UnitLocation position, BitArray collisionBitarray)
     {
-        int index = Battlefield.UvToIndex(position);
+        int index = BattlefieldMover.UvToIndex(position);
         return collisionBitarray[index];
     }
 

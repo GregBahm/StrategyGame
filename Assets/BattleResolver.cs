@@ -6,11 +6,11 @@ using UnityEngine;
 public class BattleResolver
 {
     private readonly List<UnitState> _units;
-    private readonly Battlefield _battlefield;
+    private readonly BattlefieldMover _battlefield;
     private const int BattleRoundLimit = 2000;
 
     public BattleResolver(IEnumerable<UnitState> units,
-        Battlefield battlefield)
+        BattlefieldMover battlefield)
     {
         _units = units.ToList();
         _battlefield = battlefield;
@@ -43,14 +43,24 @@ public class BattleResolver
 
     public BattleRound AdvanceBattle()
     {
-        //_battlefield.UpdatePositions(_units); TODO: Sort this out
+        BattlefieldState state = GetBattlefieldState(_units);
+        BattlefieldDistances distances = _battlefield.GetNextState(state);
+        BattlefieldState nextState = _battlefield.MoveUnits(state, distances);
+        
+        //TODO: Apply movement to units
+
         List<CombatLogItem> logItems = new List<CombatLogItem>(); 
         foreach (UnitState unit in _units)
         {
-            IEnumerable<CombatLogItem> unitCombatItems = UnitBattleApplication.DoUnit(unit, _battlefield);
+            IEnumerable<CombatLogItem> unitCombatItems = UnitBattleApplication.DoUnit(unit, nextState);
             logItems.AddRange(unitCombatItems);
         }
         return GetBattleRound(logItems);
+    }
+
+    private BattlefieldState GetBattlefieldState(List<UnitState> units)
+    {
+        throw new NotImplementedException();
     }
 
     private BattleRound GetBattleRound(List<CombatLogItem> logItems)
@@ -92,7 +102,7 @@ public static class UnitBattleApplication
     public const int MeleeAttackEnduranceCost = 10;
     public const int RangedAttackEnduranceCost = 10;
 
-    public static IEnumerable<CombatLogItem> DoUnit(UnitState unit, Battlefield battlefield)
+    public static IEnumerable<CombatLogItem> DoUnit(UnitState unit, BattlefieldState battlefield)
     {
         IEnumerable<CombatLogItem> ret = new CombatLogItem[0];
         if (unit.IsDefeated)
@@ -155,7 +165,7 @@ public static class UnitBattleApplication
     private static IEnumerable<CombatLogItem> DoMeleeAttack(UnitState unit, 
         MeleeAttack attack, 
         IEnumerable<UnitState> adjacentEnemies, 
-        Battlefield battlefield)
+        BattlefieldState battlefield)
     {
         // Incure endurance cost
         unit.Emotions.Endurance.Current -= MeleeAttackEnduranceCost;
@@ -175,7 +185,7 @@ public static class UnitBattleApplication
     private static CombatLogItem ApplyMeleeAttackOn(UnitState target, 
         UnitState attacker, 
         MeleeAttack attack, 
-        Battlefield battlefield)
+        BattlefieldState battlefield)
     {
         // Do the damage
         int baseDamage = attack.AttackPower + attacker.Offense.Strength;
@@ -188,7 +198,7 @@ public static class UnitBattleApplication
 
     private static IEnumerable<UnitState> GetAllTargets(AreaOfEffectType areaOfEffect, 
         IEnumerable<UnitState> adjacentEnemies, 
-        Battlefield battlefield)
+        BattlefieldState battlefield)
     {
         switch (areaOfEffect)
         {
@@ -203,7 +213,7 @@ public static class UnitBattleApplication
 
     private static IEnumerable<CombatLogItem> DoRangedAttack(UnitState unit, 
         RangedAttack rangedAttack, 
-        Battlefield battlefield)
+        BattlefieldState battlefield)
     {
         // Incure endurance cost
         unit.Emotions.Endurance.Current -= RangedAttackEnduranceCost;
@@ -219,14 +229,14 @@ public static class UnitBattleApplication
     private static CombatLogItem ApplyRangedAttackOn(UnitState target, 
         UnitState attacker, 
         RangedAttack rangedAttack, 
-        Battlefield battlefield)
+        BattlefieldState battlefield)
     {
         int actualDamage = rangedAttack.AttackPower - target.Defense.Armor;
         ApplyDamageTo(target, actualDamage, battlefield);
         return new CombatLogItem(attacker, target, actualDamage);
     }
 
-    private static void ApplyDamageTo(UnitState target, int damage, Battlefield battlefield)
+    private static void ApplyDamageTo(UnitState target, int damage, BattlefieldState battlefield)
     {
         target.HitPoints.Current -= damage;
 
@@ -249,7 +259,7 @@ public static class UnitBattleApplication
         }
     }
 
-    private static IEnumerable<UnitState> GetAdjacentUnits(UnitState unit, Battlefield battlefield)
+    private static IEnumerable<UnitState> GetAdjacentUnits(UnitState unit, BattlefieldState battlefield)
     {
         IEnumerable<UnitLocation> adjacentLocations = AdjacencyFinder.GetAdjacentPositions(unit);
         foreach (UnitLocation pos in adjacentLocations)
@@ -285,7 +295,7 @@ public static class UnitBattleApplication
         return unit.Emotions.Endurance.Current <= 0;
     }
 
-    private static void HandleMoral(UnitState unit, Battlefield battlefield)
+    private static void HandleMoral(UnitState unit, BattlefieldState battlefield)
     {
         if(unit.Emotions.Moral.Current <= 0)
         {

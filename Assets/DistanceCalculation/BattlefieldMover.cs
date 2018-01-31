@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Battlefield 
+public class BattlefieldMover
 {
     private readonly ComputeShader _computer;
 
@@ -21,7 +21,7 @@ public class Battlefield
     public const int BattlefieldResolution = HorizontalResolution * VerticalResolution;
     private const int GroupSize = 128;
 
-    public Battlefield(ComputeShader computer)
+    public BattlefieldMover(ComputeShader computer)
     {
         _computer = computer;
         _blurHorizontalKernel = _computer.FindKernel("BlurHorizontal");
@@ -140,21 +140,11 @@ public class Battlefield
         public int BerzerkerPresent;
     }
 
-    internal UnitState GetUnitAt(UnitLocation pos)
-    {
-        throw new NotImplementedException();
-    }
-
-    internal IEnumerable<UnitState> GetRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
-    {
-        throw new NotImplementedException();
-    }
-
     public static bool IsWithinBounds(UnitLocation location)
     {
         return location.XPos >= 0
             && location.YPos >= 0
-            && location.XPos < Battlefield.HorizontalResolution
-            && location.YPos < Battlefield.VerticalResolution;
+            && location.XPos < BattlefieldMover.HorizontalResolution
+            && location.YPos < BattlefieldMover.VerticalResolution;
     }
 }

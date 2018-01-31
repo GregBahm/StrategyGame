@@ -202,7 +202,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 867598478}
-  - component: {fileID: 867598477}
   - component: {fileID: 867598476}
   m_Layer: 0
   m_Name: Mainscript
@@ -222,20 +221,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78fa995522a6af44986f210db8f59fe3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Computer: {fileID: 7200000, guid: c72f67cc9d09c204ca2457a965f137be, type: 3}
   AlliesMaterial: {fileID: 2100000, guid: a83b3a886c8ab4843b527792f6c935f2, type: 2}
   DefenderMaterial: {fileID: 2100000, guid: 2005207fe2b72e24ea224bfe5a024f63, type: 2}
---- !u!114 &867598477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 867598475}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fcc1e897ffa119f4e98cf5f681a717e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Computer: {fileID: 7200000, guid: c72f67cc9d09c204ca2457a965f137be, type: 3}
+  DoHeightboxes: 0
 --- !u!4 &867598478
 Transform:
   m_ObjectHideFlags: 0

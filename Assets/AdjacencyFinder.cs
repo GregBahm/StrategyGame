@@ -76,7 +76,7 @@ public static class AdjacencyFinder
     {
         IEnumerable<PositionOffset> offsets = GetOffsetsForSize(size);
         IEnumerable<UnitLocation> surroundingLocations = offsets.Select(item => item.Offset(xPos, yPos));
-        IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(Battlefield.IsWithinBounds);
+        IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(BattlefieldMover.IsWithinBounds);
         return withinBounds;
     }
 }
