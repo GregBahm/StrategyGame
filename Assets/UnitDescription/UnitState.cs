@@ -10,9 +10,8 @@ public class UnitState
 
     private readonly List<RangedAttack> _rangedAttacks;
     public List<RangedAttack> RangedAttacks { get { return _rangedAttacks; } }
-
-    private readonly UnitPosition _position;
-    public UnitPosition Position { get { return _position; } }
+    
+    public UnitLocation Location { get; set; }
 
     public int Size { get; set; }
 
@@ -37,7 +36,6 @@ public class UnitState
     public UnitState(UnitIdentification description)
     {
         _identification = description;
-        _position = new UnitPosition();
         _hitPoints = new UnitMeteredAttribute();
         _emotions = new UnitEmotions();
         _offense = new UnitOffense();
@@ -49,7 +47,7 @@ public class UnitState
     public UnitStateRecord AsReadonly()
     {
         return new UnitStateRecord(Identification, 
-            Position.AsReadonly(),
+            Location,
             Size,
             Movement,
             HitPoints.AsReadonly(),
@@ -64,6 +62,6 @@ public class UnitState
 
     public override string ToString()
     {
-        return "State for " + Identification.ToString() + " at " + Position.XPos + "," + Position.YPos;
+        return "State for " + Identification.ToString() + " at " + Location.XPos + "," + Location.YPos;
     }
 }

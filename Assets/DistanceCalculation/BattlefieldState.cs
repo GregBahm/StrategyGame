@@ -1,58 +1,68 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class BattlefieldState
 {
-    private readonly UnitLocation[] _attackerPositions;
-    public UnitLocation[] AttackerPositions { get{ return _attackerPositions; } }
-    private readonly UnitLocation[] _defenderPositions;
-    public UnitLocation[] DefenderPositions { get{ return _defenderPositions; } }
-    private readonly UnitLocation[] _neutralPositions;
-    public UnitLocation[] NeutralPositions { get{ return _neutralPositions; } }
-    private readonly UnitLocation[] _berzerkerPositions;
-    public UnitLocation[] BerzerkerPositions { get{ return _berzerkerPositions; } }
+    private readonly UnitState[,] _unitsGrid;
 
-    public IEnumerable<UnitLocation> AllUnits
+    private readonly BitArray _collisions; 
+    public BitArray Collisions { get{ return _collisions; } }
+
+    private readonly BattlefieldDistances _distances;
+    public BattlefieldDistances Distances { get{ return _distances; } }
+
+    public BattlefieldState(List<UnitState> allUnits, BattlefieldMover mover)
     {
-        get
-        {
-            foreach (UnitLocation dude in _attackerPositions)
-            {
-                yield return dude;
-            }
-            foreach (UnitLocation dude in _defenderPositions)
-            {
-                yield return dude;
-            }
-            foreach (UnitLocation dude in _neutralPositions)
-            {
-                yield return dude;
-            }
-            foreach (UnitLocation dude in _berzerkerPositions)
-            {
-                yield return dude;
-            }
-        }
+        BattlefieldStateForMover stateForMover = new BattlefieldStateForMover(allUnits);
+        _distances = mover.GetDistances(stateForMover);
+        _unitsGrid = CreateUnitsGrid(allUnits);
+        _collisions = GetCollisionBitarray(allUnits);
     }
 
-    public BattlefieldState(UnitLocation[] attackerPositions,
-        UnitLocation[] defenderPositions,
-        UnitLocation[] neutralPositions,
-        UnitLocation[] berzerkerPositions)
+    private static UnitState[,] CreateUnitsGrid(List<UnitState> allUnits)
     {
-        _attackerPositions = attackerPositions;
-        _defenderPositions = defenderPositions;
-        _neutralPositions = neutralPositions;
-        _berzerkerPositions = berzerkerPositions;
+        UnitState[,] ret = new UnitState[BattlefieldMover.HorizontalResolution, BattlefieldMover.VerticalResolution];
+        foreach (UnitState unit in allUnits)
+        {
+            ret[unit.Location.XPos, unit.Location.YPos] = unit;
+        }
+        return ret;
     }
 
     internal UnitState GetUnitAt(UnitLocation pos)
     {
-        throw new NotImplementedException();
+        return _unitsGrid[pos.XPos, pos.YPos];
     }
 
     internal IEnumerable<UnitState> GetRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
     {
+        // TODO: Implement Get Ranged Targets For
         throw new NotImplementedException();
+    }
+
+    private BitArray GetCollisionBitarray(IEnumerable<UnitState> allUnits)
+    {
+        BitArray ret = new BitArray(BattlefieldMover.BattlefieldResolution);
+        foreach (UnitLocation location in allUnits.Select(item => item.Location))
+        {
+            int index = BattlefieldMover.UvToIndex(location.XPos, location.YPos);
+            ret[index] = true;
+        }
+        return ret;
+    }
+
+    private UnitLocation[] GetMovedUnits(UnitLocation[] positions, UnitAllegiance allegiance, BitArray collisionBitarray, BattlefieldDistances distances)
+    {
+        List<UnitLocation> newLocations = new List<UnitLocation>();
+        foreach (UnitLocation location in positions)
+        {
+            UnitLocation newLocation = distances.GetNextPosition(location, allegiance, collisionBitarray, distances);
+            collisionBitarray[BattlefieldMover.UvToIndex(location)] = false;
+            collisionBitarray[BattlefieldMover.UvToIndex(newLocation)] = true;
+            newLocations.Add(newLocation);
+        }
+        return newLocations.ToArray();
     }
 }

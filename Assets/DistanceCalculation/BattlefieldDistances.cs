@@ -38,16 +38,16 @@ public class BattlefieldDistances
         int amount;
         switch (alligence)
         {
-            case UnitAllegiance.Attackers:
+            case UnitAllegiance.Attacker:
                 amount = dist.EnemyDistance;
                 break;
-            case UnitAllegiance.Defenders:
+            case UnitAllegiance.Defender:
                 amount = dist.AlliedDistance;
                 break;
-            case UnitAllegiance.Neutrals:
+            case UnitAllegiance.Neutral:
                 amount = dist.NeutralDistance;
                 break;
-            case UnitAllegiance.AttacksAll:
+            case UnitAllegiance.Berzerk:
             default:
                 amount = dist.BerzerkerDistance;
                 break;

@@ -51,19 +51,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defenders));
+            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defender));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defenders));
+            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defender));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defenders));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defender));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defenders));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defender));
         }
         return ret;
     }
@@ -73,19 +73,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attackers));
+            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attacker));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attackers));
+            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attacker));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attackers));
+            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attacker));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attackers));
+            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attacker));
         }
         return ret;
     }

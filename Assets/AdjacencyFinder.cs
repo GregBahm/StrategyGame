@@ -20,10 +20,6 @@ public static class AdjacencyFinder
         {
             return new UnitLocation(xPos + _xOffset, yPos + _yOffset);
         }
-        internal UnitLocation Offset(UnitPosition position)
-        {
-            return Offset(position.XPos, position.YPos);
-        }
     }
     
     private static Dictionary<int, IEnumerable<PositionOffset>> _positionsDictionary;
@@ -70,13 +66,21 @@ public static class AdjacencyFinder
     }
     public static IEnumerable<UnitLocation> GetAdjacentPositions(UnitState unit)
     {
-        return GetAdjacentPositions(unit.Position.XPos, unit.Position.YPos, unit.Size);
+        return GetAdjacentPositions(unit.Location.XPos, unit.Location.YPos, unit.Size);
     }
     public static IEnumerable<UnitLocation> GetAdjacentPositions(int xPos, int yPos, int size)
     {
         IEnumerable<PositionOffset> offsets = GetOffsetsForSize(size);
         IEnumerable<UnitLocation> surroundingLocations = offsets.Select(item => item.Offset(xPos, yPos));
-        IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(BattlefieldMover.IsWithinBounds);
+        IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(IsWithinBounds);
         return withinBounds;
+    }
+
+    public static bool IsWithinBounds(UnitLocation location)
+    {
+        return location.XPos >= 0
+            && location.YPos >= 0
+            && location.XPos < BattlefieldMover.HorizontalResolution
+            && location.YPos < BattlefieldMover.VerticalResolution;
     }
 }

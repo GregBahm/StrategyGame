@@ -29,8 +29,7 @@ public static class UnitTemplates
         ret.Emotions.Moral.Current = ret.Emotions.Moral.Max;
         ret.Emotions.Endurance.Current = ret.Emotions.Endurance.Max;
 
-        ret.Position.XPos = xPos;
-        ret.Position.YPos = yPos;
+        ret.Location = new UnitLocation(xPos, yPos);
 
         ret.Allegiance = allegiance;
 
@@ -70,9 +69,8 @@ public static class UnitTemplates
         ret.HitPoints.Current = ret.HitPoints.Max;
         ret.Emotions.Moral.Current = ret.Emotions.Moral.Max;
         ret.Emotions.Endurance.Current = ret.Emotions.Endurance.Max;
-
-        ret.Position.XPos = xPos;
-        ret.Position.YPos = yPos;
+        
+        ret.Location = new UnitLocation(xPos, yPos);
 
         ret.Allegiance = allegiance;
 
@@ -113,9 +111,8 @@ public static class UnitTemplates
         ret.HitPoints.Current = ret.HitPoints.Max;
         ret.Emotions.Moral.Current = ret.Emotions.Moral.Max;
         ret.Emotions.Endurance.Current = ret.Emotions.Endurance.Max;
-
-        ret.Position.XPos = xPos;
-        ret.Position.YPos = yPos;
+        
+        ret.Location = new UnitLocation(xPos, yPos);
 
         ret.Allegiance = allegiance;
 
@@ -150,8 +147,7 @@ public static class UnitTemplates
         ret.Emotions.Moral.Current = ret.Emotions.Moral.Max;
         ret.Emotions.Endurance.Current = ret.Emotions.Endurance.Max;
 
-        ret.Position.XPos = xPos;
-        ret.Position.YPos = yPos;
+        ret.Location = new UnitLocation(xPos, yPos);
 
         ret.Allegiance = allegiance;
 
@@ -161,11 +157,13 @@ public static class UnitTemplates
 
     public static UnitState GetRedMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
+        // TODO: Add Red Mage
         throw new NotImplementedException();
     }
 
     public static UnitState GetGrayMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
+        // TODO: Add Grey Mage
         throw new NotImplementedException();
     }
 

@@ -31,7 +31,7 @@ public class BattlefieldMover
         _outputBuffer = new ComputeBuffer(BattlefieldResolution, OutputBufferStride);
     }
 
-    public BattlefieldDistances GetNextState(BattlefieldState state)
+    public BattlefieldDistances GetDistances(BattlefieldStateForMover state)
     {
         int horizontalGroups = HorizontalResolution / GroupSize;
         int verticalGroups = VerticalResolution / GroupSize;
@@ -59,7 +59,7 @@ public class BattlefieldMover
         return (location.XPos * VerticalResolution) + location.YPos;
     }
 
-    private void SetSourceBufferState(BattlefieldState state)
+    private void SetSourceBufferState(BattlefieldStateForMover state)
     {
         SourceLocationData[] data = new SourceLocationData[BattlefieldResolution];
         foreach (UnitLocation location in state.AttackerPositions)
@@ -79,43 +79,6 @@ public class BattlefieldMover
             data[UvToIndex(location.XPos, location.YPos)].BerzerkerPresent = 1;
         }
         _sourceBuffer.SetData(data);
-    }
-
-    internal BattlefieldState MoveUnits(BattlefieldState currentState, BattlefieldDistances distances)
-    {
-        BitArray collisionBitarray = GetCollisionBitarray(currentState);
-        UnitLocation[] attackerLocations = GetMovedUnits(currentState.AttackerPositions, UnitAllegiance.Attackers, collisionBitarray, distances);
-        UnitLocation[] defenderLocations = GetMovedUnits(currentState.DefenderPositions, UnitAllegiance.Defenders, collisionBitarray, distances);
-
-        BattlefieldState state = new BattlefieldState(attackerLocations,
-            defenderLocations,
-            new UnitLocation[0],
-            new UnitLocation[0]);
-        return state;
-    }
-
-    private UnitLocation[] GetMovedUnits(UnitLocation[] positions, UnitAllegiance allegiance, BitArray collisionBitarray, BattlefieldDistances distances)
-    {
-        List<UnitLocation> newLocations = new List<UnitLocation>();
-        foreach (UnitLocation location in positions)
-        {
-            UnitLocation newLocation = distances.GetNextPosition(location, allegiance, collisionBitarray, distances);
-            collisionBitarray[UvToIndex(location)] = false;
-            collisionBitarray[UvToIndex(newLocation)] = true;
-            newLocations.Add(newLocation);
-        }
-        return newLocations.ToArray();
-    }
-
-    private BitArray GetCollisionBitarray(BattlefieldState currentState)
-    {
-        BitArray ret = new BitArray(BattlefieldResolution);
-        foreach (UnitLocation location in currentState.AllUnits)
-        {
-            int index = UvToIndex(location);
-            ret[index] = true;
-        }
-        return ret;
     }
 
     private BattlefieldDistances GetWeights()
@@ -138,13 +101,5 @@ public class BattlefieldMover
         public int DefenderPreset;
         public int NeutralPresent;
         public int BerzerkerPresent;
-    }
-
-    public static bool IsWithinBounds(UnitLocation location)
-    {
-        return location.XPos >= 0
-            && location.YPos >= 0
-            && location.XPos < BattlefieldMover.HorizontalResolution
-            && location.YPos < BattlefieldMover.VerticalResolution;
     }
 }
