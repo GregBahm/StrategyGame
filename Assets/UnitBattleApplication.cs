@@ -31,7 +31,7 @@ public static class UnitBattleApplication
             }
             else
             {
-                IEnumerable<RangedAttack> rangedAttacks = unit.RangedAttacks.Where(attack => attack.Ammunition > 0);
+                IEnumerable<RangedAttack> rangedAttacks = unit.RangedAttacks.Where(attack => attack.Ammunition > 0 && (attack.MaximumRange - attack.MinimumRange) > 0);
                 if(rangedAttacks.Any())
                 {
                     foreach (RangedAttack rangedAttackttack in rangedAttacks)
@@ -42,7 +42,7 @@ public static class UnitBattleApplication
                 }
                 else
                 {
-                    MoveUnit(unit, battlefield.Distances, battlefield.Collisions);
+                    battlefield.MoveUnit(unit);
                 }
             }
         }
@@ -55,14 +55,6 @@ public static class UnitBattleApplication
         HandleDamageOverTime();
 
         return ret;
-    }
-
-    private static void MoveUnit(UnitState unit, BattlefieldDistances distances, BitArray collisions)
-    {
-        UnitLocation newLocation = distances.GetNextPosition(unit.Location, unit.Allegiance, collisions, distances);
-        collisions[BattlefieldMover.UvToIndex(unit.Location)] = false;
-        collisions[BattlefieldMover.UvToIndex(newLocation)] = true;
-        unit.Location = newLocation;
     }
 
     private static void CooldownCooldowns(UnitState unit)
@@ -137,14 +129,17 @@ public static class UnitBattleApplication
         RangedAttack rangedAttack, 
         BattlefieldState battlefield)
     {
-        // Incure endurance cost
-        unit.Emotions.Endurance.Current -= RangedAttackEnduranceCost;
-
-        rangedAttack.Ammunition -= 1;
         IEnumerable<UnitState> targets = battlefield.GetRangedTargetFor(unit, rangedAttack);
-        foreach (UnitState target in targets)
+        if(targets.Any())
         {
-            yield return ApplyRangedAttackOn(target, unit, rangedAttack, battlefield);
+            // Incure endurance cost
+            unit.Emotions.Endurance.Current -= RangedAttackEnduranceCost;
+
+            rangedAttack.Ammunition -= 1;
+            foreach (UnitState target in targets)
+            {
+                yield return ApplyRangedAttackOn(target, unit, rangedAttack, battlefield);
+            }
         }
     }
 

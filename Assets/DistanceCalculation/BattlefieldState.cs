@@ -6,12 +6,8 @@ using System.Linq;
 public class BattlefieldState
 {
     private readonly UnitState[,] _unitsGrid;
-
     private readonly BitArray _collisions; 
-    public BitArray Collisions { get{ return _collisions; } }
-
     private readonly BattlefieldDistances _distances;
-    public BattlefieldDistances Distances { get{ return _distances; } }
 
     public BattlefieldState(List<UnitState> allUnits, BattlefieldMover mover)
     {
@@ -38,8 +34,29 @@ public class BattlefieldState
 
     internal IEnumerable<UnitState> GetRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
     {
-        // TODO: Implement Get Ranged Targets For
-        throw new NotImplementedException();
+        UnitState baseTarget = GetBaseRangedTargetFor(unit, rangedAttack);
+        if(baseTarget != null)
+        {
+            //TODO: Handle getting splash targets for area of effect ranged attacks
+            yield return baseTarget;
+        }
+    }
+
+    private UnitState GetBaseRangedTargetFor(UnitState unit, RangedAttack rangedAttack)
+    {
+        int rangedAttackMid = (rangedAttack.MaximumRange + rangedAttack.MinimumRange) / 2;
+        int requiredDist = (rangedAttack.MaximumRange - rangedAttack.MinimumRange) / 2;
+        IEnumerable<UnitLocation> searchStartLocations = AdjacencyFinder.GetRangedSearchPositions(unit.Location, rangedAttackMid);
+        foreach (UnitLocation searchStart in searchStartLocations)
+        {
+            int dist = _distances.GetDistanceToEnemy(searchStart, unit.Allegiance);
+            if (dist < requiredDist)
+            {
+                UnitLocation location = _distances.GetEnemyClosestTo(searchStart, unit.Allegiance);
+                return GetUnitAt(location);
+            }
+        }
+        return null;
     }
 
     private BitArray GetCollisionBitarray(IEnumerable<UnitState> allUnits)
@@ -53,16 +70,11 @@ public class BattlefieldState
         return ret;
     }
 
-    private UnitLocation[] GetMovedUnits(UnitLocation[] positions, UnitAllegiance allegiance, BitArray collisionBitarray, BattlefieldDistances distances)
+    public void MoveUnit(UnitState unit)
     {
-        List<UnitLocation> newLocations = new List<UnitLocation>();
-        foreach (UnitLocation location in positions)
-        {
-            UnitLocation newLocation = distances.GetNextPosition(location, allegiance, collisionBitarray, distances);
-            collisionBitarray[BattlefieldMover.UvToIndex(location)] = false;
-            collisionBitarray[BattlefieldMover.UvToIndex(newLocation)] = true;
-            newLocations.Add(newLocation);
-        }
-        return newLocations.ToArray();
+        UnitLocation newLocation = _distances.GetNextPosition(unit.Location, unit.Allegiance, _collisions, unit.Emotions.IsRouting);
+        _collisions[BattlefieldMover.UvToIndex(unit.Location)] = false;
+        _collisions[BattlefieldMover.UvToIndex(newLocation)] = true;
+        unit.Location = newLocation;
     }
 }

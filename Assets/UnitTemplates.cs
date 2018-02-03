@@ -157,13 +157,13 @@ public static class UnitTemplates
 
     public static UnitState GetRedMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
-        // TODO: Add Red Mage
+        // TODO: Add Red Mage, who can cast a fireball
         throw new NotImplementedException();
     }
 
     public static UnitState GetGrayMage(int xPos, int yPos, UnitAllegiance allegiance)
     {
-        // TODO: Add Grey Mage
+        // TODO: Add Grey Mage, who can cast various status buffers
         throw new NotImplementedException();
     }
 

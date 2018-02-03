@@ -55,6 +55,11 @@ public static class AdjacencyFinder
         return IsPerimiter(xDimension, size) || IsPerimiter(yDimension, size);
     }
 
+    internal static IEnumerable<UnitLocation> GetRangedSearchPositions(UnitLocation location, int rangedAttackMid)
+    {
+        throw new NotImplementedException();
+    }
+
     private static bool IsPerimiter(int dimension, int size)
     {
         return dimension == -1 || dimension == size;

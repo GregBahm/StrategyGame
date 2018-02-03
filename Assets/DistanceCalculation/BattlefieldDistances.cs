@@ -11,16 +11,17 @@ public class BattlefieldDistances
     {
         Distances = distances;
     }
-    public BattlefieldDistance GetDistanceAt(int x, int y)
+    private BattlefieldDistance GetDistanceAt(UnitLocation location)
     {
-        int index = BattlefieldMover.UvToIndex(x, y);
+        int index = BattlefieldMover.UvToIndex(location.XPos, location.YPos);
         return Distances[index];
     }
-    public UnitLocation GetNextPosition(UnitLocation current, UnitAllegiance alligence, BitArray collisionBitarray, BattlefieldDistances distances)
+    public UnitLocation GetNextPosition(UnitLocation current, UnitAllegiance alligence, BitArray collisionBitarray, bool isRouting)
     {
+        // TODO: Handle fleeing
         IEnumerable<UnitLocation> adjacent = AdjacencyFinder.GetAdjacentPositions(current.XPos, current.YPos, 1);
         IEnumerable<UnitLocation> notBlocked = adjacent.Where(item => !PositionOccupied(item, collisionBitarray));
-        IEnumerable<DistanceCheck> distanceChecks = notBlocked.Select(item => GetDistanceCheck(item, distances, alligence));
+        IEnumerable<DistanceCheck> distanceChecks = notBlocked.Select(item => new DistanceCheck(GetDistanceToEnemy(item, alligence), item));
         if(!distanceChecks.Any())
         {
             return current;
@@ -32,27 +33,58 @@ public class BattlefieldDistances
         return bestDistances.First().Location;
     }
 
-    private DistanceCheck GetDistanceCheck(UnitLocation item, BattlefieldDistances distances,  UnitAllegiance alligence)
+    public UnitLocation GetEnemyClosestTo(UnitLocation searchPoint, UnitAllegiance allegiance)
     {
-        BattlefieldDistance dist = distances.GetDistanceAt(item.XPos, item.YPos);
+        int dist = GetDistanceToEnemy(searchPoint, allegiance);
+        if (dist == 0)
+        {
+            return searchPoint;
+        }
+        return GetEnemyClosestRecursive(searchPoint, allegiance);
+    }
+
+    private UnitLocation GetEnemyClosestRecursive(UnitLocation searchPoint, UnitAllegiance allegiance)
+    {
+        IEnumerable<UnitLocation> adjacentLocations = AdjacencyFinder.GetAdjacentPositions(searchPoint, 1);
+        int closestDist = int.MaxValue;
+        UnitLocation location;
+        foreach (UnitLocation adjacentLocation in adjacentLocations)
+        {
+            int adjacentDist = GetDistanceToEnemy(searchPoint, allegiance);
+            if (adjacentDist == 0)
+            {
+                return adjacentLocation;
+            }
+            else if (adjacentDist < closestDist)
+            {
+                closestDist = adjacentDist;
+                location = adjacentLocation;
+            }
+        }
+        return GetEnemyClosestRecursive(searchPoint, allegiance);
+    }
+
+    public int GetDistanceToEnemy(UnitLocation item,  UnitAllegiance alligence)
+    {
+        BattlefieldDistance dist = GetDistanceAt(item);
         int amount;
         switch (alligence)
         {
             case UnitAllegiance.Attacker:
-                amount = dist.EnemyDistance;
+                amount = Mathf.Min(dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
                 break;
             case UnitAllegiance.Defender:
-                amount = dist.AlliedDistance;
+                amount = Mathf.Min(dist.AttackerDistance, dist.NeutralDistance, dist.BerzerkerDistance);
                 break;
             case UnitAllegiance.Neutral:
-                amount = dist.NeutralDistance;
+                amount = Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.BerzerkerDistance);
                 break;
             case UnitAllegiance.Berzerk:
             default:
-                amount = dist.BerzerkerDistance;
+                amount = Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
                 break;
         }
-        return new DistanceCheck(amount, item);
+        return amount;
     }
 
     private static bool PositionOccupied(UnitLocation position, BitArray collisionBitarray)
