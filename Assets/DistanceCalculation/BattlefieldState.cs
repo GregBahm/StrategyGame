@@ -9,15 +9,15 @@ public class BattlefieldState
     private readonly BitArray _collisions; 
     private readonly BattlefieldDistances _distances;
 
-    public BattlefieldState(List<UnitState> allUnits, BattlefieldMover mover)
+    public BattlefieldState(UnitState[] allLivingUnits, BattlefieldMover mover)
     {
-        BattlefieldStateForMover stateForMover = new BattlefieldStateForMover(allUnits);
+        BattlefieldStateForMover stateForMover = new BattlefieldStateForMover(allLivingUnits);
         _distances = mover.GetDistances(stateForMover);
-        _unitsGrid = CreateUnitsGrid(allUnits);
-        _collisions = GetCollisionBitarray(allUnits);
+        _unitsGrid = CreateUnitsGrid(allLivingUnits);
+        _collisions = GetCollisionBitarray(allLivingUnits);
     }
 
-    private static UnitState[,] CreateUnitsGrid(List<UnitState> allUnits)
+    private static UnitState[,] CreateUnitsGrid(UnitState[] allUnits)
     {
         UnitState[,] ret = new UnitState[BattlefieldMover.HorizontalResolution, BattlefieldMover.VerticalResolution];
         foreach (UnitState unit in allUnits)

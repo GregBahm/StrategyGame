@@ -13,7 +13,7 @@ OcclusionCullingSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 8
+  serializedVersion: 9
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,8 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.776368, g: 0.776368, b: 0.776368, a: 1}
+  m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -54,11 +55,10 @@ LightmapSettings:
     m_EnableBakedLightmaps: 1
     m_EnableRealtimeLightmaps: 1
   m_LightmapEditorSettings:
-    serializedVersion: 9
+    serializedVersion: 10
     m_Resolution: 2
     m_BakeResolution: 40
-    m_TextureWidth: 1024
-    m_TextureHeight: 1024
+    m_AtlasSize: 1024
     m_AO: 0
     m_AOMaxDistance: 1
     m_CompAOExponent: 1
@@ -88,6 +88,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaDirect: 0.5
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ShowResolutionOverlay: 1
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -285,8 +286,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f85f41f4c1f7ec443901a5f9c9adb282, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MapCompute: {fileID: 7200000, guid: ad799cc0636539d4ebdca77f45c5ab35, type: 3}
+  MapCompute: {fileID: 7200000, guid: c72f67cc9d09c204ca2457a965f137be, type: 3}
   Timeline: 0
+  SpriteScale: 2
+  ArcherPrefab: {fileID: 1194555680333294, guid: 49db099cae31c9b44a25bf4404b22ad9,
+    type: 2}
+  SwordsmanPrefab: {fileID: 1178737923758340, guid: 5689ed03344825c439db668de7ccfd88,
+    type: 2}
+  TrollPrefab: {fileID: 1232623191296658, guid: 3327aed665dd36c44b137efcc09edb9e,
+    type: 2}
+  KnightPrefab: {fileID: 1860856472760958, guid: f91618f5fa30e4643813ddaa2319ebfa,
+    type: 2}
 --- !u!4 &1863960736
 Transform:
   m_ObjectHideFlags: 0

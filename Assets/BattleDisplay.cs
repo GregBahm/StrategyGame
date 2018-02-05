@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class BattleDisplay
 {
     private readonly int _battleRoundsCount;
     private readonly IEnumerable<BattleUnitDisplay> _units;
+    public IEnumerable<BattleUnitDisplay> Units { get{ return _units; } }
     private readonly int _battleLength;
 
     public BattleDisplay(List<BattleRound> battleRounds)

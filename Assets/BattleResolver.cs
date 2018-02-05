@@ -6,7 +6,7 @@ public class BattleResolver
 {
     private readonly List<UnitState> _units;
     private readonly BattlefieldMover _mover;
-    private const int BattleRoundLimit = 2000;
+    private const int BattleRoundLimit = 200;
 
     public BattleResolver(IEnumerable<UnitState> units,
         BattlefieldMover battlefield)
@@ -42,19 +42,20 @@ public class BattleResolver
 
     public BattleRound AdvanceBattle()
     {
-        BattlefieldState state = new BattlefieldState(_units, _mover);
+        UnitState[] allLivingUnits = _units.Where(item => !item.IsDefeated).ToArray();
+        BattlefieldState state = new BattlefieldState(allLivingUnits, _mover);
 
-        List<CombatLogItem> logItems = new List<CombatLogItem>();
-        foreach (UnitState unit in _units)
+        List<AttackRecord> logItems = new List<AttackRecord>();
+        foreach (UnitState unit in allLivingUnits)
         {
-            IEnumerable<CombatLogItem> unitCombatItems = UnitBattleApplication.DoUnit(unit, state);
+            IEnumerable<AttackRecord> unitCombatItems = UnitBattleApplication.DoUnit(unit, state);
             logItems.AddRange(unitCombatItems);
         }
 
         return GetBattleRound(logItems);
     }
 
-    private BattleRound GetBattleRound(List<CombatLogItem> logItems)
+    private BattleRound GetBattleRound(List<AttackRecord> logItems)
     {
         UnitStateRecord[] unitsRecord = _units.Select(item => item.AsReadonly()).ToArray();
         BattleStatus status = GetBattleStatus();
@@ -85,24 +86,5 @@ public class BattleResolver
             return BattleStatus.NoSurvivors;
         }
         return attackersAlive ? BattleStatus.AttackersVictorious : BattleStatus.DefendersVictorious;
-    }
-}
-
-public struct CombatLogItem
-{
-    private readonly UnitState _attacker;
-    public UnitState Attacker{ get{ return _attacker; } }
-
-    private readonly UnitState _attackee;
-    public UnitState Attackee { get{ return _attackee; } }
-
-    private readonly int _damage;
-    public int Damage { get{ return _damage; } }
-
-    public CombatLogItem(UnitState attacker, UnitState attackee, int damage)
-    {
-        _attacker = attacker;
-        _attackee = attackee;
-        _damage = damage;
     }
 }

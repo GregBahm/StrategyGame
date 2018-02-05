@@ -9,6 +9,13 @@ public class BattlePrototyper : MonoBehaviour
     public ComputeShader MapCompute;
     [Range(0, 1)]
     public float Timeline;
+    [Range(0, 10)]
+    public float SpriteScale;
+
+    public GameObject ArcherPrefab;
+    public GameObject SwordsmanPrefab;
+    public GameObject TrollPrefab;
+    public GameObject KnightPrefab;
 
     private BattleResolver _battleResolver;
     private BattleDisplay _battleDisplay;
@@ -23,6 +30,10 @@ public class BattlePrototyper : MonoBehaviour
     private void Update()
     {
         _battleDisplay.DisplayTime(Timeline);
+        foreach (BattleUnitDisplay unit in _battleDisplay.Units)
+        {
+            unit.SetScale(SpriteScale);
+        }
     }
 
     private BattleResolver GetBattleResolver()
@@ -35,35 +46,25 @@ public class BattlePrototyper : MonoBehaviour
         units.AddRange(defenders);
         return new BattleResolver(units, battlefield);
     }
-    
-    private void DisplayBattleRound(BattleRound battleRound)
-    {
-        foreach (UnitStateRecord state in battleRound.Units)
-        {
-            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obj.transform.position = new Vector3(state.Position.XPos, 0, state.Position.YPos);
-            obj.name = state.Identification.Name;
-        }
-    }
 
     private List<UnitState> GetPrototypeDefenders()
     {
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defender));
+            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defender, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defender));
+            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defender, ArcherPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defender));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defender, KnightPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defender));
+            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defender, KnightPrefab));
         }
         return ret;
     }
@@ -73,19 +74,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attacker));
+            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attacker));
+            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attacker, ArcherPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attacker));
+            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attacker, ArcherPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attacker));
+            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attacker, TrollPrefab));
         }
         return ret;
     }

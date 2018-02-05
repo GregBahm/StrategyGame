@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
+using UnityEngine;
 
 public static class UnitTemplates
 {
-    public static UnitState GetSwordsman(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetSwordsman(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         string name = "Swordsman";
         string longDescription = "A man with a sword and a shield.";
-        UnitIdentification description = new UnitIdentification(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
         ret.Size = 2;
@@ -37,11 +38,11 @@ public static class UnitTemplates
         return ret;
     }
 
-    public static UnitState GetArcher(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetArcher(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         string name = "Archer";
         string longDescription = "A man with a bow and a arrows.";
-        UnitIdentification description = new UnitIdentification(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
         ret.Size = 2;
@@ -49,6 +50,7 @@ public static class UnitTemplates
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 100;
         ret.Emotions.Endurance.Max = 100;
+        ret.Offense.Precision = 1;
 
         ret.Defense.Armor = 1;
 
@@ -78,11 +80,11 @@ public static class UnitTemplates
         return ret;
     }
 
-    public static UnitState GetKnight(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetKnight(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         string name = "Knight";
         string longDescription = "A knight in shining armor.";
-        UnitIdentification description = new UnitIdentification(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
         ret.Size = 3;
@@ -120,11 +122,11 @@ public static class UnitTemplates
         return ret;
     }
 
-    public static UnitState GetTroll(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetTroll(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         string name = "Troll";
         string longDescription = "A nasty green troll.";
-        UnitIdentification description = new UnitIdentification(name, longDescription);
+        UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
         ret.Size = 4;
@@ -155,13 +157,13 @@ public static class UnitTemplates
         return ret;
     }
 
-    public static UnitState GetRedMage(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetRedMage(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         // TODO: Add Red Mage, who can cast a fireball
         throw new NotImplementedException();
     }
 
-    public static UnitState GetGrayMage(int xPos, int yPos, UnitAllegiance allegiance)
+    public static UnitState GetGrayMage(int xPos, int yPos, UnitAllegiance allegiance, GameObject artPrefab)
     {
         // TODO: Add Grey Mage, who can cast various status buffers
         throw new NotImplementedException();
@@ -195,7 +197,7 @@ public static class UnitTemplates
             throw new Exception(state.ToString() + " has no moral");
         }
         // Make sure it has an attack
-        if (state.MeleeAttacks.Any())
+        if (!state.MeleeAttacks.Any())
         {
             throw new Exception(state.ToString() + " has no melee attacks");
         }

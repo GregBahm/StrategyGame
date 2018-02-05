@@ -8,14 +8,9 @@ public static class UnitBattleApplication
     public const int MeleeAttackEnduranceCost = 10;
     public const int RangedAttackEnduranceCost = 10;
 
-    public static IEnumerable<CombatLogItem> DoUnit(UnitState unit, BattlefieldState battlefield)
+    public static IEnumerable<AttackRecord> DoUnit(UnitState unit, BattlefieldState battlefield)
     {
-        IEnumerable<CombatLogItem> ret = new CombatLogItem[0];
-        if (unit.IsDefeated)
-        {
-            return ret;
-        }
-
+        List<AttackRecord> ret = new List<AttackRecord>();
         CooldownCooldowns(unit);
 
         if(!unit.Emotions.IsRouting && !GetIsExhausted(unit))
@@ -25,8 +20,8 @@ public static class UnitBattleApplication
             {
                 foreach (MeleeAttack attack in unit.MeleeAttacks.Where(attack => attack.Cooldown.Current < 1))
                 {
-                    IEnumerable<CombatLogItem> meleeAttackLogs = DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
-                    ret.Concat(meleeAttackLogs);
+                    IEnumerable<AttackRecord> meleeAttackLogs = DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
+                    ret.AddRange(meleeAttackLogs);
                 }
             }
             else
@@ -36,16 +31,17 @@ public static class UnitBattleApplication
                 {
                     foreach (RangedAttack rangedAttackttack in rangedAttacks)
                     {
-                        IEnumerable<CombatLogItem> rangedAttackLogs = DoRangedAttack(unit, rangedAttackttack, battlefield);
-                        ret.Concat(rangedAttackLogs);
+                        IEnumerable<AttackRecord> rangedAttackLogs = DoRangedAttack(unit, rangedAttackttack, battlefield);
+                        ret.AddRange(rangedAttackLogs);
                     }
                 }
-                else
-                {
-                    battlefield.MoveUnit(unit);
-                }
+            }
+            if(!ret.Any())
+            {
+                battlefield.MoveUnit(unit);
             }
         }
+
         RecoverExhaustion(unit);
 
         HandleRegeneration(unit);
@@ -76,7 +72,7 @@ public static class UnitBattleApplication
         // TODO: Put poisons heres
     }
 
-    private static IEnumerable<CombatLogItem> DoMeleeAttack(UnitState unit, 
+    private static IEnumerable<AttackRecord> DoMeleeAttack(UnitState unit, 
         MeleeAttack attack, 
         IEnumerable<UnitState> adjacentEnemies, 
         BattlefieldState battlefield)
@@ -86,7 +82,6 @@ public static class UnitBattleApplication
 
         // Reset cooldown
         attack.Cooldown.Current = attack.Cooldown.Max;
-
         // Figure out who to attack exactly
         IEnumerable<UnitState> allTargets = GetAllTargets(attack.AreaOfEffect, adjacentEnemies, battlefield);
         
@@ -96,7 +91,7 @@ public static class UnitBattleApplication
         }
     }
 
-    private static CombatLogItem ApplyMeleeAttackOn(UnitState target, 
+    private static AttackRecord ApplyMeleeAttackOn(UnitState target, 
         UnitState attacker, 
         MeleeAttack attack, 
         BattlefieldState battlefield)
@@ -107,7 +102,7 @@ public static class UnitBattleApplication
 
         int actualDamage = baseDamage - armor;
         ApplyDamageTo(target, actualDamage, battlefield);
-        return new CombatLogItem(attacker, target, actualDamage);
+        return new AttackRecord(attacker, target, actualDamage);
     }
 
     private static IEnumerable<UnitState> GetAllTargets(AreaOfEffectType areaOfEffect, 
@@ -125,7 +120,7 @@ public static class UnitBattleApplication
         }
     }
 
-    private static IEnumerable<CombatLogItem> DoRangedAttack(UnitState unit, 
+    private static IEnumerable<AttackRecord> DoRangedAttack(UnitState unit, 
         RangedAttack rangedAttack, 
         BattlefieldState battlefield)
     {
@@ -143,20 +138,19 @@ public static class UnitBattleApplication
         }
     }
 
-    private static CombatLogItem ApplyRangedAttackOn(UnitState target, 
+    private static AttackRecord ApplyRangedAttackOn(UnitState target, 
         UnitState attacker, 
         RangedAttack rangedAttack, 
         BattlefieldState battlefield)
     {
         int actualDamage = rangedAttack.AttackPower - target.Defense.Armor;
         ApplyDamageTo(target, actualDamage, battlefield);
-        return new CombatLogItem(attacker, target, actualDamage);
+        return new AttackRecord(attacker, target, actualDamage);
     }
 
     private static void ApplyDamageTo(UnitState target, int damage, BattlefieldState battlefield)
     {
         target.HitPoints.Current -= damage;
-
         // If this kills the unit, eleminate them
         if (target.HitPoints.Current < 1)
         {
@@ -228,7 +222,7 @@ public static class UnitBattleApplication
 
     private static void HandleRegeneration(UnitState unit)
     {
-        unit.HitPoints.Current = Mathf.Max(unit.HitPoints.Current + unit.Defense.Regeneration, unit.HitPoints.Max);
+        unit.HitPoints.Current = Mathf.Min(unit.HitPoints.Current + unit.Defense.Regeneration, unit.HitPoints.Max);
     }
 
     private static void RecoverExhaustion(UnitState unit)

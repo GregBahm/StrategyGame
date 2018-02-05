@@ -57,7 +57,23 @@ public static class AdjacencyFinder
 
     internal static IEnumerable<UnitLocation> GetRangedSearchPositions(UnitLocation location, int rangedAttackMid)
     {
-        throw new NotImplementedException();
+        IEnumerable<UnitLocation> baseLocations = GetBaseRangedSearchPositions(location, rangedAttackMid);
+        foreach (UnitLocation baseLocation in baseLocations)
+        {
+            yield return ClipToBounds(baseLocation);
+        }
+    }
+    internal static IEnumerable<UnitLocation> GetBaseRangedSearchPositions(UnitLocation location, int rangedAttackMid)
+    {
+        yield return new UnitLocation(location.XPos + rangedAttackMid, location.YPos);
+        yield return new UnitLocation(location.XPos - rangedAttackMid, location.YPos);
+        yield return new UnitLocation(location.XPos, location.YPos + rangedAttackMid);
+        yield return new UnitLocation(location.XPos, location.YPos - rangedAttackMid);
+        int diagonal = (int)(rangedAttackMid * .7f);
+        yield return new UnitLocation(location.XPos + diagonal, location.YPos + diagonal);
+        yield return new UnitLocation(location.XPos + diagonal, location.YPos - diagonal);
+        yield return new UnitLocation(location.XPos - diagonal, location.YPos - diagonal);
+        yield return new UnitLocation(location.XPos - diagonal, location.YPos + diagonal);
     }
 
     private static bool IsPerimiter(int dimension, int size)
@@ -79,6 +95,13 @@ public static class AdjacencyFinder
         IEnumerable<UnitLocation> surroundingLocations = offsets.Select(item => item.Offset(xPos, yPos));
         IEnumerable<UnitLocation> withinBounds = surroundingLocations.Where(IsWithinBounds);
         return withinBounds;
+    }
+
+    public static UnitLocation ClipToBounds(UnitLocation location)
+    {
+        int newX = Mathf.Clamp(0, BattlefieldMover.HorizontalResolution - 1, location.XPos);
+        int newY = Mathf.Clamp(0, BattlefieldMover.VerticalResolution - 1, location.XPos);
+        return new UnitLocation(newX, newY);
     }
 
     public static bool IsWithinBounds(UnitLocation location)
