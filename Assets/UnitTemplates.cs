@@ -21,7 +21,7 @@ public static class UnitTemplates
         ret.Defense.Shield = ShieldStatus.Medium;
 
         MeleeAttack swordAttack = new MeleeAttack();
-        swordAttack.AttackPower = 50;
+        swordAttack.AttackPower = 8;
         swordAttack.DamageType = DamageType.Slashing;
         swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(swordAttack);
@@ -55,7 +55,7 @@ public static class UnitTemplates
         ret.Defense.Armor = 1;
 
         MeleeAttack daggerAttack = new MeleeAttack();
-        daggerAttack.AttackPower = 30;
+        daggerAttack.AttackPower = 3;
         daggerAttack.DamageType = DamageType.Piercing;
         daggerAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(daggerAttack);
@@ -63,9 +63,9 @@ public static class UnitTemplates
         RangedAttack bowAttack = new RangedAttack();
         bowAttack.Ammunition = 20;
         bowAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
-        bowAttack.AttackPower = 50;
-        bowAttack.MaximumRange = 100;
-        bowAttack.MaximumRange = 20;
+        bowAttack.AttackPower = 5;
+        bowAttack.MaximumRange = 80;
+        bowAttack.MinimumRange = 20;
         ret.RangedAttacks.Add(bowAttack);
 
         ret.HitPoints.Current = ret.HitPoints.Max;
@@ -97,13 +97,13 @@ public static class UnitTemplates
         ret.Defense.Shield = ShieldStatus.Medium;
 
         MeleeAttack swordAttack = new MeleeAttack();
-        swordAttack.AttackPower = 50;
+        swordAttack.AttackPower = 8;
         swordAttack.DamageType = DamageType.Slashing;
         swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(swordAttack);
 
         MeleeAttack lanceAttack = new MeleeAttack();
-        swordAttack.AttackPower = 150;
+        swordAttack.AttackPower = 20;
         swordAttack.DamageType = DamageType.Piercing;
         swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         swordAttack.ChargeAttack = true;
@@ -137,10 +137,10 @@ public static class UnitTemplates
 
         ret.Defense.Armor = 0;
 
-        ret.Defense.Regeneration = 20;
+        ret.Defense.Regeneration = 6;
 
         MeleeAttack swipeAttack = new MeleeAttack();
-        swipeAttack.AttackPower = 200;
+        swipeAttack.AttackPower = 15;
         swipeAttack.DamageType = DamageType.Slashing;
         swipeAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(swipeAttack);

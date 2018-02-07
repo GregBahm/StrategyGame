@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -36,7 +37,7 @@ public class BattlefieldDistances
     public UnitLocation GetEnemyClosestTo(UnitLocation searchPoint, UnitAllegiance allegiance)
     {
         int dist = GetDistanceToEnemy(searchPoint, allegiance);
-        if (dist == 0)
+        if (dist == 1)
         {
             return searchPoint;
         }
@@ -47,11 +48,11 @@ public class BattlefieldDistances
     {
         IEnumerable<UnitLocation> adjacentLocations = AdjacencyFinder.GetAdjacentPositions(searchPoint, 1);
         int closestDist = int.MaxValue;
-        UnitLocation location;
+        UnitLocation location = searchPoint;
         foreach (UnitLocation adjacentLocation in adjacentLocations)
         {
-            int adjacentDist = GetDistanceToEnemy(searchPoint, allegiance);
-            if (adjacentDist == 0)
+            int adjacentDist = GetDistanceToEnemy(adjacentLocation, allegiance);
+            if (adjacentDist == 1)
             {
                 return adjacentLocation;
             }
@@ -61,30 +62,28 @@ public class BattlefieldDistances
                 location = adjacentLocation;
             }
         }
-        return GetEnemyClosestRecursive(searchPoint, allegiance);
+        if(location == searchPoint)
+        {
+            throw new System.Exception("GetEnemyClosestRecursive is broken");
+        }
+        return GetEnemyClosestRecursive(location, allegiance);
     }
 
     public int GetDistanceToEnemy(UnitLocation item,  UnitAllegiance alligence)
     {
         BattlefieldDistance dist = GetDistanceAt(item);
-        int amount;
         switch (alligence)
         {
             case UnitAllegiance.Attacker:
-                amount = Mathf.Min(dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
-                break;
+                return Mathf.Min(dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
             case UnitAllegiance.Defender:
-                amount = Mathf.Min(dist.AttackerDistance, dist.NeutralDistance, dist.BerzerkerDistance);
-                break;
+                return Mathf.Min(dist.AttackerDistance, dist.NeutralDistance, dist.BerzerkerDistance);
             case UnitAllegiance.Neutral:
-                amount = Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.BerzerkerDistance);
-                break;
+                return Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.BerzerkerDistance);
             case UnitAllegiance.Berzerk:
             default:
-                amount = Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
-                break;
+                return Mathf.Min(dist.AttackerDistance, dist.DefenderDistance, dist.NeutralDistance, dist.BerzerkerDistance);
         }
-        return amount;
     }
 
     private static bool PositionOccupied(UnitLocation position, BitArray collisionBitarray)

@@ -99,8 +99,8 @@ public static class AdjacencyFinder
 
     public static UnitLocation ClipToBounds(UnitLocation location)
     {
-        int newX = Mathf.Clamp(0, BattlefieldMover.HorizontalResolution - 1, location.XPos);
-        int newY = Mathf.Clamp(0, BattlefieldMover.VerticalResolution - 1, location.XPos);
+        int newX = Mathf.Clamp(location.XPos, 0, BattlefieldMover.HorizontalResolution - 1 );
+        int newY = Mathf.Clamp(location.YPos, 0, BattlefieldMover.VerticalResolution - 1);
         return new UnitLocation(newX, newY);
     }
 
