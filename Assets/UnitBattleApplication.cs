@@ -102,7 +102,7 @@ public static class UnitBattleApplication
 
         int actualDamage = baseDamage - armor;
         ApplyDamageTo(target, actualDamage, battlefield);
-        return new AttackRecord(attacker, target, actualDamage);
+        return new AttackRecord(attacker.Identification, target.Identification, actualDamage);
     }
 
     private static IEnumerable<UnitState> GetAllTargets(AreaOfEffectType areaOfEffect, 
@@ -145,7 +145,7 @@ public static class UnitBattleApplication
     {
         int actualDamage = rangedAttack.AttackPower - target.Defense.Armor;
         ApplyDamageTo(target, actualDamage, battlefield);
-        return new AttackRecord(attacker, target, actualDamage);
+        return new AttackRecord(attacker.Identification, target.Identification, actualDamage);
     }
 
     private static void ApplyDamageTo(UnitState target, int damage, BattlefieldState battlefield)

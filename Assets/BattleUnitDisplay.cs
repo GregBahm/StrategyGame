@@ -4,8 +4,16 @@ using System.Linq;
 using UnityEngine;
 public class BattleUnitDisplay
 {
-    private GameObject _unitGameobject;
-    private Material _unitMaterial;
+    private readonly UnitIdentification _identification;
+    public UnitIdentification Identification { get { return _identification; } }
+
+    private readonly UnitAllegiance _allegiance;
+    public UnitAllegiance Allegiance { get { return _allegiance; } }
+
+    private readonly GameObject _unitGameobject;
+    public GameObject UnitGameObject { get{ return _unitGameobject; } }
+
+    private readonly Material _unitMaterial;
 
     private readonly List<UnitStateRecord> _states;
     public int StatesCount { get{ return _states.Count; } }
@@ -15,7 +23,8 @@ public class BattleUnitDisplay
         _states = states;
         _unitGameobject = GameObject.Instantiate(states.First().Identification.ArtPrefab);
         _unitMaterial = _unitGameobject.GetComponentInChildren<MeshRenderer>().material;
-
+        _allegiance = _states.First().Allegiance;
+        _identification = _states.First().Identification;
     }
 
     public void SetScale(float scale)
