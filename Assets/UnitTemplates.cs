@@ -11,7 +11,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 2;
+        ret.Size = 1;
         ret.Movement = 4;
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 100;
@@ -45,7 +45,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 2;
+        ret.Size = 1;
         ret.Movement = 4;
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 100;
@@ -87,7 +87,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 3;
+        ret.Size = 1;
         ret.Movement = 16;
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 200;
@@ -129,7 +129,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 4;
+        ret.Size = 1;
         ret.Movement = 3;
         ret.HitPoints.Max = 300;
         ret.Emotions.Moral.Max = 250;
