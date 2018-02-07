@@ -56,15 +56,19 @@ public class BattlePrototyper : MonoBehaviour
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defender, ArcherPrefab));
+            ret.Add(UnitTemplates.GetSwordsman(12, i * 3 + 40, UnitAllegiance.Defender, SwordsmanPrefab));
         }
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 16; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defender, KnightPrefab));
+            ret.Add(UnitTemplates.GetArcher(5, i * 2 + 10, UnitAllegiance.Defender, ArcherPrefab));
         }
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 12; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defender, KnightPrefab));
+            ret.Add(UnitTemplates.GetKnight(8, i, UnitAllegiance.Defender, KnightPrefab));
+        }
+        for (int i = 0; i < 12; i++)
+        {
+            ret.Add(UnitTemplates.GetKnight(8, i + 100, UnitAllegiance.Defender, KnightPrefab));
         }
         return ret;
     }
@@ -72,9 +76,13 @@ public class BattlePrototyper : MonoBehaviour
     private List<UnitState> GetPrototypeAttackers()
     {
         List<UnitState> ret = new List<UnitState>();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 20; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
+            ret.Add(UnitTemplates.GetSwordsman(90, i * 2 + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
+        }
+        for (int i = 0; i < 20; i++)
+        {
+            ret.Add(UnitTemplates.GetSwordsman(92, i * 2 + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
@@ -84,7 +92,7 @@ public class BattlePrototyper : MonoBehaviour
         {
             ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attacker, ArcherPrefab));
         }
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 16; i++)
         {
             ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attacker, TrollPrefab));
         }
