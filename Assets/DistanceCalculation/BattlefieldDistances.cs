@@ -34,6 +34,15 @@ public class BattlefieldDistances
         return bestDistances.First().Location;
     }
 
+    private int GetBestDistance(IEnumerable<DistanceCheck> distanceChecks, bool isRouting)
+    {
+        if(isRouting)
+        {
+            return distanceChecks.Max(item => item.Distance);
+        }
+        return distanceChecks.Min(item => item.Distance);
+    }
+
     public UnitLocation GetEnemyClosestTo(UnitLocation searchPoint, UnitAllegiance allegiance)
     {
         int dist = GetDistanceToEnemy(searchPoint, allegiance);

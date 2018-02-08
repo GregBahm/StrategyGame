@@ -13,30 +13,33 @@ public static class UnitBattleApplication
         List<AttackRecord> ret = new List<AttackRecord>();
         CooldownCooldowns(unit);
 
-        if(!unit.Emotions.IsRouting && !GetIsExhausted(unit))
+        if(!GetIsExhausted(unit))
         {
-            IEnumerable<UnitState> adjacentEnemies = GetAdjacentUnits(unit, battlefield).Where(adjacentUnit => !unit.IsDefeated && GetIsEnemy(unit, adjacentUnit));
-            if(adjacentEnemies.Any())
+            if (!unit.Emotions.IsRouting)
             {
-                foreach (MeleeAttack attack in unit.MeleeAttacks.Where(attack => attack.Cooldown.Current < 1))
+                IEnumerable<UnitState> adjacentEnemies = GetAdjacentUnits(unit, battlefield).Where(adjacentUnit => !unit.IsDefeated && GetIsEnemy(unit, adjacentUnit));
+                if (adjacentEnemies.Any())
                 {
-                    IEnumerable<AttackRecord> meleeAttackLogs = DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
-                    ret.AddRange(meleeAttackLogs);
-                }
-            }
-            else
-            {
-                IEnumerable<RangedAttack> rangedAttacks = unit.RangedAttacks.Where(attack => attack.Ammunition > 0 && (attack.MaximumRange - attack.MinimumRange) > 0);
-                if(rangedAttacks.Any())
-                {
-                    foreach (RangedAttack rangedAttackttack in rangedAttacks)
+                    foreach (MeleeAttack attack in unit.MeleeAttacks.Where(attack => attack.Cooldown.Current < 1))
                     {
-                        IEnumerable<AttackRecord> rangedAttackLogs = DoRangedAttack(unit, rangedAttackttack, battlefield);
-                        ret.AddRange(rangedAttackLogs);
+                        IEnumerable<AttackRecord> meleeAttackLogs = DoMeleeAttack(unit, attack, adjacentEnemies, battlefield);
+                        ret.AddRange(meleeAttackLogs);
+                    }
+                }
+                else
+                {
+                    IEnumerable<RangedAttack> rangedAttacks = unit.RangedAttacks.Where(attack => attack.Ammunition > 0 && (attack.MaximumRange - attack.MinimumRange) > 0);
+                    if (rangedAttacks.Any())
+                    {
+                        foreach (RangedAttack rangedAttackttack in rangedAttacks)
+                        {
+                            IEnumerable<AttackRecord> rangedAttackLogs = DoRangedAttack(unit, rangedAttackttack, battlefield);
+                            ret.AddRange(rangedAttackLogs);
+                        }
                     }
                 }
             }
-            if(!ret.Any())
+            if(!ret.Any() || unit.Emotions.IsRouting)
             {
                 battlefield.MoveUnit(unit);
             }
