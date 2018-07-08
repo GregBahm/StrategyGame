@@ -6,7 +6,7 @@ public class BattleResolver
 {
     private readonly List<UnitState> _units;
     private readonly BattlefieldMover _mover;
-    private const int BattleRoundLimit = 200;
+    private const int BattleRoundLimit = 1000;
 
     public BattleResolver(IEnumerable<UnitState> units,
         BattlefieldMover battlefield)

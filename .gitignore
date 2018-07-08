@@ -10,3 +10,5 @@
 /Packages/
 /SourceArt/
 /.vs/
+/Unity.PackageManagerUI.Editor.csproj
+*.csproj

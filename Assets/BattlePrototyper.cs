@@ -52,19 +52,19 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(10, i * 3 + 40, UnitAllegiance.Defender, SwordsmanPrefab));
+            ret.Add(UnitTemplates.GetSwordsman(20, i + 40, UnitAllegiance.Defender, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(5, i * 3 + 10, UnitAllegiance.Defender, ArcherPrefab));
+            ret.Add(UnitTemplates.GetArcher(15, i + 40, UnitAllegiance.Defender, ArcherPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3, UnitAllegiance.Defender, KnightPrefab));
+            ret.Add(UnitTemplates.GetKnight(20, i + 30, UnitAllegiance.Defender, KnightPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetKnight(10, i * 3 + 100, UnitAllegiance.Defender, KnightPrefab));
+            ret.Add(UnitTemplates.GetKnight(20, i + 50, UnitAllegiance.Defender, KnightPrefab));
         }
         return ret;
     }
@@ -74,19 +74,23 @@ public class BattlePrototyper : MonoBehaviour
         List<UnitState> ret = new List<UnitState>();
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetSwordsman(90, i * 3 + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
+            ret.Add(UnitTemplates.GetSwordsman(80, i + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(95, i * 3 + 40, UnitAllegiance.Attacker, ArcherPrefab));
+            ret.Add(UnitTemplates.GetSwordsman(81, i + 40, UnitAllegiance.Attacker, SwordsmanPrefab));
         }
         for (int i = 0; i < 10; i++)
         {
-            ret.Add(UnitTemplates.GetArcher(97, i * 3 + 40, UnitAllegiance.Attacker, ArcherPrefab));
+            ret.Add(UnitTemplates.GetArcher(83, i + 40, UnitAllegiance.Attacker, ArcherPrefab));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            ret.Add(UnitTemplates.GetArcher(84, i + 40, UnitAllegiance.Attacker, ArcherPrefab));
         }
         for (int i = 0; i < 6; i++)
         {
-            ret.Add(UnitTemplates.GetTroll(85, i * 3 + 60, UnitAllegiance.Attacker, TrollPrefab));
+            ret.Add(UnitTemplates.GetTroll(75, i + 44, UnitAllegiance.Attacker, TrollPrefab));
         }
         return ret;
     }
