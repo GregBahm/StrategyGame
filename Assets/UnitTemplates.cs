@@ -11,7 +11,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 2;
+        ret.Size = 1;
         ret.Movement = 4;
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 100;
@@ -21,7 +21,7 @@ public static class UnitTemplates
         ret.Defense.Shield = ShieldStatus.Medium;
 
         MeleeAttack swordAttack = new MeleeAttack();
-        swordAttack.AttackPower = 8;
+        swordAttack.AttackPower = 10;
         swordAttack.DamageType = DamageType.Slashing;
         swordAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(swordAttack);
@@ -45,7 +45,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 2;
+        ret.Size = 1;
         ret.Movement = 4;
         ret.HitPoints.Max = 100;
         ret.Emotions.Moral.Max = 100;
@@ -55,15 +55,15 @@ public static class UnitTemplates
         ret.Defense.Armor = 1;
 
         MeleeAttack daggerAttack = new MeleeAttack();
-        daggerAttack.AttackPower = 3;
+        daggerAttack.AttackPower = 4;
         daggerAttack.DamageType = DamageType.Piercing;
         daggerAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
         ret.MeleeAttacks.Add(daggerAttack);
 
         RangedAttack bowAttack = new RangedAttack();
-        bowAttack.Ammunition = 20;
+        bowAttack.Ammunition = 50;
         bowAttack.AreaOfEffect = AreaOfEffectType.SingleTarget;
-        bowAttack.AttackPower = 5;
+        bowAttack.AttackPower = 4;
         bowAttack.MaximumRange = 80;
         bowAttack.MinimumRange = 20;
         ret.RangedAttacks.Add(bowAttack);
@@ -87,9 +87,9 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 3;
+        ret.Size = 1;
         ret.Movement = 16;
-        ret.HitPoints.Max = 100;
+        ret.HitPoints.Max = 150;
         ret.Emotions.Moral.Max = 200;
         ret.Emotions.Endurance.Max = 250;
 
@@ -129,7 +129,7 @@ public static class UnitTemplates
         UnitIdentification description = new UnitIdentification(name, longDescription, artPrefab);
 
         UnitState ret = new UnitState(description);
-        ret.Size = 4;
+        ret.Size = 1;
         ret.Movement = 3;
         ret.HitPoints.Max = 300;
         ret.Emotions.Moral.Max = 250;
