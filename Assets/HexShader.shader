@@ -53,8 +53,8 @@
 			{
 				float2 toCenter = normalize(base);
 				float2 toRow = float2(1, 0);
-				float2 toAscending = normalize(float2(1, 1.73));
-				float2 toDescending = normalize(float2(-1, 1.73));
+				float2 toAscending = normalize(float2(1, -1.73));
+				float2 toDescending = normalize(float2(-1, -1.73));
 
 				float rowDot = dot(toCenter, toRow);
 				float ascendingDot = dot(toCenter, toAscending);
