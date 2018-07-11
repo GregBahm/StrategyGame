@@ -15,6 +15,7 @@ public class Worldmap : MonoBehaviour
     public Color BackgroundColor;
     public Material SkyMat;
 
+    private Province _startingProvince;
     private Province _testProvince;
 
     private void Start()
@@ -22,7 +23,21 @@ public class Worldmap : MonoBehaviour
         _rows = 20;
         _columns = 20;
         Tiles = MakeTiles();
+        foreach (Tile tile in Tiles)
+        {
+            tile.EstablishNeighbors();
+        }
+        _startingProvince = new Province();
         _testProvince = new Province();
+        SetInitialProvince();
+    }
+
+    private void SetInitialProvince()
+    {
+        foreach (Tile tile in Tiles)
+        {
+            tile.Province = _startingProvince;
+        }
     }
 
     private void Update()
@@ -49,7 +64,7 @@ public class Worldmap : MonoBehaviour
             for (int ascendingColumn = 0; ascendingColumn < _columns; ascendingColumn++)
             {
                 int index = (row * _columns) + ascendingColumn;
-                ret[index] = CreateTiles(row, ascendingColumn);
+                ret[index] = CreateTile(row, ascendingColumn);
             }
         }
         return ret;
@@ -57,11 +72,22 @@ public class Worldmap : MonoBehaviour
 
     public Tile GetTile(int row, int ascendingColumn)
     {
-        int index = (row * _columns) + ascendingColumn;
+        int modRow = MathMod(row, _rows);
+        int modColumn = MathMod(ascendingColumn, _columns);
+        int index = (modRow * _columns) + modColumn;
+        if(index < 0 || index >= Tiles.Length)
+        {
+            throw new Exception("Bad index (" + index + ")");
+        }
         return Tiles[index];
     }
 
-    private Tile CreateTiles(int row, int ascendingColumn)
+    private static int MathMod(int value, int modolus)
+    {
+        return (Math.Abs(value * modolus) + value) % modolus;
+    }
+
+    private Tile CreateTile(int row, int ascendingColumn)
     {
         int descendingColumn = row + ascendingColumn;
         string providenceName = string.Format("Providence {0} {1} {2}", row, ascendingColumn, descendingColumn);
@@ -77,7 +103,7 @@ public class Worldmap : MonoBehaviour
 
     internal void TestConnect(Tile tile)
     {
-        _testProvince.AddTlle(tile);
+        tile.Province = _testProvince;
     }
 }
 
@@ -89,46 +115,64 @@ public class Province
     {
         Tiles = new HashSet<Tile>(tiles);
     }
-
-    public void AddTlle(Tile tile)
-    {
-        Connect(tile, 1, 0, item => item.NegativeRowConnected = true, item => item.PositiveRowConnected = true);
-        Connect(tile, -1, 0, item => item.PositiveRowConnected = true, item => item.NegativeRowConnected = true);
-
-        Connect(tile, 0, 1, item => item.NegativeAscendingConnected = true, item => item.PositiveAscendingConnected = true);
-        Connect(tile, 0, -1, item => item.PositiveAscendingConnected = true, item => item.NegativeAscendingConnected = true);
-
-        Connect(tile, 1, 1, item => item.NegativeDescendingConnected = true, item => item.PositiveDescendingConnected = true);
-        Connect(tile, 1, -1, item => item.PositiveDescendingConnected = true, item => item.NegativeDescendingConnected = true);
-
-        Tiles.Add(tile);
-    }
-
-    private void Connect(Tile tile, int rowOffset, int columnOffset, Action<Tile> fromSetter, Action<Tile> toSetter)
-    {
-        Tile potentialTile = tile.GetOffset(rowOffset, columnOffset);
-        if(Tiles.Contains(potentialTile))
-        {
-            fromSetter(potentialTile);
-            toSetter(tile);
-        }
-    }
 }
 
 
 public class Tile : MonoBehaviour
 {
+    private bool _provincesNeedUpdate;
+    private Province _province;
+    public Province Province
+    {
+        get { return _province; }
+        set
+        {
+            if(value != _province)
+            {
+                SetProvince(value);
+            }
+        }
+    }
+
+    private void SetProvince(Province newProvince)
+    {
+        if(_province != null)
+        {
+            _province.Tiles.Remove(this);
+        }
+        newProvince.Tiles.Add(this);
+        _province = newProvince;
+        _provincesNeedUpdate = true;
+        foreach (Tile tile in Neighbors)
+        {
+            tile._provincesNeedUpdate = true;
+        }
+    }
+
     public Worldmap Map;
 
     public int Row;
     public int AscendingColumn;
 
-    public bool PositiveRowConnected;
-    public bool NegativeRowConnected;
-    public bool PositiveAscendingConnected;
-    public bool NegativeAscendingConnected;
-    public bool PositiveDescendingConnected;
-    public bool NegativeDescendingConnected;
+    public Tile PositiveRow;
+    public Tile NegativeRow;
+    public Tile PositiveAscending;
+    public Tile NegativeAscending;
+    public Tile PositiveDescending;
+    public Tile NegativeDescending;
+
+    public IEnumerable<Tile> Neighbors
+    {
+        get
+        {
+            yield return PositiveRow;
+            yield return NegativeRow;
+            yield return PositiveAscending;
+            yield return NegativeAscending;
+            yield return PositiveDescending;
+            yield return NegativeDescending;
+        }
+    }
 
     public bool ConnectionTest;
 
@@ -147,17 +191,35 @@ public class Tile : MonoBehaviour
             Map.TestConnect(this);
             ConnectionTest = false;
         }
-
-        _mat.SetFloat("_PositiveRowConnected", PositiveRowConnected ? 1 : 0);
-        _mat.SetFloat("_NegativeRowConnected", NegativeRowConnected ? 1 : 0);
-        _mat.SetFloat("_PositiveAscendingConnected", PositiveAscendingConnected ? 1 : 0);
-        _mat.SetFloat("_NegativeAscendingConnected", NegativeAscendingConnected ? 1 : 0);
-        _mat.SetFloat("_PositiveDescendingConnected", PositiveDescendingConnected ? 1 : 0);
-        _mat.SetFloat("_NegativeDescendingConnected", NegativeDescendingConnected ? 1 : 0);
+        if(_provincesNeedUpdate)
+        {
+            _provincesNeedUpdate = false;
+            UpdateConnections();
+        }
     }
 
     public Tile GetOffset(int rowOffset, int ascendingColumnOffset)
     {
         return Map.GetTile(Row + rowOffset, AscendingColumn + ascendingColumnOffset);
+    }
+
+    public void EstablishNeighbors()
+    {
+        PositiveRow = GetOffset(1, 0);
+        NegativeRow = GetOffset(-1, 0);
+        PositiveAscending = GetOffset(0, 1);
+        NegativeAscending = GetOffset(0, -1);
+        PositiveDescending = GetOffset(-1, 1);
+        NegativeDescending = GetOffset(1, -1);
+    }
+
+    public void UpdateConnections()
+    {
+        _mat.SetFloat("_PositiveRowConnected", PositiveRow.Province == Province ? 1 : 0);
+        _mat.SetFloat("_NegativeRowConnected", NegativeRow.Province == Province ? 1 : 0);
+        _mat.SetFloat("_PositiveAscendingConnected", PositiveAscending.Province == Province ? 1 : 0);
+        _mat.SetFloat("_NegativeAscendingConnected", NegativeAscending.Province == Province ? 1 : 0);
+        _mat.SetFloat("_PositiveDescendingConnected", PositiveDescending.Province == Province ? 1 : 0);
+        _mat.SetFloat("_NegativeDescendingConnected", NegativeDescending.Province == Province ? 1 : 0);
     }
 }
