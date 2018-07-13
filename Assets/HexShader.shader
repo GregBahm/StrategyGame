@@ -33,6 +33,7 @@
 				float3 normal : NORMAL;
 				float3 viewDir : TEXCOORD2;
 				float4 vertex : SV_POSITION;
+				float hexDist : TEXCOORD3;
 			};
 
 			sampler2D _HeightMap;
@@ -41,6 +42,7 @@
 			float4x4 _MapUvs;
 			float _TileMargin;
 			float3 _SideColor;
+			float3 _FactionColor;
 
 			bool _PositiveRowConnected;
 			bool _NegativeRowConnected;
@@ -109,6 +111,7 @@
 				specColor = lerp(float3(0, 1, 1), specColor, saturate(heightMap * 10));
 				float3 topColor = heightColor + saturate(specColor * theDot);
 				topColor = saturate(topColor);
+				topColor *= _FactionColor;
 				float3 sideColor = lerp(_SideColor, topColor, pow(height, 5));
 				float3 ret = lerp(sideColor, topColor, mapKey);
 				return float4(ret, 1);
