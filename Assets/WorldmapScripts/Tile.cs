@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
+    public bool Highlit;
     private bool _provincesNeedUpdate;
     private Province _province;
     public Province Province
@@ -72,6 +73,7 @@ public class Tile : MonoBehaviour
             _provincesNeedUpdate = false;
             UpdateConnections();
         }
+        _mat.SetColor("_FactionColor", Highlit ? Color.green : Province.Owner.Color);
     }
 
     public Tile GetOffset(int rowOffset, int ascendingColumnOffset)
@@ -91,7 +93,6 @@ public class Tile : MonoBehaviour
 
     public void UpdateConnections()
     {
-        _mat.SetColor("_FactionColor", Province.Owner.Color);
         _mat.SetFloat("_PositiveRowConnected", PositiveRow.Province == Province ? 1 : 0);
         _mat.SetFloat("_NegativeRowConnected", NegativeRow.Province == Province ? 1 : 0);
         _mat.SetFloat("_PositiveAscendingConnected", PositiveAscending.Province == Province ? 1 : 0);

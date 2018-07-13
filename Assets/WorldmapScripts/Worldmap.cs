@@ -4,8 +4,28 @@ using UnityEngine;
 
 public class Worldmap : MonoBehaviour
 {
-    private int _rows;
-    private int _columns;
+    public Tile HighlitTile
+    {
+        get
+        {
+            return _highlitTile;
+        }
+        set
+        {
+            if(_highlitTile != value)
+            {
+                if(_highlitTile != null)
+                {
+                    _highlitTile.Highlit = false;
+                }
+                if(value != null)
+                {
+                    value.Highlit = true;
+                }
+                _highlitTile = value;
+            }
+        }
+    }
     public Tile[] Tiles;
     public GameObject TilePrefab;
     public Transform MapUvs;
@@ -14,13 +34,21 @@ public class Worldmap : MonoBehaviour
     public Color BackgroundColor;
     public Material SkyMat;
 
+
+    private int _rows;
+    private int _columns;
     private Faction _factionA;
     private Faction _factionB;
     private Faction _unclaimed;
     private Province _startingProvince;
+    private Tile _highlitTile;
+    private Plane _groundPlane;
+    private Vector2 _ascendingOffset;
 
     private void Start()
     {
+        _ascendingOffset = new Vector2(1, -1.73f).normalized;
+        _groundPlane = new Plane(Vector3.up, 0);
         _rows = 20;
         _columns = 20;
         Tiles = MakeTiles();
@@ -47,15 +75,36 @@ public class Worldmap : MonoBehaviour
 
     private void Update()
     {
+        HighlitTile = GetHighlitTile();
         Shader.SetGlobalFloat("_TileMargin", TileMargin);
         Shader.SetGlobalMatrix("_MapUvs", MapUvs.worldToLocalMatrix);
         Shader.SetGlobalColor("_SideColor", BackgroundColor);
         SkyMat.SetColor("_Tint", BackgroundColor);
     }
 
+    private Tile GetHighlitTile()
+    {
+        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        float enter;
+        if(_groundPlane.Raycast(mouseRay, out enter))
+        {
+            Vector3 intersectionPoint = mouseRay.origin + (mouseRay.direction * enter);
+            return GetClosestTile(intersectionPoint.x, intersectionPoint.z);
+        }
+        return null;
+    }
+
+    private Tile GetClosestTile(float x, float y)
+    {
+        int row = Mathf.CeilToInt(x / 2);
+        float columnDot = Vector2.Dot(_ascendingOffset, new Vector2(x, y)) / 2;
+        int column = (int)columnDot + row;
+        return GetTile(row, 0);
+    }
+
     private Vector3 GetProvincePosition(int row, int ascendingColumn)
     {
-        Vector2 ascendingOffset = new Vector2(1, -1.73f).normalized * ascendingColumn;
+        Vector2 ascendingOffset = _ascendingOffset * ascendingColumn;
         Vector2 offset = ascendingOffset + new Vector2(row, 0);
         offset *= 2;
         return new Vector3(offset.x, 0, offset.y);
@@ -80,7 +129,7 @@ public class Worldmap : MonoBehaviour
         int modRow = MathMod(row, _rows);
         int modColumn = MathMod(ascendingColumn, _columns);
         int index = (modRow * _columns) + modColumn;
-        if(index < 0 || index >= Tiles.Length)
+        if (index < 0 || index >= Tiles.Length)
         {
             throw new Exception("Bad index (" + index + ")");
         }
