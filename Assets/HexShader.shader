@@ -24,6 +24,7 @@
 				float4 vertex : POSITION;
 				float3 normal : NORMAL;
 				float2 uv : TEXCOORD0;
+				float3 color : COLOR;
 			};
 
 			struct v2f
@@ -34,6 +35,7 @@
 				float3 viewDir : TEXCOORD2;
 				float4 vertex : SV_POSITION;
 				float hexDist : TEXCOORD3;
+				float3 color : COLOR;
 			};
 
 			sampler2D _HeightMap;
@@ -83,16 +85,15 @@
 			{
 				v2f o;
 				o.objPos = v.vertex.xyz;
+				v.vertex.y -= 1;
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = mul(_MapUvs, worldPos).xz + .5;
-				float height = tex2Dlod(_HeightMap, float4(uv, 0, 0)).x;
-				v.vertex.y += height * 2;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.normal = v.normal;
 				o.viewDir = WorldSpaceViewDir(v.vertex);
 				o.uv = uv;
-				
+				o.color = v.color;
 				return o;
 			}
 			

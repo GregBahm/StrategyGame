@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Worldmap : MonoBehaviour
 {
+    public Transform DebugSphere;
     public Tile HighlitTile
     {
         get
@@ -89,17 +90,18 @@ public class Worldmap : MonoBehaviour
         if(_groundPlane.Raycast(mouseRay, out enter))
         {
             Vector3 intersectionPoint = mouseRay.origin + (mouseRay.direction * enter);
-            return GetClosestTile(intersectionPoint.x, intersectionPoint.z);
+            return GetClosestTile(new Vector2(intersectionPoint.x, intersectionPoint.z));
         }
         return null;
     }
 
-    private Tile GetClosestTile(float x, float y)
+    private Tile GetClosestTile(Vector2 pos)
     {
-        int row = Mathf.CeilToInt(x / 2);
-        float columnDot = Vector2.Dot(_ascendingOffset, new Vector2(x, y)) / 2;
-        int column = (int)columnDot + row;
-        return GetTile(row, 0);
+        Vector2 intersection = FindIntersection(pos, pos + _ascendingOffset, Vector2.zero, Vector2.right);
+        DebugSphere.transform.position = new Vector3(intersection.x, 0, intersection.y);
+        int row = (int)(intersection.x / 2 + .5f);
+        int column = (int)((pos - intersection).magnitude / 2 + .5f);
+        return GetTile(row, column);
     }
 
     private Vector3 GetProvincePosition(int row, int ascendingColumn)
@@ -153,5 +155,19 @@ public class Worldmap : MonoBehaviour
         ret.AscendingColumn = ascendingColumn;
         obj.transform.position = GetProvincePosition(row, ascendingColumn);
         return ret;
+    }
+    
+    private Vector2 FindIntersection(Vector2 lineAStart, Vector2 lineAEnd, Vector2 lineBStart, Vector2 lineBEnd)
+    {
+        Vector2 lineADiff = lineAEnd - lineAStart;
+        Vector2 lineBDiff = lineBEnd - lineBStart;
+        
+        float denominator = (lineADiff.y * lineBDiff.x - lineADiff.x * lineBDiff.y);
+
+        float t1 = ((lineAStart.x - lineBStart.x) * lineBDiff.y + (lineBStart.y - lineAStart.y) * lineBDiff.x) / denominator;
+        float t2 = ((lineBStart.x - lineAStart.x) * lineADiff.y + (lineAStart.y - lineBStart.y) * lineADiff.x) / -denominator;
+
+        return new Vector2(lineAStart.x + lineADiff.x * t1, lineAStart.y + lineADiff.y * t1);
+        
     }
 }
