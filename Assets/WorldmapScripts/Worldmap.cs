@@ -89,8 +89,8 @@ public class Worldmap : MonoBehaviour
         float enter;
         if(_groundPlane.Raycast(mouseRay, out enter))
         {
-            Vector3 intersectionPoint = mouseRay.origin + (mouseRay.direction * enter);
-            return GetClosestTile(new Vector2(intersectionPoint.x, intersectionPoint.z));
+            Vector3 mousePoint = mouseRay.origin + (mouseRay.direction * enter);
+            return GetClosestTile(new Vector2(mousePoint.x, mousePoint.z));
         }
         return null;
     }
@@ -100,7 +100,10 @@ public class Worldmap : MonoBehaviour
         Vector2 intersection = FindIntersection(pos, pos + _ascendingOffset, Vector2.zero, Vector2.right);
         DebugSphere.transform.position = new Vector3(intersection.x, 0, intersection.y);
         int row = (int)(intersection.x / 2 + .5f);
-        int column = (int)((pos - intersection).magnitude / 2 + .5f);
+
+        Tile rowTile = GetTile(row, 0);
+        Vector2 basePoint = new Vector2(rowTile.transform.position.x, rowTile.transform.position.z);
+        int column = (int)((pos - basePoint).magnitude / 2 + .5f);
         return GetTile(row, column);
     }
 
