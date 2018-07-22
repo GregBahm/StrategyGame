@@ -85,7 +85,6 @@
 			{
 				v2f o;
 				o.objPos = v.vertex.xyz;
-				v.vertex.y -= 1;
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = mul(_MapUvs, worldPos).xz + .5;

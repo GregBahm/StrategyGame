@@ -21,7 +21,8 @@ GameObject:
   - component: {fileID: 4343452714911924}
   - component: {fileID: 33379866120089922}
   - component: {fileID: 23400927753939020}
-  m_Layer: 0
+  - component: {fileID: 64899181692970164}
+  m_Layer: 8
   m_Name: Tile_pfb
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -35,7 +36,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1178486124817436}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: -0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -82,4 +83,18 @@ MeshFilter:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1178486124817436}
+  m_Mesh: {fileID: 4300000, guid: d20504de5e599df46b93a935d6f8e601, type: 3}
+--- !u!64 &64899181692970164
+MeshCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1178486124817436}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Convex: 1
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: d20504de5e599df46b93a935d6f8e601, type: 3}

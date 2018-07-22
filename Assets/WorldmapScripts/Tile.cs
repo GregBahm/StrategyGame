@@ -1,37 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
     public bool Highlit;
-    private bool _provincesNeedUpdate;
-    private Province _province;
-    public Province Province
-    {
-        get { return _province; }
-        set
-        {
-            if(value != _province)
-            {
-                SetProvince(value);
-            }
-        }
-    }
-
-    private void SetProvince(Province newProvince)
-    {
-        if(_province != null)
-        {
-            _province.Tiles.Remove(this);
-        }
-        newProvince.Tiles.Add(this);
-        _province = newProvince;
-        _provincesNeedUpdate = true;
-        foreach (Tile tile in Neighbors)
-        {
-            tile._provincesNeedUpdate = true;
-        }
-    }
 
     public Worldmap Map;
 
@@ -45,25 +18,47 @@ public class Tile : MonoBehaviour
     public Tile PositiveDescending;
     public Tile NegativeDescending;
 
-    public IEnumerable<Tile> Neighbors
+    public IEnumerable<Tile> Neighbors { get; private set; }
+
+    public Dictionary<Collider, Tile> ColliderDictionary { get; private set; }
+
+    public Province Province
     {
-        get
+        get { return _province; }
+        set
         {
-            yield return PositiveRow;
-            yield return NegativeRow;
-            yield return PositiveAscending;
-            yield return NegativeAscending;
-            yield return PositiveDescending;
-            yield return NegativeDescending;
+            if (value != _province)
+            {
+                SetProvince(value);
+            }
         }
     }
-    
+
     private Material _mat;
+    private bool _provincesNeedUpdate;
+    private Province _province;
+    private MeshCollider _collider;
 
     private void Start()
     {
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         _mat = renderer.material;
+        ColliderDictionary = GetColliderDictionary();
+    }
+    
+    private void SetProvince(Province newProvince)
+    {
+        if (_province != null)
+        {
+            _province.Tiles.Remove(this);
+        }
+        newProvince.Tiles.Add(this);
+        _province = newProvince;
+        _provincesNeedUpdate = true;
+        foreach (Tile tile in Neighbors)
+        {
+            tile._provincesNeedUpdate = true;
+        }
     }
 
     private void Update()
@@ -89,6 +84,31 @@ public class Tile : MonoBehaviour
         NegativeAscending = GetOffset(0, -1);
         PositiveDescending = GetOffset(-1, 1);
         NegativeDescending = GetOffset(1, -1);
+        Neighbors = GetNeighbors();
+        _collider = GetComponent<MeshCollider>();
+    }
+
+    private Dictionary<Collider, Tile> GetColliderDictionary()
+    {
+        Dictionary<Collider, Tile> ret = new Dictionary<Collider, Tile>();
+        foreach (Tile neighbor in Neighbors)
+        {
+            ret.Add(neighbor._collider, neighbor);
+        }
+        ret.Add(_collider, this);
+        return ret;
+    }
+
+    private IEnumerable<Tile> GetNeighbors()
+    {
+        return new Tile[] {
+            PositiveRow,
+            NegativeRow,
+            PositiveAscending,
+            NegativeAscending,
+            PositiveDescending,
+            NegativeDescending
+        };
     }
 
     public void UpdateConnections()
