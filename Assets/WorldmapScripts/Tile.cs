@@ -38,12 +38,18 @@ public class Tile : MonoBehaviour
     private bool _provincesNeedUpdate;
     private Province _province;
     private MeshCollider _collider;
+    public float _highlightPower;
+
+    private int _highlightPowerId;
+    private int _factionColorId;
 
     private void Start()
     {
         MeshRenderer renderer = GetComponent<MeshRenderer>();
         _mat = renderer.material;
         ColliderDictionary = GetColliderDictionary();
+        _highlightPowerId = Shader.PropertyToID("_HighlightPower");
+        _factionColorId = Shader.PropertyToID("_FactionColor");
     }
     
     private void SetProvince(Province newProvince)
@@ -68,7 +74,9 @@ public class Tile : MonoBehaviour
             _provincesNeedUpdate = false;
             UpdateConnections();
         }
-        _mat.SetColor("_FactionColor", Highlit ? Color.green : Province.Owner.Color);
+        _highlightPower = Mathf.Lerp(_highlightPower, Highlit ? 1 : 0, .1f);//Time.deltaTime * Map.HighlightDecaySpeed);
+        _mat.SetFloat(_highlightPowerId, _highlightPower);
+        _mat.SetColor(_factionColorId, Province.Owner.Color);
     }
 
     public Tile GetOffset(int rowOffset, int ascendingColumnOffset)

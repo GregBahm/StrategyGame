@@ -45,6 +45,7 @@
 			float _TileMargin;
 			float3 _SideColor;
 			float3 _FactionColor;
+			float _HighlightPower;
 
 			bool _PositiveRowConnected;
 			bool _NegativeRowConnected;
@@ -86,6 +87,7 @@
 				v2f o;
 				o.objPos = v.vertex.xyz;
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
+				v.vertex.y += _HighlightPower;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = mul(_MapUvs, worldPos).xz + .5;
 				o.vertex = UnityObjectToClipPos(v.vertex);
@@ -102,6 +104,7 @@
 				float3 heightColor = lerp(float3(0, .5, 1), .5, pow(heightMap, .5));
 				heightColor = lerp(1, heightColor, saturate((1 - heightMap)));
 				heightColor *= heightMap + .5;
+
 				float3 mapNormal = UnpackNormal(tex2D(_NormalMap, i.uv)).xzy;
 				float theDot = dot(normalize(i.viewDir), mapNormal);
 				theDot = pow(theDot, (heightMap + .05) ) - .5;
