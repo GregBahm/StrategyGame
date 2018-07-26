@@ -4,29 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class GameLoop
-{
-    private readonly  Faction[] Players;
-
-    public GameLoop(IEnumerable<Faction> players)
-    {
-
-    }
-}
-
-public class PlayerMove
-{
-    public string ToString()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static PlayerMove FromString(string moveString)
-    {
-        throw new NotImplementedException();
-    }
-}
-
 public class Worldmap : MonoBehaviour
 {
     public Tile HighlitTile
