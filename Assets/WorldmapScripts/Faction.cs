@@ -2,12 +2,10 @@
 
 public class Faction
 {
-    public bool IsLocalPlayer { get; }
     public Color Color { get; }
 
-    public Faction(bool isLocalPlayer, Color color)
+    public Faction(Color color)
     {
-        IsLocalPlayer = isLocalPlayer;
         Color = color;
     }
 }

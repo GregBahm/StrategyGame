@@ -1,14 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class Province
 {
-    public Faction Owner { get; set; }
+    public Faction Owner { get; }
+    public ProvinceUpgrades Upgrades { get; }
+    public RallyTarget RallyTarget { get; }
 
-    public HashSet<Tile> Tiles;
+    private readonly HashSet<Tile> _tiles;
 
-    public Province(Faction owner, params Tile[] tiles)
+    public Province(Faction owner, 
+        ProvinceUpgrades upgrades, 
+        RallyTarget rallyTarget,
+        params Tile[] tiles)
     {
         Owner = owner;
-        Tiles = new HashSet<Tile>(tiles);
+        Upgrades = upgrades;
+        RallyTarget = rallyTarget;
+        _tiles = new HashSet<Tile>(tiles);
     }
 }

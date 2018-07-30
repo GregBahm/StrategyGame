@@ -1,41 +1,89 @@
 ﻿using System;
-using System.Collections.Generic;
 
-public class MoveProperties { }
+public class MergerMove : PlayerMove
+{
+    public Province GrowingProvince { get; }
+    public Province AbsorbedProvince { get; }
 
-public class PlayerMove<T> 
-    where T : MoveProperties 
+    public MergerMove(Faction faction, 
+        Province growingProvince,
+        Province absorbedProvince) 
+        : base(faction, MoveCategory.ArmyMove)
+    {
+        GrowingProvince = growingProvince;
+        AbsorbedProvince = absorbedProvince;
+    }
+    
+}
+public class UpgradeMove : PlayerMove
+{
+    public Province TargetProvince { get; }
+    public ProvinceUpgrade Upgrade { get; }
+
+    public UpgradeMove(Faction faction,
+        Province targetProvince,
+        ProvinceUpgrade upgrade) 
+        : base(faction, MoveCategory.Upgrade)
+    {
+        TargetProvince = targetProvince;
+        Upgrade = upgrade;
+    }
+}
+public class ArmyMove : PlayerMove
+{
+    public Army TargetArmy { get; }
+    public Province TargetProvince { get; }
+
+    public ArmyMove(Faction faction,
+        Army targetArmy,
+        Province targetProvince) 
+        : base(faction, MoveCategory.ArmyMove)
+    {
+        TargetArmy = targetArmy;
+        TargetProvince = targetProvince;
+    }
+}
+public class RallyPointChange : PlayerMove
+{
+    public Province TargetProvince { get; }
+    public RallyTarget NewRallyTarget { get; }
+
+    public RallyPointChange(Faction faction,
+        Province targetProvince,
+        RallyTarget newRallyTarget) 
+        : base(faction, MoveCategory.RallyPointChange)
+    {
+        TargetProvince = targetProvince;
+        NewRallyTarget = newRallyTarget;
+    }
+}
+
+public abstract class PlayerMove
 {
     public enum MoveCategory
     {
-        Merger,
+        Merger, 
         Upgrade,
         ArmyMove,
         RallyPointChange,
     }
 
+    public Faction Faction { get; }
     public MoveCategory Category { get; }
-    public T Properties { get; }
 
-    public PlayerMove(MoveCategory category, T properties)
+    public PlayerMove(Faction faction, MoveCategory category)
     {
+        Faction = faction;
         Category = category;
-        Properties = properties;
     }
 
     public string GetServerMessage()
     {
-
+        throw new NotImplementedException();
     }
     
-}
-
-public class GameLoop
-{
-    private readonly Faction PlayerFaction;
-    private readonly Faction[] AllPlayers;
-
-    public GameLoop()
+    public static PlayerMove LoadMoveFromServer(string serverMessage)
     {
+        throw new NotImplementedException();
     }
 }
