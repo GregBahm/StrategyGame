@@ -1,14 +1,16 @@
-﻿public class RallyTarget
+﻿using System;
+
+public class RallyTarget
 {
-    public Army TargetArmy { get; }
-    public Province TargetProvince { get; }
+    public Guid? TargetArmyId { get; }
+    public Guid? TargetProvinceId { get; }
 
     public RallyTarget(Army targetArmy)
     {
-        TargetArmy = targetArmy;
+        TargetArmyId = targetArmy.Identifier;
     }
     public RallyTarget(Province targetProvince)
     {
-        TargetProvince = targetProvince;
+        TargetProvinceId = targetProvince.Identifier;
     }
 }

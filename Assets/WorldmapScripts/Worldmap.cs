@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Worldmap : MonoBehaviour
 {
-    public Tile HighlitTile
+    public TileBehaviour HighlitTile
     {
         get
         {
@@ -28,7 +28,7 @@ public class Worldmap : MonoBehaviour
             }
         }
     }
-    public Tile[] Tiles;
+    public TileBehaviour[] Tiles;
     public GameObject TilePrefab;
     public Transform MapUvs;
     [Range(0, 1)]
@@ -41,7 +41,7 @@ public class Worldmap : MonoBehaviour
     private Faction _factionB;
     private Faction _unclaimed;
     private Province _startingProvince;
-    private Tile _highlitTile;
+    private TileBehaviour _highlitTile;
 
     private TileManager _tileManager;
     public int Rows;
@@ -54,25 +54,30 @@ public class Worldmap : MonoBehaviour
     {
         _tileManager = new TileManager(this);
         Tiles = MakeTiles();
-        foreach (Tile tile in Tiles)
+        foreach (TileBehaviour tile in Tiles)
         {
             tile.EstablishNeighbors();
         }
         _factionA = new Faction(Color.red);
         _factionB = new Faction(Color.blue);
         _unclaimed = new Faction(Color.white);
-        _startingProvince = new Province(_unclaimed);
+        _startingProvince = GetNewProvince(_unclaimed);
         SetInitialProvince();
+    }
+
+    private Province GetNewProvince(Faction faction)
+    {
+        return new Province(faction, new ProvinceUpgrades(new ProvinceUpgradeBlueprint[0]), Guid.NewGuid(), new TileBehaviour[0]);
     }
 
     private void SetInitialProvince()
     {
-        foreach (Tile tile in Tiles)
+        foreach (TileBehaviour tile in Tiles)
         {
             tile.Province = _startingProvince;
         }
-        GetTile(0, 0).Province = new Province(_factionA);
-        GetTile(Rows / 2, Columns / 2).Province = new Province(_factionB);
+        GetTile(0, 0).Province = GetNewProvince(_factionA);
+        GetTile(Rows / 2, Columns / 2).Province = GetNewProvince(_factionB);
     }
 
     private void Update()
@@ -84,9 +89,9 @@ public class Worldmap : MonoBehaviour
         SkyMat.SetColor("_Tint", BackgroundColor);
     }
 
-    private Tile[] MakeTiles()
+    private TileBehaviour[] MakeTiles()
     {
-        Tile[] ret = new Tile[TilesCount];
+        TileBehaviour[] ret = new TileBehaviour[TilesCount];
         for (int row = 0; row < Rows; row++)
         {
             for (int ascendingColumn = 0; ascendingColumn < Columns; ascendingColumn++)
@@ -98,7 +103,7 @@ public class Worldmap : MonoBehaviour
         return ret;
     }
 
-    public Tile GetTile(int row, int ascendingColumn)
+    public TileBehaviour GetTile(int row, int ascendingColumn)
     {
         int modRow = MathMod(row, Rows);
         int modColumn = MathMod(ascendingColumn, Columns);
@@ -115,16 +120,16 @@ public class Worldmap : MonoBehaviour
         return (Math.Abs(value * modolus) + value) % modolus;
     }
 
-    private Tile CreateTile(int row, int ascendingColumn)
+    private TileBehaviour CreateTile(int row, int ascendingColumn)
     {
         int descendingColumn = row + ascendingColumn;
         string providenceName = string.Format("Providence {0} {1} {2}", row, ascendingColumn, descendingColumn);
         GameObject obj = Instantiate(TilePrefab);
         obj.name = providenceName;
-        Tile ret = obj.AddComponent<Tile>();
+        TileBehaviour ret = obj.AddComponent<TileBehaviour>();
         ret.Map = this;
-        ret.Row = row;
-        ret.AscendingColumn = ascendingColumn;
+        Tile tile = new Tile(row, ascendingColumn);
+        ret.Tile = tile;
         obj.transform.position = _tileManager.GetProvincePosition(row, ascendingColumn);
         return ret;
     }

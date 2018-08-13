@@ -2,25 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Tile : MonoBehaviour
+public class TileBehaviour : MonoBehaviour
 {
     public bool Highlit;
 
     public Worldmap Map;
+    public Tile Tile;
 
-    public int Row;
-    public int AscendingColumn;
+    public TileBehaviour PositiveRow;
+    public TileBehaviour NegativeRow;
+    public TileBehaviour PositiveAscending;
+    public TileBehaviour NegativeAscending;
+    public TileBehaviour PositiveDescending;
+    public TileBehaviour NegativeDescending;
 
-    public Tile PositiveRow;
-    public Tile NegativeRow;
-    public Tile PositiveAscending;
-    public Tile NegativeAscending;
-    public Tile PositiveDescending;
-    public Tile NegativeDescending;
+    public IEnumerable<TileBehaviour> Neighbors { get; private set; }
 
-    public IEnumerable<Tile> Neighbors { get; private set; }
-
-    public Dictionary<Collider, Tile> ColliderDictionary { get; private set; }
+    public Dictionary<Collider, TileBehaviour> ColliderDictionary { get; private set; }
 
     public Province Province
     {
@@ -54,17 +52,19 @@ public class Tile : MonoBehaviour
     
     private void SetProvince(Province newProvince)
     {
-        if (_province != null)
-        {
-            _province.Tiles.Remove(this);
-        }
-        newProvince.Tiles.Add(this);
+        // TODO: Sort this out when you get back to map drawing mechanics
+
+        //if (_province != null)
+        //{
+        //    _province.Tiles.Remove(this);
+        //}
+        //newProvince.Tiles.Add(this);
         _province = newProvince;
-        _provincesNeedUpdate = true;
-        foreach (Tile tile in Neighbors)
-        {
-            tile._provincesNeedUpdate = true;
-        }
+        //_provincesNeedUpdate = true;
+        //foreach (TileBehaviour tile in Neighbors)
+        //{
+        //    tile._provincesNeedUpdate = true;
+        //}
     }
 
     private void Update()
@@ -79,9 +79,9 @@ public class Tile : MonoBehaviour
         _mat.SetColor(_factionColorId, Province.Owner.Color);
     }
 
-    public Tile GetOffset(int rowOffset, int ascendingColumnOffset)
+    public TileBehaviour GetOffset(int rowOffset, int ascendingColumnOffset)
     {
-        return Map.GetTile(Row + rowOffset, AscendingColumn + ascendingColumnOffset);
+        return Map.GetTile(Tile.Row + rowOffset, Tile.AscendingColumn + ascendingColumnOffset);
     }
 
     public void EstablishNeighbors()
@@ -96,10 +96,10 @@ public class Tile : MonoBehaviour
         _collider = GetComponent<MeshCollider>();
     }
 
-    private Dictionary<Collider, Tile> GetColliderDictionary()
+    private Dictionary<Collider, TileBehaviour> GetColliderDictionary()
     {
-        Dictionary<Collider, Tile> ret = new Dictionary<Collider, Tile>();
-        foreach (Tile neighbor in Neighbors)
+        Dictionary<Collider, TileBehaviour> ret = new Dictionary<Collider, TileBehaviour>();
+        foreach (TileBehaviour neighbor in Neighbors)
         {
             ret.Add(neighbor._collider, neighbor);
         }
@@ -107,9 +107,9 @@ public class Tile : MonoBehaviour
         return ret;
     }
 
-    private IEnumerable<Tile> GetNeighbors()
+    private IEnumerable<TileBehaviour> GetNeighbors()
     {
-        return new Tile[] {
+        return new TileBehaviour[] {
             PositiveRow,
             NegativeRow,
             PositiveAscending,

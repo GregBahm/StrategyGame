@@ -3,61 +3,42 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
+
 public class GameState
 {
-    private readonly ReadOnlyCollection<Province> _provinces;
-    private readonly ReadOnlyCollection<Army> _armies;
+    public ReadOnlyCollection<Province> Provinces { get; }
+    public ReadOnlyCollection<Army> Armies { get; }
 
     public GameState(IEnumerable<Province> provinces, IEnumerable<Army> armies)
     {
-        _provinces = provinces.ToList().AsReadOnly();
-        _armies = armies.ToList().AsReadOnly();
+        Provinces = provinces.ToList().AsReadOnly();
+        Armies = armies.ToList().AsReadOnly();
     }
 
     public GameState GetNextState(GameTurnMoves moves)
     {
-        List<Province> newProvinces = new List<Province>(_provinces);
-        List<Army> newArmies = new List<Army>(_armies);
-        HandleArmyMoves(moves);
-        HandleMergers(moves);
-        HandleUpgrades(moves);
-        HandleRallyChanes(moves);
-        return new GameState(newProvinces, newArmies);
+        GameState postArmyMovesState = new ArmyMovesResolver(this, moves.ArmyMoves).NewGameState;
+        GameState postUpgradesState = new UpgradeMovesResolver(postArmyMovesState, moves.Upgrades).NewGameState;
+        GameState postMergersState = new MergerMovesResolver(postUpgradesState, moves.Mergers).NewGameState;
+        GameState postRallyChangesState = new RallyChangesResolver(postMergersState, moves.RallyChanges).NewGameState;
+        return postRallyChangesState;
+    }
+    
+    public Province TryGetEquivalentProvince(Province province)
+    {
+        return TryGetEquivalentProvince(province.Identifier);
+    }
+    public Province TryGetEquivalentProvince(Guid provinceId)
+    {
+        return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
     }
 
-    private void HandleRallyChanes(GameTurnMoves turn)
+    public Army TryGetEquivalentArmy(Army army)
     {
-        // Need to make sure they still control the rallying forces
-        foreach (RallyPointChange rallyChange in turn.RallyChanges)
-        {
-            throw new NotImplementedException();
-        }
+        return TryGetEquivalentArmy(army.Identifier);
     }
-
-    private void HandleArmyMoves(GameTurnMoves turn)
+    public Army TryGetEquivalentArmy(Guid armyId)
     {
-        // Need to handle situations where two armys collide
-        foreach (ArmyMove armyMove in turn.ArmyMoves)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    private void HandleUpgrades(GameTurnMoves turn)
-    {
-        // Need to make sure they're not upgrading a province they no longer own
-        foreach (UpgradeMove upgrade in turn.Upgrades)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    private void HandleMergers(GameTurnMoves turn)
-    {
-        // Need to make sure they're not merging a province they no longer own
-        foreach (MergerMove item in turn.Mergers)
-        {
-            throw new NotImplementedException();
-        }
+        return Armies.FirstOrDefault(item => item.Identifier == armyId);
     }
 }
