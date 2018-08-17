@@ -1,6 +1,6 @@
 ﻿public class ArmyMove : PlayerMove
 {
-    public Army TargetArmy { get; }
+    public Army Army { get; }
     public Province TargetProvince { get; }
 
     public ArmyMove(Faction faction,
@@ -8,7 +8,7 @@
         Province targetProvince) 
         : base(faction, MoveCategory.ArmyMove)
     {
-        TargetArmy = targetArmy;
+        Army = targetArmy;
         TargetProvince = targetProvince;
     }
 }
