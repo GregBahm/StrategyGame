@@ -17,10 +17,12 @@ public class GameState
 
     public GameState GetNextState(GameTurnMoves moves)
     {
+        // TODO: Generate new units, apply province effects, and do routing army recovery
         GameState postArmyMovesState = new ArmyMovesResolver(this, moves.ArmyMoves).NewGameState;
         GameState postUpgradesState = new UpgradeMovesResolver(postArmyMovesState, moves.Upgrades).NewGameState;
         GameState postMergersState = new MergerMovesResolver(postUpgradesState, moves.Mergers).NewGameState;
         GameState postRallyChangesState = new RallyChangesResolver(postMergersState, moves.RallyChanges).NewGameState;
+        // TODO: Move units towards rally points and determine if a player has died
         return postRallyChangesState;
     }
     
