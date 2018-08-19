@@ -135,7 +135,7 @@ public class MergerMovesResolver
                 if(_changesTable.ContainsKey(army.LocationId))
                 {
                     Province newLocation = _changesTable[army.LocationId];
-                    Army redirectedArmy = new Army(army.Identifier, newLocation.Identifier);
+                    Army redirectedArmy = new Army(army.Identifier, newLocation.Identifier, army.Forces, army.Routed);
                     ret.Add(redirectedArmy);
                 }
                 else

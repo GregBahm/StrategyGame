@@ -8,11 +8,14 @@ public class Army
 
     public ArmyForces Forces { get; }
 
-    public Army(Guid identifier, Guid locationId)
+    public bool Routed { get; }
+
+    public Army(Guid identifier, Guid locationId, ArmyForces forces, bool routed)
     {
         Identifier = identifier;
         LocationId = locationId;
-        Forces = Forces;
+        Forces = forces;
+        Routed = routed;
     }
 }
 public class ArmyForces
