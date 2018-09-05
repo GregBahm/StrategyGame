@@ -23,12 +23,12 @@ public class TileManager
         return new Vector3(offset.x, 0, offset.y);
     }
 
-    public TileBehaviour GetTileUnderMouse()
+    public OldTileDisplay GetTileUnderMouse()
     {
         return GetTileAtScreenPoint(Input.mousePosition);
     }
 
-    public TileBehaviour GetTileAtScreenPoint(Vector3 pos)
+    public OldTileDisplay GetTileAtScreenPoint(Vector3 pos)
     {
         Ray mouseRay = Camera.main.ScreenPointToRay(pos);
         float enter;
@@ -36,13 +36,13 @@ public class TileManager
         {
             Vector3 mousePoint = mouseRay.origin + (mouseRay.direction * enter);
 
-            TileBehaviour approximateTile = GetApproximateTile(new Vector2(mousePoint.x, mousePoint.z));
+            OldTileDisplay approximateTile = GetApproximateTile(new Vector2(mousePoint.x, mousePoint.z));
             return GetClosestTile(mouseRay, approximateTile);
         }
         return null;
     }
 
-    private TileBehaviour GetClosestTile(Ray ray, TileBehaviour approximateTile)
+    private OldTileDisplay GetClosestTile(Ray ray, OldTileDisplay approximateTile)
     {
         foreach (MeshCollider collider in approximateTile.ColliderDictionary.Keys)
         {
@@ -61,12 +61,12 @@ public class TileManager
         return null;
     }
 
-    private TileBehaviour GetApproximateTile(Vector2 pos)
+    private OldTileDisplay GetApproximateTile(Vector2 pos)
     {
         Vector2 intersection = FindIntersection(pos, pos + AscendingTileOffset, Vector2.zero, Vector2.right);
         int row = (int)(intersection.x / 2 + .5f);
 
-        TileBehaviour rowTile = _map.GetTile(row, 0);
+        OldTileDisplay rowTile = _map.GetTile(row, 0);
         Vector2 basePoint = new Vector2(rowTile.transform.position.x, rowTile.transform.position.z);
         int column = (int)((pos - basePoint).magnitude / 2 + .5f);
         return _map.GetTile(row, column);

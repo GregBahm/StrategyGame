@@ -87,7 +87,7 @@ public class MergerMovesResolver
         private Province GetMerged(Province basis, Province toAbsorb)
         {
             ProvinceUpgrades newUpgrades = new ProvinceUpgrades(basis.Upgrades.Upgrades.Concat(toAbsorb.Upgrades.Upgrades));
-            IEnumerable<TileBehaviour> newTiles = basis.Tiles.Concat(toAbsorb.Tiles);
+            IEnumerable<OldTileDisplay> newTiles = basis.Tiles.Concat(toAbsorb.Tiles);
             Province newProvince = new Province(
                 basis.Owner,
                 newUpgrades,

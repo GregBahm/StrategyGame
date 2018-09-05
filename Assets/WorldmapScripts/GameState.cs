@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-
 public class GameState
 {
     public ReadOnlyCollection<Province> Provinces { get; }
@@ -15,15 +14,16 @@ public class GameState
         Armies = armies.ToList().AsReadOnly();
     }
 
-    public GameState GetNextState(GameTurnMoves moves)
+    public GameTurnTransition GetNextState(GameTurnMoves moves)
     {
         // TODO: Generate new units, apply province effects, and do routing army recovery
-        GameState postArmyMovesState = new ArmyMovesResolver(this, moves.ArmyMoves).NewGameState;
-        GameState postUpgradesState = new UpgradeMovesResolver(postArmyMovesState, moves.Upgrades).NewGameState;
-        GameState postMergersState = new MergerMovesResolver(postUpgradesState, moves.Mergers).NewGameState;
-        GameState postRallyChangesState = new RallyChangesResolver(postMergersState, moves.RallyChanges).NewGameState;
+        ArmyMovesResolver postArmyMoves = new ArmyMovesResolver(this, moves.ArmyMoves);
+        UpgradeMovesResolver postUpgrades = new UpgradeMovesResolver(postArmyMoves.NewGameState, moves.Upgrades);
+        MergerMovesResolver postMergers = new MergerMovesResolver(postUpgrades.NewGameState, moves.Mergers);
+        RallyChangesResolver postRallyChanges = new RallyChangesResolver(postMergers.NewGameState, moves.RallyChanges);
         // TODO: Move units towards rally points and determine if a player has died
-        return postRallyChangesState;
+        // TODO: Build the GameTurnTransition
+        throw new NotImplementedException();
     }
     
     public Province TryGetEquivalentProvince(Province province)

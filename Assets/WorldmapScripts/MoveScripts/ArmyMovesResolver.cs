@@ -2,32 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class CombatOutcome
-{
-    public ArmyMove ArmyBeforeCombat { get; }
-    public bool Victorious { get; }
-    public Army ArmyAfterCombat { get; }
-
-    public CombatOutcome(ArmyMove armyBeforeCombat,
-        bool victorious,
-        Army armyAfterCombat)
-    {
-        ArmyBeforeCombat = armyBeforeCombat;
-        Victorious = victorious;
-        ArmyAfterCombat = armyAfterCombat;
-    }
-}
-
-public class CombatSetup
-{
-    public IEnumerable<CombatOutcome> Outcome { get; }
-
-    public CombatSetup(IEnumerable<ArmyMove> movingArmies, IEnumerable<Army> stationaryArmies, Province defendingProvince)
-    {
-        // TODO: Sort out how combat rounds are built and resolved
-    }
-}
-
 public class ArmyMovesResolver
 {
     public GameState NewGameState { get; }

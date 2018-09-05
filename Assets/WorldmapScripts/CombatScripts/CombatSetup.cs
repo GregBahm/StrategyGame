@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class CombatSetup
+{
+    public CombatLocation Location {get;}
+
+    public IEnumerable<CombatOutcome> Outcome { get; }
+
+    public CombatSetup(IEnumerable<ArmyMove> movingArmies, IEnumerable<Army> stationaryArmies, Province defendingProvince)
+    {
+        // TODO: Sort out how combat rounds are built and resolved
+        Location = GetLocation(movingArmies, defendingProvince);
+    }
+
+    private static CombatLocation GetLocation(IEnumerable<ArmyMove> movingArmies, Province defendingProvince)
+    {
+        if(defendingProvince != null)
+        {
+            return new CombatLocation(defendingProvince.Identifier);
+        }
+        Guid provinceA = movingArmies.First().Army.LocationId;
+        Guid provinceB = movingArmies.First(move => move.Army.LocationId != provinceA).Army.LocationId;
+        return new CombatLocation(provinceA, provinceB);
+    }
+}

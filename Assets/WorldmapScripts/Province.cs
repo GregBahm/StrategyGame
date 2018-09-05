@@ -8,41 +8,30 @@ public class Province
     public RallyTarget RallyTarget { get; }
     public Guid Identifier { get; }
 
-    private readonly HashSet<TileBehaviour> _tiles;
-    public IEnumerable<TileBehaviour> Tiles { get { return _tiles; } }
+    private readonly HashSet<OldTileDisplay> _tiles;
+    public IEnumerable<OldTileDisplay> Tiles { get { return _tiles; } }
 
     public Province(Faction owner, 
         ProvinceUpgrades upgrades, 
         RallyTarget rallyTarget,
         Guid identifier,
-        IEnumerable<TileBehaviour> tiles)
+        IEnumerable<OldTileDisplay> tiles)
     {
         Owner = owner;
         Upgrades = upgrades;
         RallyTarget = rallyTarget;
         Identifier = identifier;
-        _tiles = new HashSet<TileBehaviour>(tiles);
+        _tiles = new HashSet<OldTileDisplay>(tiles);
     }
     public Province(Faction owner,
         ProvinceUpgrades upgrades,
         Guid identifier,
-        IEnumerable<TileBehaviour> tiles)
+        IEnumerable<OldTileDisplay> tiles)
     {
         Owner = owner;
         Upgrades = upgrades;
         RallyTarget = new RallyTarget(this);
         Identifier = identifier;
-        _tiles = new HashSet<TileBehaviour>(tiles);
-    }
-}
-public class Tile
-{
-    public int Row { get; }
-    public int AscendingColumn { get; }
-
-    public Tile(int row, int ascendingColumn)
-    {
-        Row = row;
-        AscendingColumn = ascendingColumn;
+        _tiles = new HashSet<OldTileDisplay>(tiles);
     }
 }

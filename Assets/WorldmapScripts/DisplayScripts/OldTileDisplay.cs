@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileBehaviour : MonoBehaviour
+public class OldTileDisplay : MonoBehaviour
 {
     public bool Highlit;
 
     public Worldmap Map;
     public Tile Tile;
 
-    public TileBehaviour PositiveRow;
-    public TileBehaviour NegativeRow;
-    public TileBehaviour PositiveAscending;
-    public TileBehaviour NegativeAscending;
-    public TileBehaviour PositiveDescending;
-    public TileBehaviour NegativeDescending;
+    public OldTileDisplay PositiveRow;
+    public OldTileDisplay NegativeRow;
+    public OldTileDisplay PositiveAscending;
+    public OldTileDisplay NegativeAscending;
+    public OldTileDisplay PositiveDescending;
+    public OldTileDisplay NegativeDescending;
 
-    public IEnumerable<TileBehaviour> Neighbors { get; private set; }
+    public IEnumerable<OldTileDisplay> Neighbors { get; private set; }
 
-    public Dictionary<Collider, TileBehaviour> ColliderDictionary { get; private set; }
+    public Dictionary<Collider, OldTileDisplay> ColliderDictionary { get; private set; }
 
     public Province Province
     {
@@ -79,7 +79,7 @@ public class TileBehaviour : MonoBehaviour
         _mat.SetColor(_factionColorId, Province.Owner.Color);
     }
 
-    public TileBehaviour GetOffset(int rowOffset, int ascendingColumnOffset)
+    public OldTileDisplay GetOffset(int rowOffset, int ascendingColumnOffset)
     {
         return Map.GetTile(Tile.Row + rowOffset, Tile.AscendingColumn + ascendingColumnOffset);
     }
@@ -96,10 +96,10 @@ public class TileBehaviour : MonoBehaviour
         _collider = GetComponent<MeshCollider>();
     }
 
-    private Dictionary<Collider, TileBehaviour> GetColliderDictionary()
+    private Dictionary<Collider, OldTileDisplay> GetColliderDictionary()
     {
-        Dictionary<Collider, TileBehaviour> ret = new Dictionary<Collider, TileBehaviour>();
-        foreach (TileBehaviour neighbor in Neighbors)
+        Dictionary<Collider, OldTileDisplay> ret = new Dictionary<Collider, OldTileDisplay>();
+        foreach (OldTileDisplay neighbor in Neighbors)
         {
             ret.Add(neighbor._collider, neighbor);
         }
@@ -107,9 +107,9 @@ public class TileBehaviour : MonoBehaviour
         return ret;
     }
 
-    private IEnumerable<TileBehaviour> GetNeighbors()
+    private IEnumerable<OldTileDisplay> GetNeighbors()
     {
-        return new TileBehaviour[] {
+        return new OldTileDisplay[] {
             PositiveRow,
             NegativeRow,
             PositiveAscending,
