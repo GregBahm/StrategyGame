@@ -113,32 +113,6 @@ public class ArmyDisplay
     }
 }
 
-public struct DisplayTimings
-{
-    public float NewUnits { get; }
-    public float ProvinceEffects { get; }
-    public float RoutingArmyRecovery { get; }
-
-    public float ArmiesMoveToCollision { get; }
-    public float ArmiesDieFromCollisionBattles { get; }
-    public float ArmiesToDestination { get; }
-    public float ArmiesDieFromNonCollisionBattles { get; }
-
-    public float ProvinceOwnershipChanges { get; }
-    public float ProvinceMergers { get; }
-    public float ProvinceUpgrades { get; }
-
-    public float RallyChanges { get; }
-    public float NewArmyCreated { get; }
-    public float UnitsMove { get; }
-    public float PlayersDead { get; }
-
-    public DisplayTimings(float turnProgression)
-    {
-
-    }
-}
-
 public class NewTileDisplay
 {
     public GameObject GameObject { get; }
