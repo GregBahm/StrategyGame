@@ -6,6 +6,7 @@ public class ArmyTurnTransition
     /// The initial state of the army. Should never be null.
     /// </summary>
     public Army StartingState { get; }
+    public Guid ArmyDestination { get; }
     public Army AfterCollisionFight { get; }
     public Army AfterNonCollisionFight { get; }
     public Army AfterReceiveUnits { get; }
@@ -15,6 +16,7 @@ public class ArmyTurnTransition
 
     public ArmyTurnTransition(
         Army startingState,
+        Guid armyDestination,
         Army afterCollisionFight,
         Army afterNonCollisionFight,
         Army afterReceiveUnits,
@@ -27,6 +29,7 @@ public class ArmyTurnTransition
             throw new ArgumentNullException("startingState", "startingState of ArmyTurnTransition should never be null");
         }
         StartingState = startingState;
+        ArmyDestination = armyDestination;
         AfterCollisionFight = afterCollisionFight;
         AfterNonCollisionFight = afterNonCollisionFight;
         AfterReceiveUnits = afterReceiveUnits;
