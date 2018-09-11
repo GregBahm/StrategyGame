@@ -5,21 +5,21 @@ public class ArmyTurnTransition
     /// <summary>
     /// The initial state of the army. Should never be null.
     /// </summary>
-    public Army StartingState { get; }
+    public ArmyState StartingState { get; }
     public Guid ArmyDestination { get; }
-    public Army AfterCollisionFight { get; }
-    public Army AfterNonCollisionFight { get; }
-    public Army AfterReceiveUnits { get; }
+    public ArmyState AfterCollisionFight { get; }
+    public ArmyState AfterNonCollisionFight { get; }
+    public ArmyState AfterReceiveUnits { get; }
     public bool IsNewThisTurn { get; }
     public bool FoughtInCollision { get; }
     public bool FoughtNonCollision { get; }
 
     public ArmyTurnTransition(
-        Army startingState,
+        ArmyState startingState,
         Guid armyDestination,
-        Army afterCollisionFight,
-        Army afterNonCollisionFight,
-        Army afterReceiveUnits,
+        ArmyState afterCollisionFight,
+        ArmyState afterNonCollisionFight,
+        ArmyState afterReceiveUnits,
         bool isNewThisTurn,
         bool foughtInCollision,
         bool foughtNonCOllision)

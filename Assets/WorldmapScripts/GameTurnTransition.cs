@@ -2,14 +2,17 @@
 
 public class GameTurnTransition
 {
+    public GameState InitialState { get; }
     public GameState FinalState { get; }
 
     public IEnumerable<ArmyTurnTransition> ArmyTransitions { get; }
 
-    public GameTurnTransition(GameState finalState,
+    public GameTurnTransition(GameState initialState,
+        GameState finalState,
         IEnumerable<ArmyTurnTransition> armyTransitions)
     {
-        finalState = FinalState;
+        InitialState = initialState;
+        FinalState = finalState;
         ArmyTransitions = armyTransitions;
     }
 }

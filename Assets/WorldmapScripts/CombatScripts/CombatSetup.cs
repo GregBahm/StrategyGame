@@ -8,13 +8,13 @@ public class CombatSetup
 
     public IEnumerable<CombatOutcome> Outcome { get; }
 
-    public CombatSetup(IEnumerable<ArmyMove> movingArmies, IEnumerable<Army> stationaryArmies, Province defendingProvince)
+    public CombatSetup(IEnumerable<ArmyMove> movingArmies, IEnumerable<ArmyState> stationaryArmies, ProvinceState defendingProvince)
     {
         // TODO: Sort out how combat rounds are built and resolved
         Location = GetLocation(movingArmies, defendingProvince);
     }
 
-    private static CombatLocation GetLocation(IEnumerable<ArmyMove> movingArmies, Province defendingProvince)
+    private static CombatLocation GetLocation(IEnumerable<ArmyMove> movingArmies, ProvinceState defendingProvince)
     {
         if(defendingProvince != null)
         {

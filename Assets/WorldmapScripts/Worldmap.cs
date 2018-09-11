@@ -40,7 +40,7 @@ public class Worldmap : MonoBehaviour
     private Faction _factionA;
     private Faction _factionB;
     private Faction _unclaimed;
-    private Province _startingProvince;
+    private ProvinceState _startingProvince;
     private OldTileDisplay _highlitTile;
 
     private TileManager _tileManager;
@@ -65,9 +65,9 @@ public class Worldmap : MonoBehaviour
         SetInitialProvince();
     }
 
-    private Province GetNewProvince(Faction faction)
+    private ProvinceState GetNewProvince(Faction faction)
     {
-        return new Province(faction, new ProvinceUpgrades(new ProvinceUpgradeBlueprint[0]), Guid.NewGuid(), new OldTileDisplay[0]);
+        return new ProvinceState(faction, new ProvinceUpgrades(new ProvinceUpgrade[0]), Guid.NewGuid(), new Tile[0]);
     }
 
     private void SetInitialProvince()

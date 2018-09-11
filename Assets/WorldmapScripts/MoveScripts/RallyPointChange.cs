@@ -1,10 +1,10 @@
 ﻿public class RallyPointChange : PlayerMove
 {
-    public Province AlteredProvince { get; }
+    public ProvinceState AlteredProvince { get; }
     public RallyTarget NewRallyTarget { get; }
 
     public RallyPointChange(Faction faction,
-        Province alteredProvince,
+        ProvinceState alteredProvince,
         RallyTarget newRallyTarget) 
         : base(faction, MoveCategory.RallyPointChange)
     {

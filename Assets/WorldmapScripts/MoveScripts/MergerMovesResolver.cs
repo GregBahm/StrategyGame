@@ -56,39 +56,39 @@ public class MergerMovesResolver
         return growerValid && absorberValid;
     }
 
-    private bool ValidateProvinceOwner(Province provinceFromMove, GameState state)
+    private bool ValidateProvinceOwner(ProvinceState provinceFromMove, GameState state)
     {
-        Province grower = state.TryGetEquivalentProvince(provinceFromMove);
+        ProvinceState grower = state.TryGetEquivalentProvince(provinceFromMove);
         return grower.Owner == provinceFromMove.Owner;
     }
 
     private class MergerChain
     {
-        public List<Province> Provinces { get; }
-        public Province SourceProvince { get { return Provinces.FirstOrDefault(); } }
-        public IEnumerable<Province> EliminatedProvinces { get { return Provinces.Skip(1); } }
+        public List<ProvinceState> Provinces { get; }
+        public ProvinceState SourceProvince { get { return Provinces.FirstOrDefault(); } }
+        public IEnumerable<ProvinceState> EliminatedProvinces { get { return Provinces.Skip(1); } }
 
         public MergerChain(MergerMove move)
         {
-            Provinces = new List<Province>() { move.GrowingProvince, move.AbsorbedProvince };
+            Provinces = new List<ProvinceState>() { move.GrowingProvince, move.AbsorbedProvince };
         }
 
-        public Province GetCompletedMerger(GameState state)
+        public ProvinceState GetCompletedMerger(GameState state)
         {
-            Province ret = state.TryGetEquivalentProvince(SourceProvince);
-            foreach (Province absorbedProvince in EliminatedProvinces)
+            ProvinceState ret = state.TryGetEquivalentProvince(SourceProvince);
+            foreach (ProvinceState absorbedProvince in EliminatedProvinces)
             {
-                Province trueAbsorbee = state.TryGetEquivalentProvince(absorbedProvince);
+                ProvinceState trueAbsorbee = state.TryGetEquivalentProvince(absorbedProvince);
                 ret = GetMerged(ret, trueAbsorbee);
             }
             return ret;
         }
 
-        private Province GetMerged(Province basis, Province toAbsorb)
+        private ProvinceState GetMerged(ProvinceState basis, ProvinceState toAbsorb)
         {
             ProvinceUpgrades newUpgrades = new ProvinceUpgrades(basis.Upgrades.Upgrades.Concat(toAbsorb.Upgrades.Upgrades));
-            IEnumerable<OldTileDisplay> newTiles = basis.Tiles.Concat(toAbsorb.Tiles);
-            Province newProvince = new Province(
+            IEnumerable<Tile> newTiles = basis.Tiles.Concat(toAbsorb.Tiles);
+            ProvinceState newProvince = new ProvinceState(
                 basis.Owner,
                 newUpgrades,
                 basis.RallyTarget,
@@ -101,22 +101,22 @@ public class MergerMovesResolver
 
     private class ProvinceMergerTables
     {
-        private Dictionary<Province, Province> _oldNewDictionary { get; }
-        private Dictionary<Guid, Province> _changesTable { get; }
-        public IEnumerable<Province> NewProvinces { get; }
-        public IEnumerable<Army> RedirectedArmies { get; }
+        private Dictionary<ProvinceState, ProvinceState> _oldNewDictionary { get; }
+        private Dictionary<Guid, ProvinceState> _changesTable { get; }
+        public IEnumerable<ProvinceState> NewProvinces { get; }
+        public IEnumerable<ArmyState> RedirectedArmies { get; }
 
         public ProvinceMergerTables(GameState state, IEnumerable<MergerChain> chains)
         {
             _oldNewDictionary = state.Provinces.ToDictionary(item => item, item => item);
-            _changesTable = new Dictionary<Guid, Province>();
+            _changesTable = new Dictionary<Guid, ProvinceState>();
 
             foreach (MergerChain chain in chains)
             {
-                Province mergeChainProduct = chain.GetCompletedMerger(state);
-                foreach (Province province in chain.EliminatedProvinces)
+                ProvinceState mergeChainProduct = chain.GetCompletedMerger(state);
+                foreach (ProvinceState province in chain.EliminatedProvinces)
                 {
-                    Province toDelete = state.TryGetEquivalentProvince(province);
+                    ProvinceState toDelete = state.TryGetEquivalentProvince(province);
                     _oldNewDictionary.Remove(toDelete);
                     _changesTable.Add(toDelete.Identifier, mergeChainProduct);
                 }
@@ -127,15 +127,15 @@ public class MergerMovesResolver
             RedirectedArmies = GetRedirectedArmies(state.Armies);
         }
 
-        private IEnumerable<Army> GetRedirectedArmies(IEnumerable<Army> oldArmy)
+        private IEnumerable<ArmyState> GetRedirectedArmies(IEnumerable<ArmyState> oldArmy)
         {
-            List<Army> ret = new List<Army>();
-            foreach (Army army in oldArmy)
+            List<ArmyState> ret = new List<ArmyState>();
+            foreach (ArmyState army in oldArmy)
             {
                 if(_changesTable.ContainsKey(army.LocationId))
                 {
-                    Province newLocation = _changesTable[army.LocationId];
-                    Army redirectedArmy = new Army(army.Identifier, newLocation.Identifier, army.Forces, army.Routed);
+                    ProvinceState newLocation = _changesTable[army.LocationId];
+                    ArmyState redirectedArmy = new ArmyState(army.Identifier, newLocation.Identifier, army.Forces, army.Routed);
                     ret.Add(redirectedArmy);
                 }
                 else
@@ -146,16 +146,16 @@ public class MergerMovesResolver
             return ret;
         }
 
-        private IEnumerable<Province> GetNewProvinces()
+        private IEnumerable<ProvinceState> GetNewProvinces()
         {
-            List<Province> ret = new List<Province>();
-            foreach (Province province in _oldNewDictionary.Values)
+            List<ProvinceState> ret = new List<ProvinceState>();
+            foreach (ProvinceState province in _oldNewDictionary.Values)
             {
                 Guid? rallyTarget = province.RallyTarget.TargetProvinceId;
                 if(rallyTarget.HasValue && _changesTable.ContainsKey(rallyTarget.Value))
                 {
                     RallyTarget newTarget = new RallyTarget(_changesTable[rallyTarget.Value]);
-                    Province newProvince = new Province(
+                    ProvinceState newProvince = new ProvinceState(
                         province.Owner,
                         province.Upgrades,
                         newTarget,

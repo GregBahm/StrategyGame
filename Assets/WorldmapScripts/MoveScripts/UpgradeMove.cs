@@ -1,10 +1,10 @@
 ﻿public class UpgradeMove : PlayerMove
 {
-    public Province AlteredProvince { get; }
+    public ProvinceState AlteredProvince { get; }
     public ProvinceUpgrade Upgrade { get; }
 
     public UpgradeMove(Faction faction,
-        Province alteredProvince,
+        ProvinceState alteredProvince,
         ProvinceUpgrade upgrade) 
         : base(faction, MoveCategory.Upgrade)
     {

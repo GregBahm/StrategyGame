@@ -5,10 +5,10 @@ using System.Linq;
 
 public class GameState
 {
-    public ReadOnlyCollection<Province> Provinces { get; }
-    public ReadOnlyCollection<Army> Armies { get; }
+    public ReadOnlyCollection<ProvinceState> Provinces { get; }
+    public ReadOnlyCollection<ArmyState> Armies { get; }
 
-    public GameState(IEnumerable<Province> provinces, IEnumerable<Army> armies)
+    public GameState(IEnumerable<ProvinceState> provinces, IEnumerable<ArmyState> armies)
     {
         Provinces = provinces.ToList().AsReadOnly();
         Armies = armies.ToList().AsReadOnly();
@@ -26,20 +26,20 @@ public class GameState
         throw new NotImplementedException();
     }
     
-    public Province TryGetEquivalentProvince(Province province)
+    public ProvinceState TryGetEquivalentProvince(ProvinceState province)
     {
         return TryGetEquivalentProvince(province.Identifier);
     }
-    public Province TryGetEquivalentProvince(Guid provinceId)
+    public ProvinceState TryGetEquivalentProvince(Guid provinceId)
     {
         return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
     }
 
-    public Army TryGetEquivalentArmy(Army army)
+    public ArmyState TryGetEquivalentArmy(ArmyState army)
     {
         return TryGetEquivalentArmy(army.Identifier);
     }
-    public Army TryGetEquivalentArmy(Guid armyId)
+    public ArmyState TryGetEquivalentArmy(Guid armyId)
     {
         return Armies.FirstOrDefault(item => item.Identifier == armyId);
     }

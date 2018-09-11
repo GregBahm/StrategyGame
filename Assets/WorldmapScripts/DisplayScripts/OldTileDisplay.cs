@@ -20,7 +20,7 @@ public class OldTileDisplay : MonoBehaviour
 
     public Dictionary<Collider, OldTileDisplay> ColliderDictionary { get; private set; }
 
-    public Province Province
+    public ProvinceState Province
     {
         get { return _province; }
         set
@@ -34,7 +34,7 @@ public class OldTileDisplay : MonoBehaviour
 
     private Material _mat;
     private bool _provincesNeedUpdate;
-    private Province _province;
+    private ProvinceState _province;
     private MeshCollider _collider;
     public float _highlightPower;
 
@@ -50,7 +50,7 @@ public class OldTileDisplay : MonoBehaviour
         _factionColorId = Shader.PropertyToID("_FactionColor");
     }
     
-    private void SetProvince(Province newProvince)
+    private void SetProvince(ProvinceState newProvince)
     {
         // TODO: Sort this out when you get back to map drawing mechanics
 

@@ -2,11 +2,11 @@
 {
     public ArmyMove ArmyBeforeCombat { get; }
     public bool Victorious { get; }
-    public Army ArmyAfterCombat { get; }
+    public ArmyState ArmyAfterCombat { get; }
 
     public CombatOutcome(ArmyMove armyBeforeCombat,
         bool victorious,
-        Army armyAfterCombat)
+        ArmyState armyAfterCombat)
     {
         ArmyBeforeCombat = armyBeforeCombat;
         Victorious = victorious;

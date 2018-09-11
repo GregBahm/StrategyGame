@@ -1,12 +1,12 @@
 ﻿public class ProvinceUpgrade
 {
     public ProvinceUpgradeBlueprint Blueprint { get; }
-    public OldTileDisplay BaseTile { get; }
+    public TileDisplay BaseTile { get; }
     public int Rotations { get; }
     public bool PrimaryUnitProducer { get; }
 
     public ProvinceUpgrade(ProvinceUpgradeBlueprint blueprint,
-        OldTileDisplay baseTile,
+        TileDisplay baseTile,
         int rotations,
         bool primaryUnitProducer)
     {

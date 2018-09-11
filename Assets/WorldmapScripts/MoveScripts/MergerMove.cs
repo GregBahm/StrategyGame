@@ -1,11 +1,11 @@
 ﻿public class MergerMove : PlayerMove
 {
-    public Province GrowingProvince { get; }
-    public Province AbsorbedProvince { get; }
+    public ProvinceState GrowingProvince { get; }
+    public ProvinceState AbsorbedProvince { get; }
 
     public MergerMove(Faction faction, 
-        Province growingProvince,
-        Province absorbedProvince) 
+        ProvinceState growingProvince,
+        ProvinceState absorbedProvince) 
         : base(faction, MoveCategory.ArmyMove)
     {
         GrowingProvince = growingProvince;

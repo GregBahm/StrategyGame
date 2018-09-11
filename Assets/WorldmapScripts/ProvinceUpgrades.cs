@@ -4,9 +4,9 @@ using System.Linq;
 
 public class ProvinceUpgrades
 {
-    public ReadOnlyCollection<ProvinceUpgradeBlueprint> Upgrades { get; }
+    public ReadOnlyCollection<ProvinceUpgrade> Upgrades { get; }
 
-    public ProvinceUpgrades(IEnumerable<ProvinceUpgradeBlueprint> upgrades)
+    public ProvinceUpgrades(IEnumerable<ProvinceUpgrade> upgrades)
     {
         Upgrades = upgrades.ToList().AsReadOnly();
     }
