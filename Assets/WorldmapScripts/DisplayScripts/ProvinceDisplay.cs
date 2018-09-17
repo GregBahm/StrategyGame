@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class ProvinceDisplay
 {
-    public Guid Identifier { get; }
+    public Province Identifier { get; }
     public GameDisplayManager _mothership;
 
-    public ProvinceDisplay(Guid identifier, GameDisplayManager mothership)
+    public ProvinceDisplay(Province identifier, GameDisplayManager mothership)
     {
         Identifier = identifier;
         _mothership = mothership;

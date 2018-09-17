@@ -102,14 +102,14 @@ public class MergerMovesResolver
     private class ProvinceMergerTables
     {
         private Dictionary<ProvinceState, ProvinceState> _oldNewDictionary { get; }
-        private Dictionary<Guid, ProvinceState> _changesTable { get; }
+        private Dictionary<Province, ProvinceState> _changesTable { get; }
         public IEnumerable<ProvinceState> NewProvinces { get; }
         public IEnumerable<ArmyState> RedirectedArmies { get; }
 
         public ProvinceMergerTables(GameState state, IEnumerable<MergerChain> chains)
         {
             _oldNewDictionary = state.Provinces.ToDictionary(item => item, item => item);
-            _changesTable = new Dictionary<Guid, ProvinceState>();
+            _changesTable = new Dictionary<Province, ProvinceState>();
 
             foreach (MergerChain chain in chains)
             {
@@ -151,10 +151,10 @@ public class MergerMovesResolver
             List<ProvinceState> ret = new List<ProvinceState>();
             foreach (ProvinceState province in _oldNewDictionary.Values)
             {
-                Guid? rallyTarget = province.RallyTarget.TargetProvinceId;
-                if(rallyTarget.HasValue && _changesTable.ContainsKey(rallyTarget.Value))
+                Province rallyTarget = province.RallyTarget.TargetProvinceId;
+                if(rallyTarget != null && _changesTable.ContainsKey(rallyTarget))
                 {
-                    RallyTarget newTarget = new RallyTarget(_changesTable[rallyTarget.Value]);
+                    RallyTarget newTarget = new RallyTarget(_changesTable[rallyTarget]);
                     ProvinceState newProvince = new ProvinceState(
                         province.Owner,
                         province.Upgrades,

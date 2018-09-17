@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class GameDisplayManager
 {
-    private readonly Dictionary<Guid, ArmyDisplay> _armies;
-    private readonly Dictionary<Guid, ProvinceDisplay> _provinces;
+    private readonly Dictionary<Army, ArmyDisplay> _armies;
+    private readonly Dictionary<Province, ProvinceDisplay> _provinces;
     private readonly Worldmap _worldMap;
 
     public GameDisplayManager(Worldmap worldmap)
     {
-        _armies = new Dictionary<Guid, ArmyDisplay>();
-        _provinces = new Dictionary<Guid, ProvinceDisplay>();
+        _armies = new Dictionary<Army, ArmyDisplay>();
+        _provinces = new Dictionary<Province, ProvinceDisplay>();
         _worldMap = worldmap;
     }
 
@@ -67,7 +67,7 @@ public class GameDisplayManager
 
     private void UpdateArmies(GameTurnTransition transiation, DisplayTimings progression)
     {
-        Dictionary<Guid, ArmyTurnTransition> transitions =
+        Dictionary<Army, ArmyTurnTransition> transitions =
             transiation.ArmyTransitions.ToDictionary(transition => transition.StartingState.Identifier, transition => transition);
 
         foreach (ArmyDisplay displayer in _armies.Values)

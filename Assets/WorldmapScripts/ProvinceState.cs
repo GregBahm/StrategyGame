@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-
 public class ProvinceState
 {
     public Faction Owner { get; }
     public ProvinceUpgrades Upgrades { get; }
     public RallyTarget RallyTarget { get; }
-    public Guid Identifier { get; }
+    public Province Identifier { get; }
 
     private readonly HashSet<Tile> _tiles;
     public IEnumerable<Tile> Tiles { get { return _tiles; } }
@@ -14,7 +13,7 @@ public class ProvinceState
     public ProvinceState(Faction owner, 
         ProvinceUpgrades upgrades, 
         RallyTarget rallyTarget,
-        Guid identifier,
+        Province identifier,
         IEnumerable<Tile> tiles)
         :this(owner, 
              upgrades,
@@ -25,7 +24,7 @@ public class ProvinceState
     }
     public ProvinceState(Faction owner,
         ProvinceUpgrades upgrades,
-        Guid identifier,
+        Province identifier,
         IEnumerable<Tile> tiles)
     {
         Owner = owner;

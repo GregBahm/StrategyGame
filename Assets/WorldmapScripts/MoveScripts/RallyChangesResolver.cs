@@ -39,12 +39,12 @@ public class RallyChangesResolver
 
     private RallyTarget GetUpdatedTarget(GameState state, RallyPointChange change)
     {
-        if(change.NewRallyTarget.TargetArmyId.HasValue)
+        if(change.NewRallyTarget.TargetArmyId != null)
         {
-            ArmyState equivalentArmy = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId.Value);
+            ArmyState equivalentArmy = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId);
             return new RallyTarget(equivalentArmy);
         }
-        ProvinceState equivalentProvince = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId.Value);
+        ProvinceState equivalentProvince = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId);
         return new RallyTarget(equivalentProvince);
     }
 
@@ -57,16 +57,16 @@ public class RallyChangesResolver
             return false;
         }
 
-        if (change.NewRallyTarget.TargetProvinceId.HasValue)
+        if (change.NewRallyTarget.TargetProvinceId != null)
         {
             // Need to make sure they still control the target if the target is a province
-            ProvinceState targetEquivalent = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId.Value);
+            ProvinceState targetEquivalent = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId);
             return targetEquivalent.Owner == change.Faction;
         }
         else
         {
             // Need to make sure the rally target is still alive if its an army
-            ArmyState army = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId.Value);
+            ArmyState army = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId);
             return army != null;
         }
     }

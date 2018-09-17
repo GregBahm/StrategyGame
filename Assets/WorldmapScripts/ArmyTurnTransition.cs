@@ -6,7 +6,7 @@ public class ArmyTurnTransition
     /// The initial state of the army. Should never be null.
     /// </summary>
     public ArmyState StartingState { get; }
-    public Guid ArmyDestination { get; }
+    public Province ArmyDestination { get; }
     public ArmyState AfterCollisionFight { get; }
     public ArmyState AfterNonCollisionFight { get; }
     public ArmyState AfterReceiveUnits { get; }
@@ -16,7 +16,7 @@ public class ArmyTurnTransition
 
     public ArmyTurnTransition(
         ArmyState startingState,
-        Guid armyDestination,
+        Province armyDestination,
         ArmyState afterCollisionFight,
         ArmyState afterNonCollisionFight,
         ArmyState afterReceiveUnits,

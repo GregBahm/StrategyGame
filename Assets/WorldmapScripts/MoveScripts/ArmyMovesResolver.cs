@@ -23,7 +23,7 @@ public class ArmyMovesResolver
 
     private GameState GetPostPeacefulMoves(GameState state, IEnumerable<ArmyMove> peacefulTransitions)
     {
-        Dictionary<Guid, ArmyState> armyDictionary = state.Armies.ToDictionary(item => item.Identifier, item => item);
+        Dictionary<Army, ArmyState> armyDictionary = state.Armies.ToDictionary(item => item.Identifier, item => item);
         foreach (ArmyMove move in peacefulTransitions)
         {
             ArmyState newArmy = new ArmyState(move.Army.Identifier, move.TargetProvince.Identifier, move.Army.Forces, move.Army.Routed);
@@ -34,13 +34,13 @@ public class ArmyMovesResolver
 
     private static GameState GetPostFinalFights(GameState state, IEnumerable<CombatSetup> fights)
     {
-        Dictionary<Guid, ProvinceState> provinceDictionary = state.Provinces.ToDictionary(item => item.Identifier, item => item);
-        Dictionary<Guid, ArmyState> armyDictionary = state.Armies.ToDictionary(item => item.Identifier, item => item);
+        Dictionary<Province, ProvinceState> provinceDictionary = state.Provinces.ToDictionary(item => item.Identifier, item => item);
+        Dictionary<Army, ArmyState> armyDictionary = state.Armies.ToDictionary(item => item.Identifier, item => item);
         foreach (CombatSetup fight in fights)
         {
             foreach (CombatOutcome outcome in fight.Outcome)
             {
-                Guid armyGuid = outcome.ArmyAfterCombat.Identifier;
+                Army armyGuid = outcome.ArmyAfterCombat.Identifier;
                 armyDictionary[armyGuid] = outcome.ArmyAfterCombat;
 
                 if(outcome.Victorious)
@@ -111,7 +111,7 @@ public class ArmyMovesResolver
             // Change each army in the state to the  
             // If it's a winner, add the army move. 
 
-            Dictionary<Guid, ArmyState> newArmiesDictionary = oldState.Armies.ToDictionary(item => item.Identifier, item => item);
+            Dictionary<Army, ArmyState> newArmiesDictionary = oldState.Armies.ToDictionary(item => item.Identifier, item => item);
             List<ArmyMove> newMoves = new List<ArmyMove>(collisionsSorter.NotCollisions);
 
             foreach (CombatSetup fight in collisionsSorter.Collisions)
@@ -170,8 +170,8 @@ public class ArmyMovesResolver
 
         private IEnumerable<ArmyState> GetStationaryArmies(CollisionApplier collisionApplier)
         {
-            IEnumerable<Guid> movingArmiesGuids = collisionApplier.MovesToGo.Select(item => item.Army.Identifier);
-            HashSet<Guid> movingArmiesHash = new HashSet<Guid>(movingArmiesGuids);
+            IEnumerable<Army> movingArmiesGuids = collisionApplier.MovesToGo.Select(item => item.Army.Identifier);
+            HashSet<Army> movingArmiesHash = new HashSet<Army>(movingArmiesGuids);
             return collisionApplier.NewGameState.Armies.Where(item => !movingArmiesHash.Contains(item.Identifier));
         }
 
@@ -190,11 +190,11 @@ public class ArmyMovesResolver
 
         private IEnumerable<List<ArmyMove>> GetConvergencies(CollisionApplier collisionApplier)
         {
-            Dictionary<Guid, List<ArmyMove>> ret = new Dictionary<Guid, List<ArmyMove>>();
+            Dictionary<Province, List<ArmyMove>> ret = new Dictionary<Province, List<ArmyMove>>();
 
             foreach (ArmyMove item in collisionApplier.MovesToGo)
             {
-                Guid provinceId = item.TargetProvince.Identifier;
+                Province provinceId = item.TargetProvince.Identifier;
                 if(ret.ContainsKey(provinceId))
                 {
                     ret[provinceId].Add(item);

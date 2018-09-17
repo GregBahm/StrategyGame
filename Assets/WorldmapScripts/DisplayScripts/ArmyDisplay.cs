@@ -7,9 +7,9 @@ public class ArmyDisplay
 
     public GameObject ArtContent { get; }
 
-    public Guid Identifier { get; }
+    public Army Identifier { get; }
 
-    public ArmyDisplay(GameDisplayManager manager, Guid identifier)
+    public ArmyDisplay(GameDisplayManager manager, Army identifier)
     {
         Manager = manager;
         Identifier = identifier;
@@ -36,8 +36,8 @@ public class ArmyDisplay
 
     private Vector3 GetForcesPosition(ArmyTurnTransition transition, DisplayTimings progression)
     {
-        Guid startingProvince = transition.StartingState.LocationId;
-        Guid destinationProvince = transition.ArmyDestination;
+        Province startingProvince = transition.StartingState.LocationId;
+        Province destinationProvince = transition.ArmyDestination;
         Vector3 startingPos = GetProvincePosition(startingProvince);
         Vector3 destinationPos = GetProvincePosition(destinationProvince);
         Vector3 collisionPos = (startingPos + destinationPos) / 2;
@@ -52,7 +52,7 @@ public class ArmyDisplay
         throw new NotImplementedException();
     }
 
-    private Vector2 GetProvincePosition(Guid provinceId)
+    private Vector2 GetProvincePosition(Province provinceId)
     {
         throw new NotImplementedException();
     }

@@ -2,8 +2,8 @@
 
 public class RallyTarget
 {
-    public Guid? TargetArmyId { get; }
-    public Guid? TargetProvinceId { get; }
+    public Army TargetArmyId { get; }
+    public Province TargetProvinceId { get; }
 
     public RallyTarget(ArmyState targetArmy)
     {

@@ -62,7 +62,7 @@ public class MainGameManager : MonoBehaviour
     {
         ProvinceUpgrades upgrades = new ProvinceUpgrades(new ProvinceUpgrade[0]);
         IEnumerable<Tile> tileSet = new[] { tile };
-        return new ProvinceState(faction, upgrades, Guid.NewGuid(), tileSet);
+        return new ProvinceState(faction, upgrades, new Province(), tileSet);
     }
 
     private Dictionary<Tile, Faction> GetStartingLocations()

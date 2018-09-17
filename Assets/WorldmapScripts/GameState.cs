@@ -30,7 +30,7 @@ public class GameState
     {
         return TryGetEquivalentProvince(province.Identifier);
     }
-    public ProvinceState TryGetEquivalentProvince(Guid provinceId)
+    public ProvinceState TryGetEquivalentProvince(Province provinceId)
     {
         return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
     }
@@ -39,7 +39,7 @@ public class GameState
     {
         return TryGetEquivalentArmy(army.Identifier);
     }
-    public ArmyState TryGetEquivalentArmy(Guid armyId)
+    public ArmyState TryGetEquivalentArmy(Army armyId)
     {
         return Armies.FirstOrDefault(item => item.Identifier == armyId);
     }

@@ -6,20 +6,20 @@ public class CombatLocation
     /// <summary>
     /// The site of the battle if not collision
     /// </summary>
-    public Guid? Province { get; }
+    public Province Province { get; }
     /// <summary>
     /// The battle is between Province and ProvinceB if a collision
     /// </summary>
-    public Guid? ProvinceB { get; }
+    public Province ProvinceB { get; }
 
-    public CombatLocation(Guid province)
+    public CombatLocation(Province province)
     {
         Province = province;
         IsCollision = false;
     }
 
-    public CombatLocation(Guid province,
-        Guid provinceB)
+    public CombatLocation(Province province,
+        Province provinceB)
     {
         Province = province;
         ProvinceB = provinceB;

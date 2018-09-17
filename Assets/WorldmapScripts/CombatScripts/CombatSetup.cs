@@ -20,8 +20,8 @@ public class CombatSetup
         {
             return new CombatLocation(defendingProvince.Identifier);
         }
-        Guid provinceA = movingArmies.First().Army.LocationId;
-        Guid provinceB = movingArmies.First(move => move.Army.LocationId != provinceA).Army.LocationId;
+        Province provinceA = movingArmies.First().Army.LocationId;
+        Province provinceB = movingArmies.First(move => move.Army.LocationId != provinceA).Army.LocationId;
         return new CombatLocation(provinceA, provinceB);
     }
 }
