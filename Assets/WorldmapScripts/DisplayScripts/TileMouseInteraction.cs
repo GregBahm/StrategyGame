@@ -1,34 +1,25 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class TileManager
+public class TileMouseInteraction
 {
-    public Vector2 AscendingTileOffset { get; }
     private readonly Worldmap _map;
     private readonly Plane _groundPlane;
     private readonly int _tileLayermask;
 
-    public TileManager(Worldmap map)
+    public TileMouseInteraction(Worldmap map)
     {
         _tileLayermask = 1 << LayerMask.NameToLayer("TileLayer");
         _map = map;
         _groundPlane = new Plane(Vector3.up, 0);
-        AscendingTileOffset = new Vector2(1, -1.73f).normalized;
     }
 
-    public Vector3 GetProvincePosition(int row, int ascendingColumn)
-    {
-        Vector2 ascendingOffset = AscendingTileOffset * ascendingColumn;
-        Vector2 offset = ascendingOffset + new Vector2(row, 0);
-        offset *= 2;
-        return new Vector3(offset.x, 0, offset.y);
-    }
-
-    public OldTileDisplay GetTileUnderMouse()
+    public TileDisplay GetTileUnderMouse()
     {
         return GetTileAtScreenPoint(Input.mousePosition);
     }
 
-    public OldTileDisplay GetTileAtScreenPoint(Vector3 pos)
+    public TileDisplay GetTileAtScreenPoint(Vector3 pos)
     {
         Ray mouseRay = Camera.main.ScreenPointToRay(pos);
         float enter;
@@ -36,38 +27,38 @@ public class TileManager
         {
             Vector3 mousePoint = mouseRay.origin + (mouseRay.direction * enter);
 
-            OldTileDisplay approximateTile = GetApproximateTile(new Vector2(mousePoint.x, mousePoint.z));
+            TileDisplay approximateTile = GetApproximateTile(new Vector2(mousePoint.x, mousePoint.z));
             return GetClosestTile(mouseRay, approximateTile);
         }
         return null;
     }
 
-    private OldTileDisplay GetClosestTile(Ray ray, OldTileDisplay approximateTile)
+    private TileDisplay GetClosestTile(Ray ray, TileDisplay approximateTile)
     {
-        foreach (MeshCollider collider in approximateTile.ColliderDictionary.Keys)
+        foreach (TileDisplay tile in approximateTile.ColliderCluster)
         {
-            collider.enabled = true;
+            tile.Collider.enabled = true;
         }
         RaycastHit hitInfo;
         bool hit = Physics.Raycast(ray, out hitInfo, Mathf.Infinity, _tileLayermask, QueryTriggerInteraction.UseGlobal);
-        foreach (MeshCollider collider in approximateTile.ColliderDictionary.Keys)
+        foreach (TileDisplay tile in approximateTile.ColliderCluster)
         {
-            collider.enabled = false;
+            tile.Collider.enabled = false;
         }
-        if(hit)
+        if (hit)
         {
-            return approximateTile.ColliderDictionary[hitInfo.collider];
+            return approximateTile.ColliderCluster[hitInfo.collider];
         }
         return null;
     }
 
-    private OldTileDisplay GetApproximateTile(Vector2 pos)
+    private TileDisplay GetApproximateTile(Vector2 pos)
     {
-        Vector2 intersection = FindIntersection(pos, pos + AscendingTileOffset, Vector2.zero, Vector2.right);
+        Vector2 intersection = FindIntersection(pos, pos + _map.AscendingTileOffset, Vector2.zero, Vector2.right);
         int row = (int)(intersection.x / 2 + .5f);
 
-        OldTileDisplay rowTile = _map.GetTile(row, 0);
-        Vector2 basePoint = new Vector2(rowTile.transform.position.x, rowTile.transform.position.z);
+        TileDisplay rowTile = _map.GetTile(row, 0);
+        Vector2 basePoint = new Vector2(rowTile.GameObject.transform.position.x, rowTile.GameObject.transform.position.z);
         int column = (int)((pos - basePoint).magnitude / 2 + .5f);
         return _map.GetTile(row, column);
     }

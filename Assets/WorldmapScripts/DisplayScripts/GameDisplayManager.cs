@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class GameDisplayManager
 {
     private readonly Dictionary<Guid, ArmyDisplay> _armies;
     private readonly Dictionary<Guid, ProvinceDisplay> _provinces;
-    private readonly Dictionary<Tile, TileDisplay> _tiles;
+    private readonly Worldmap _worldMap;
 
-    public GameDisplayManager(GameState gameState, IEnumerable<Tile> tiles)
+    public GameDisplayManager(Worldmap worldmap)
     {
         _armies = new Dictionary<Guid, ArmyDisplay>();
         _provinces = new Dictionary<Guid, ProvinceDisplay>();
-        _tiles = tiles.ToDictionary(item => item, item => new TileDisplay(item));
-        UpdateDisplayWrappers(gameState);
+        _worldMap = worldmap;
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -52,6 +52,11 @@ public class GameDisplayManager
         // Then move units towards rally points
     }
 
+    internal TileDisplay GetTile(Tile tile)
+    {
+        return _worldMap.GetTile(tile.Row, tile.AscendingColumn);
+    }
+
     private void UpdateProvinces(GameTurnTransition transiation, DisplayTimings timings)
     {
         foreach (ProvinceDisplay province in _provinces.Values)
@@ -77,10 +82,5 @@ public class GameDisplayManager
                 displayer.SetArmyAsDead();
             }
         }
-    }
-
-    public TileDisplay GetDisplayTile(Tile tile)
-    {
-        return _tiles[tile];
     }
 }

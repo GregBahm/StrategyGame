@@ -40,7 +40,7 @@ public class ProvinceDisplay
         int count = 0;
         foreach (Tile tile in tiles)
         {
-            TileDisplay tileDisplay = _mothership.GetDisplayTile(tile);
+            TileDisplay tileDisplay = _mothership.GetTile(tile);
             ret += tileDisplay.GameObject.transform.position;
             count++;
         }

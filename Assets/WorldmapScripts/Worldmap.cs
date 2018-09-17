@@ -4,94 +4,55 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Worldmap : MonoBehaviour
+public class Worldmap
 {
-    public OldTileDisplay HighlitTile
-    {
-        get
-        {
-            return _highlitTile;
-        }
-        set
-        {
-            if(_highlitTile != value)
-            {
-                if(_highlitTile != null)
-                {
-                    _highlitTile.Highlit = false;
-                }
-                if(value != null)
-                {
-                    value.Highlit = true;
-                }
-                _highlitTile = value;
-            }
-        }
-    }
-    public OldTileDisplay[] Tiles;
-    public GameObject TilePrefab;
-    public Transform MapUvs;
-    [Range(0, 1)]
-    public float TileMargin;
-    public Color BackgroundColor;
-    public Material SkyMat;
+    public TileDisplay HighlitTile { get; private set; }
 
-    
-    private Faction _factionA;
-    private Faction _factionB;
-    private Faction _unclaimed;
-    private ProvinceState _startingProvince;
-    private OldTileDisplay _highlitTile;
-
-    private TileManager _tileManager;
-    public int Rows;
-    public int Columns;
+    public TileDisplay[] Tiles { get; }
+    //public Color BackgroundColor;
+    //public Material SkyMat;
+    public int Rows { get; } = 20;
+    public int Columns { get; } = 20;
     public int TilesCount { get { return Rows * Columns; } }
-    public float HighlightDecaySpeed;
+    //public float HighlightDecaySpeed;
 
+    public readonly Vector2 AscendingTileOffset = new Vector2(1, -1.73f).normalized;
 
-    private void Start()
+    private readonly MainGameManager _mainManager;
+    private readonly TileMouseInteraction _tileManager;
+
+    public Worldmap(MainGameManager mainManager)
     {
-        _tileManager = new TileManager(this);
+        _mainManager = mainManager;
         Tiles = MakeTiles();
-        foreach (OldTileDisplay tile in Tiles)
-        {
-            tile.EstablishNeighbors();
-        }
-        _factionA = new Faction(Color.red);
-        _factionB = new Faction(Color.blue);
-        _unclaimed = new Faction(Color.white);
-        _startingProvince = GetNewProvince(_unclaimed);
-        SetInitialProvince();
+        InitializeTiles();
+        _tileManager = new TileMouseInteraction(this);
     }
 
-    private ProvinceState GetNewProvince(Faction faction)
+    private void InitializeTiles()
     {
-        return new ProvinceState(faction, new ProvinceUpgrades(new ProvinceUpgrade[0]), Guid.NewGuid(), new Tile[0]);
-    }
-
-    private void SetInitialProvince()
-    {
-        foreach (OldTileDisplay tile in Tiles)
+        foreach (TileDisplay tile in Tiles)
         {
-            tile.Province = _startingProvince;
+            tile.SetNeighbors(this);
         }
-        GetTile(0, 0).Province = GetNewProvince(_factionA);
-        GetTile(Rows / 2, Columns / 2).Province = GetNewProvince(_factionB);
+        foreach (TileDisplay tile in Tiles)
+        {
+            tile.SetCollisionCluster();
+        }
     }
 
     private void Update()
     {
         HighlitTile = _tileManager.GetTileUnderMouse();
-        Shader.SetGlobalFloat("_TileMargin", TileMargin);
-        Shader.SetGlobalMatrix("_MapUvs", MapUvs.worldToLocalMatrix);
-        Shader.SetGlobalColor("_SideColor", BackgroundColor);
-        SkyMat.SetColor("_Tint", BackgroundColor);
+        //Shader.SetGlobalFloat("_TileMargin", TileMargin);
+        //Shader.SetGlobalMatrix("_MapUvs", MapUvs.worldToLocalMatrix);
+        //Shader.SetGlobalColor("_SideColor", BackgroundColor);
+        //SkyMat.SetColor("_Tint", BackgroundColor);
     }
 
-    private OldTileDisplay[] MakeTiles()
+    private TileDisplay[] MakeTiles()
     {
-        OldTileDisplay[] ret = new OldTileDisplay[TilesCount];
+        TileDisplay[] ret = new TileDisplay[TilesCount];
         for (int row = 0; row < Rows; row++)
         {
             for (int ascendingColumn = 0; ascendingColumn < Columns; ascendingColumn++)
@@ -102,8 +63,8 @@ public class Worldmap : MonoBehaviour
         }
         return ret;
     }
-
-    public OldTileDisplay GetTile(int row, int ascendingColumn)
+    
+    public TileDisplay GetTile(int row, int ascendingColumn)
     {
         int modRow = MathMod(row, Rows);
         int modColumn = MathMod(ascendingColumn, Columns);
@@ -120,17 +81,25 @@ public class Worldmap : MonoBehaviour
         return (Math.Abs(value * modolus) + value) % modolus;
     }
 
-    private OldTileDisplay CreateTile(int row, int ascendingColumn)
+    private TileDisplay CreateTile(int row, int ascendingColumn)
     {
         int descendingColumn = row + ascendingColumn;
         string providenceName = string.Format("Providence {0} {1} {2}", row, ascendingColumn, descendingColumn);
-        GameObject obj = Instantiate(TilePrefab);
+        GameObject obj = GameObject.Instantiate(_mainManager.TilePrefab);
         obj.name = providenceName;
-        OldTileDisplay ret = obj.AddComponent<OldTileDisplay>();
-        ret.Map = this;
+
         Tile tile = new Tile(row, ascendingColumn);
-        ret.Tile = tile;
-        obj.transform.position = _tileManager.GetProvincePosition(row, ascendingColumn);
+        TileDisplay ret = new TileDisplay(tile, this, obj); 
+        obj.transform.position = GetProvincePosition(row, ascendingColumn);
         return ret;
+    }
+
+
+    public Vector3 GetProvincePosition(int row, int ascendingColumn)
+    {
+        Vector2 ascendingOffset = AscendingTileOffset * ascendingColumn;
+        Vector2 offset = ascendingOffset + new Vector2(row, 0);
+        offset *= 2;
+        return new Vector3(offset.x, 0, offset.y);
     }
 }
