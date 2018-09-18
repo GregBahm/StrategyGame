@@ -23,9 +23,19 @@ public class GameState
         RallyChangesResolver postRallyChanges = new RallyChangesResolver(postMergers.NewGameState, moves.RallyChanges);
         // TODO: Move units towards rally points and determine if a player has died
         // TODO: Build the GameTurnTransition
+        IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions();
+        GameTurnTransition transition = new GameTurnTransition(this, 
+            postRallyChanges.NewGameState, 
+            postMergers.MergeTable,
+            armyTurnTransitions);
+        return transition;
+    }
+
+    private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions()
+    {
         throw new NotImplementedException();
     }
-    
+
     public ProvinceState GetProvinceState(ProvinceState province)
     {
         return GetProvinceState(province.Identifier);

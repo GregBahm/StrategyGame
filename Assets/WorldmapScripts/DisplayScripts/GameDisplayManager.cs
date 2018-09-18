@@ -65,22 +65,35 @@ public class GameDisplayManager
         }
     }
 
-    private void UpdateArmies(GameTurnTransition transiation, DisplayTimings progression)
+    private void UpdateArmies(GameTurnTransition gameTurnTransition, DisplayTimings progression)
     {
-        Dictionary<Army, ArmyTurnTransition> transitions =
-            transiation.ArmyTransitions.ToDictionary(transition => transition.StartingState.Identifier, transition => transition);
+        Dictionary<Army, ArmyTurnTransition> armyTransitions =
+            gameTurnTransition.ArmyTransitions.ToDictionary(transition => transition.StartingState.Identifier, transition => transition);
 
         foreach (ArmyDisplay displayer in _armies.Values)
         {
-            if(transitions.ContainsKey(displayer.Identifier))
+            if(armyTransitions.ContainsKey(displayer.Identifier))
             {
-                ArmyTurnTransition transition = transitions[displayer.Identifier];
-                displayer.DisplayArmy(transition, progression);
+                ArmyTurnTransition armyTransition = armyTransitions[displayer.Identifier];
+                displayer.DisplayArmy(gameTurnTransition, armyTransition, progression);
             }
             else
             {
                 displayer.SetArmyAsDead();
             }
         }
+    }
+
+    public Vector3 GetAverageTilePosition(IEnumerable<Tile> tiles)
+    {
+        Vector3 ret = Vector3.zero;
+        int count = 0;
+        foreach (Tile tile in tiles)
+        {
+            TileDisplay tileDisplay = GetTile(tile);
+            ret += tileDisplay.GameObject.transform.position;
+            count++;
+        }
+        return ret / count;
     }
 }

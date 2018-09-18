@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class ArmyDisplay
 {
-    public GameDisplayManager Manager { get; }
+    private readonly GameDisplayManager _mothership;
 
     public GameObject ArtContent { get; }
 
     public Army Identifier { get; }
 
-    public ArmyDisplay(GameDisplayManager manager, Army identifier)
+    public ArmyDisplay(GameDisplayManager mothership, Army identifier)
     {
-        Manager = manager;
+        _mothership = mothership;
         Identifier = identifier;
         ArtContent = MakeArtContent();
     }
@@ -27,24 +27,63 @@ public class ArmyDisplay
         ArtContent.SetActive(false);
     }
 
-    internal void DisplayArmy(ArmyTurnTransition transition, DisplayTimings progression)
+    internal void DisplayArmy(GameTurnTransition gameTurnTransition, ArmyTurnTransition transition, DisplayTimings progression)
     {
         ArtContent.SetActive(true);
-        ArtContent.transform.position = GetForcesPosition(transition, progression);
+        ArtContent.transform.position = GetForcesPosition(gameTurnTransition, transition, progression);
         DisplayForces(transition, progression);
     }
 
-    private Vector3 GetForcesPosition(ArmyTurnTransition transition, DisplayTimings progression)
+    private Vector3 GetPostMergeDestinationPos(GameTurnTransition gameTurnTransition, Province originalDestination)
     {
-        Province startingProvince = transition.StartingState.LocationId;
-        Province destinationProvince = transition.ArmyDestination;
-        Vector3 startingPos = GetProvincePosition(startingProvince);
-        Vector3 destinationPos = GetProvincePosition(destinationProvince);
-        Vector3 collisionPos = (startingPos + destinationPos) / 2;
+        Province postMerge = gameTurnTransition.MergeTable.GetPostMerged(originalDestination);
+        ProvinceState postMergeState = gameTurnTransition.FinalState.GetProvinceState(postMerge);
+        return GetProvincePosition(postMergeState);
+    }
+    private Vector3 GetPreMergeDestinationPos(GameTurnTransition gameTurnTransition, Province originalDestination)
+    {
+        ProvinceState preMergeState = gameTurnTransition.InitialState.GetProvinceState(originalDestination);
+        return GetProvincePosition(preMergeState);
+    }
+    private Vector3 GetStartingPos(GameTurnTransition gameTurnTransition, Province start)
+    {
+        ProvinceState startState = gameTurnTransition.InitialState.GetProvinceState(start);
+        return GetProvincePosition(startState);
+    }
 
-        Vector3 finalPos = Vector3.Lerp(startingPos, collisionPos, progression.ArmiesMoveToCollision);
-        finalPos = Vector3.Lerp(finalPos, destinationPos, progression.ArmiesToDestination);
-        return finalPos;
+    private Vector3 GetForcesPosition(GameTurnTransition gameTurnTransition, ArmyTurnTransition transition, DisplayTimings progression)
+    {
+        Province start = transition.StartingState.LocationId;
+        Province originlDestination = transition.ArmyDestination;
+
+        if (progression.ProvinceMergers > 0)
+        {
+            // You will need to know the province where the army ended up
+            // But their destination could have merged away
+            Vector3 postMergePos = GetPostMergeDestinationPos(gameTurnTransition, originlDestination);
+
+            if (progression.ProvinceMergers >= 1)
+            {
+                return postMergePos;
+            }
+            else
+            {
+                // You will need to place it from the unmerged to the merged province
+
+                Vector3 preMergePos = GetPreMergeDestinationPos(gameTurnTransition, originlDestination);
+                return Vector3.Lerp(preMergePos, postMergePos, progression.ProvinceMergers);
+            }
+        }
+        else
+        {
+            Vector3 startingPos = GetStartingPos(gameTurnTransition, start);
+            Vector3 destinationPos = GetPreMergeDestinationPos(gameTurnTransition, originlDestination);
+            Vector3 collisionPos = (startingPos + destinationPos) / 2;
+
+            Vector3 finalPos = Vector3.Lerp(startingPos, collisionPos, progression.ArmiesMoveToCollision);
+            finalPos = Vector3.Lerp(finalPos, destinationPos, progression.ArmiesToDestination);
+            return finalPos;
+        }
     }
 
     private void DisplayForces(ArmyTurnTransition transition, DisplayTimings progression)
@@ -52,8 +91,8 @@ public class ArmyDisplay
         throw new NotImplementedException();
     }
 
-    private Vector2 GetProvincePosition(Province provinceId)
+    private Vector3 GetProvincePosition(ProvinceState provinceState)
     {
-        throw new NotImplementedException();
+        return _mothership.GetAverageTilePosition(provinceState.Tiles);
     }
 }

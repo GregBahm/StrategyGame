@@ -6,6 +6,7 @@ using System.Linq;
 public class MergerMovesResolver
 {
     public GameState NewGameState { get; }
+    public MergeTable MergeTable { get; }
 
     public MergerMovesResolver(GameState postArmyMovesState, List<MergerMove> mergers)
     {
@@ -16,6 +17,23 @@ public class MergerMovesResolver
         IEnumerable<MergerChain> chains = GetMergerChains(validMoves);
         ProvinceMergerTables merger = new ProvinceMergerTables(postArmyMovesState, chains);
         NewGameState = new GameState(merger.NewProvinces, merger.RedirectedArmies);
+        MergeTable = GetMergeTable(postArmyMovesState.Provinces, merger.ChangesTable);
+    }
+
+    private MergeTable GetMergeTable(IEnumerable<ProvinceState> provinces, Dictionary<Province, ProvinceState> changesTable)
+    {
+        Dictionary<Province, Province> ret = new Dictionary<Province, Province>();
+        foreach (ProvinceState province in provinces)
+        {
+            Province key = province.Identifier;
+            Province value = key;
+            if(changesTable.ContainsKey(key))
+            {
+                value = changesTable[value].Identifier;
+            }
+            ret.Add(key, value);
+        }
+        return new MergeTable(ret);
     }
 
     private IEnumerable<MergerChain> GetMergerChains(IEnumerable<MergerMove> validMoves)
@@ -102,14 +120,14 @@ public class MergerMovesResolver
     private class ProvinceMergerTables
     {
         private Dictionary<ProvinceState, ProvinceState> _oldNewDictionary { get; }
-        private Dictionary<Province, ProvinceState> _changesTable { get; }
+        public Dictionary<Province, ProvinceState> ChangesTable { get; }
         public IEnumerable<ProvinceState> NewProvinces { get; }
         public IEnumerable<ArmyState> RedirectedArmies { get; }
 
         public ProvinceMergerTables(GameState state, IEnumerable<MergerChain> chains)
         {
             _oldNewDictionary = state.Provinces.ToDictionary(item => item, item => item);
-            _changesTable = new Dictionary<Province, ProvinceState>();
+            ChangesTable = new Dictionary<Province, ProvinceState>();
 
             foreach (MergerChain chain in chains)
             {
@@ -118,7 +136,7 @@ public class MergerMovesResolver
                 {
                     ProvinceState toDelete = state.GetProvinceState(province);
                     _oldNewDictionary.Remove(toDelete);
-                    _changesTable.Add(toDelete.Identifier, mergeChainProduct);
+                    ChangesTable.Add(toDelete.Identifier, mergeChainProduct);
                 }
                 _oldNewDictionary[chain.SourceProvince] = mergeChainProduct;
             }
@@ -132,9 +150,9 @@ public class MergerMovesResolver
             List<ArmyState> ret = new List<ArmyState>();
             foreach (ArmyState army in oldArmy)
             {
-                if(_changesTable.ContainsKey(army.LocationId))
+                if(ChangesTable.ContainsKey(army.LocationId))
                 {
-                    ProvinceState newLocation = _changesTable[army.LocationId];
+                    ProvinceState newLocation = ChangesTable[army.LocationId];
                     ArmyState redirectedArmy = new ArmyState(army.Identifier, newLocation.Identifier, army.Forces, army.Routed);
                     ret.Add(redirectedArmy);
                 }
@@ -152,9 +170,9 @@ public class MergerMovesResolver
             foreach (ProvinceState province in _oldNewDictionary.Values)
             {
                 Province rallyTarget = province.RallyTarget.TargetProvinceId;
-                if(rallyTarget != null && _changesTable.ContainsKey(rallyTarget))
+                if(rallyTarget != null && ChangesTable.ContainsKey(rallyTarget))
                 {
-                    RallyTarget newTarget = new RallyTarget(_changesTable[rallyTarget]);
+                    RallyTarget newTarget = new RallyTarget(ChangesTable[rallyTarget]);
                     ProvinceState newProvince = new ProvinceState(
                         province.Owner,
                         province.Upgrades,
