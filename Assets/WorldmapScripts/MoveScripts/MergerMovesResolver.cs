@@ -58,7 +58,7 @@ public class MergerMovesResolver
 
     private bool ValidateProvinceOwner(ProvinceState provinceFromMove, GameState state)
     {
-        ProvinceState grower = state.TryGetEquivalentProvince(provinceFromMove);
+        ProvinceState grower = state.GetProvinceState(provinceFromMove);
         return grower.Owner == provinceFromMove.Owner;
     }
 
@@ -75,10 +75,10 @@ public class MergerMovesResolver
 
         public ProvinceState GetCompletedMerger(GameState state)
         {
-            ProvinceState ret = state.TryGetEquivalentProvince(SourceProvince);
+            ProvinceState ret = state.GetProvinceState(SourceProvince);
             foreach (ProvinceState absorbedProvince in EliminatedProvinces)
             {
-                ProvinceState trueAbsorbee = state.TryGetEquivalentProvince(absorbedProvince);
+                ProvinceState trueAbsorbee = state.GetProvinceState(absorbedProvince);
                 ret = GetMerged(ret, trueAbsorbee);
             }
             return ret;
@@ -116,7 +116,7 @@ public class MergerMovesResolver
                 ProvinceState mergeChainProduct = chain.GetCompletedMerger(state);
                 foreach (ProvinceState province in chain.EliminatedProvinces)
                 {
-                    ProvinceState toDelete = state.TryGetEquivalentProvince(province);
+                    ProvinceState toDelete = state.GetProvinceState(province);
                     _oldNewDictionary.Remove(toDelete);
                     _changesTable.Add(toDelete.Identifier, mergeChainProduct);
                 }

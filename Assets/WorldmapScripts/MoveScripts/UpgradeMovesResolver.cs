@@ -18,7 +18,7 @@ public class UpgradeMovesResolver
         Dictionary<ProvinceState, ProvinceState> oldNewDictionary = oldState.Provinces.ToDictionary(item => item, item => item);
         foreach (UpgradeMove upgrade in validUpgrades)
         {
-            ProvinceState equivalent = oldState.TryGetEquivalentProvince(upgrade.AlteredProvince);
+            ProvinceState equivalent = oldState.GetProvinceState(upgrade.AlteredProvince);
             ProvinceState upgraded = GetUpgradedProvince(upgrade, equivalent);
             oldNewDictionary[equivalent] = upgraded;
         }
@@ -28,7 +28,7 @@ public class UpgradeMovesResolver
     private bool ValidateUpgrade(UpgradeMove item, GameState oldState)
     {
         // Need to make sure the province exists and they're not upgrading a province they no longer own
-        ProvinceState equivalentProvince = oldState.TryGetEquivalentProvince(item.AlteredProvince);
+        ProvinceState equivalentProvince = oldState.GetProvinceState(item.AlteredProvince);
         return equivalentProvince != null && equivalentProvince.Owner == item.Faction;
     }
 

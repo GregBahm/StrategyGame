@@ -26,20 +26,20 @@ public class GameState
         throw new NotImplementedException();
     }
     
-    public ProvinceState TryGetEquivalentProvince(ProvinceState province)
+    public ProvinceState GetProvinceState(ProvinceState province)
     {
-        return TryGetEquivalentProvince(province.Identifier);
+        return GetProvinceState(province.Identifier);
     }
-    public ProvinceState TryGetEquivalentProvince(Province provinceId)
+    public ProvinceState GetProvinceState(Province provinceId)
     {
         return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
     }
 
-    public ArmyState TryGetEquivalentArmy(ArmyState army)
+    public ArmyState GetArmyState(ArmyState army)
     {
-        return TryGetEquivalentArmy(army.Identifier);
+        return GetArmyState(army.Identifier);
     }
-    public ArmyState TryGetEquivalentArmy(Army armyId)
+    public ArmyState GetArmyState(Army armyId)
     {
         return Armies.FirstOrDefault(item => item.Identifier == armyId);
     }

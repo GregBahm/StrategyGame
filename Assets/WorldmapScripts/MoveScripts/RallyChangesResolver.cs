@@ -18,7 +18,7 @@ public class RallyChangesResolver
         Dictionary<ProvinceState, ProvinceState> oldNewDictionary = state.Provinces.ToDictionary(item => item, item => item);
         foreach (RallyPointChange change in validChanges)
         {
-            ProvinceState equivalent = state.TryGetEquivalentProvince(change.AlteredProvince);
+            ProvinceState equivalent = state.GetProvinceState(change.AlteredProvince);
             ProvinceState changedProvince = GetChangedProvince(state, equivalent, change);
             oldNewDictionary[equivalent] = changedProvince;
         }
@@ -41,17 +41,17 @@ public class RallyChangesResolver
     {
         if(change.NewRallyTarget.TargetArmyId != null)
         {
-            ArmyState equivalentArmy = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId);
+            ArmyState equivalentArmy = state.GetArmyState(change.NewRallyTarget.TargetArmyId);
             return new RallyTarget(equivalentArmy);
         }
-        ProvinceState equivalentProvince = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId);
+        ProvinceState equivalentProvince = state.GetProvinceState(change.NewRallyTarget.TargetProvinceId);
         return new RallyTarget(equivalentProvince);
     }
 
     private bool IsValid(RallyPointChange change, GameState state)
     {
         // Need to make sure they still control the altered province
-        ProvinceState sourceEquivalent = state.TryGetEquivalentProvince(change.AlteredProvince);
+        ProvinceState sourceEquivalent = state.GetProvinceState(change.AlteredProvince);
         if(sourceEquivalent == null || sourceEquivalent.Owner != change.AlteredProvince.Owner)
         {
             return false;
@@ -60,13 +60,13 @@ public class RallyChangesResolver
         if (change.NewRallyTarget.TargetProvinceId != null)
         {
             // Need to make sure they still control the target if the target is a province
-            ProvinceState targetEquivalent = state.TryGetEquivalentProvince(change.NewRallyTarget.TargetProvinceId);
+            ProvinceState targetEquivalent = state.GetProvinceState(change.NewRallyTarget.TargetProvinceId);
             return targetEquivalent.Owner == change.Faction;
         }
         else
         {
             // Need to make sure the rally target is still alive if its an army
-            ArmyState army = state.TryGetEquivalentArmy(change.NewRallyTarget.TargetArmyId);
+            ArmyState army = state.GetArmyState(change.NewRallyTarget.TargetArmyId);
             return army != null;
         }
     }
