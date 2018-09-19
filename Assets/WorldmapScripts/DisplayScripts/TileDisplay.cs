@@ -27,7 +27,7 @@ public class TileDisplay
         _map = map;
         GameObject = gameObject;
         Collider = gameObject.GetComponent<MeshCollider>();
-        _tileMat = gameObject.GetComponent<MeshRenderer>().sharedMaterial;
+        _tileMat = gameObject.GetComponent<MeshRenderer>().material;
     }
 
     public TileDisplay GetOffset(int rowOffset, int ascendingColumnOffset)
@@ -63,8 +63,8 @@ public class TileDisplay
 
     private void DisplayProvinceMergers(GameState preMergeGame, GameState postMergeGame, float mergerProgress)
     {
-        Faction preMergeOwner = preMergeGame.GetTilesProvince(Tile).Owner;
-        Faction postMergeOwner = postMergeGame.GetTilesProvince(Tile).Owner;
+        Province preMergeOwner = preMergeGame.GetTilesProvince(Tile).Identifier;
+        Province postMergeOwner = postMergeGame.GetTilesProvince(Tile).Identifier;
         foreach (MaterialConnection connection in Neighbors.MaterialConnections)
         {
             float preMergeVal = GetConnectionVal(preMergeOwner, connection.Tile, preMergeGame);
@@ -74,16 +74,16 @@ public class TileDisplay
         }
     }
 
-    private float GetConnectionVal(Faction tileOwner, Tile neighborTile, GameState state)
+    private float GetConnectionVal(Province tileOwner, Tile neighborTile, GameState state)
     {
-        Faction neighborFaction = state.GetTilesProvince(neighborTile).Owner;
+        Province neighborFaction = state.GetTilesProvince(neighborTile).Identifier;
         bool connected = tileOwner == neighborFaction;
         return connected ? 1 : 0;
     }
 
     public void UpdateHighlighting(bool isHighlit, float highlightDecaySpeed)
     {
-        _highlighting = Mathf.Lerp(_highlighting, isHighlit ? 0 : 1, highlightDecaySpeed);
+        _highlighting = Mathf.Lerp(_highlighting, isHighlit ? 1 : 0, highlightDecaySpeed);
         _tileMat.SetFloat("_HighlightPower", _highlighting);
     }
 

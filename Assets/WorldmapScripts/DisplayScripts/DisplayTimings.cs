@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UnityEngine;
 
 public class DisplayTimings
 {
@@ -35,7 +36,6 @@ public class DisplayTimings
         public Phase RoutingArmyRecovery { get; }
         public Phase ArmiesMoveToCollision { get; }
         public Phase ArmiesDieFromCollisionBattles { get; }
-        public Phase ArmiesMoveAfterCollision { get; }
         public Phase ArmiesToDestination { get; }
         public Phase ArmiesDieFromNonCollisionBattles { get; }
 
@@ -54,7 +54,6 @@ public class DisplayTimings
             RoutingArmyRecovery = new Phase(1);
             ArmiesMoveToCollision = new Phase(1);
             ArmiesDieFromCollisionBattles = new Phase(1);
-            ArmiesMoveAfterCollision = new Phase(1);
             ArmiesToDestination = new Phase(1);
             ArmiesDieFromNonCollisionBattles = new Phase(1);
             ProvinceOwnershipChanges = new Phase(1);
@@ -71,7 +70,6 @@ public class DisplayTimings
                 RoutingArmyRecovery,
                 ArmiesMoveToCollision,
                 ArmiesDieFromCollisionBattles,
-                ArmiesMoveAfterCollision,
                 ArmiesToDestination,
                 ArmiesDieFromNonCollisionBattles,
                 ProvinceOwnershipChanges,
@@ -86,12 +84,12 @@ public class DisplayTimings
 
         private void SetPhaseTimings(Phase[] phaseOrder)
         {
-            float totalTime = phaseOrder.Sum(item => item.Length);
+            float totalTime = phaseOrder.Sum(item => item.RelativeLength);
             float accumulatedTime = 0;
             foreach (Phase phase in phaseOrder)
             {
                 phase.Start = accumulatedTime / totalTime;
-                accumulatedTime += phase.Length;
+                accumulatedTime += phase.RelativeLength;
                 phase.End = accumulatedTime / totalTime; 
             }
         }
@@ -101,15 +99,17 @@ public class DisplayTimings
     {
         public float Start { get; set; }
         public float End { get; set; }
-        public float Length { get; }
+        public float RelativeLength { get; }
 
-        public Phase(float length)
+        public Phase(float relativeLength)
         {
-            Length = length;
+            RelativeLength = relativeLength;
         }
         public float GetSubprogress(float masterProgress)
         {
-            return (masterProgress - Start) / Length;
+            float ret = (masterProgress - Start) / (End - Start);
+            ret = Mathf.Clamp01(ret);
+            return ret;
         }
     }
 }
