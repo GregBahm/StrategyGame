@@ -6,27 +6,19 @@ using UnityEngine;
 
 public class Worldmap
 {
-    public TileDisplay HighlitTile { get; private set; }
-
     public TileDisplay[] Tiles { get; }
-    //public Color BackgroundColor;
-    //public Material SkyMat;
-    public int Rows { get; } = 20;
-    public int Columns { get; } = 20;
+    public int Rows { get; }
+    public int Columns { get; }
     public int TilesCount { get { return Rows * Columns; } }
-    //public float HighlightDecaySpeed;
 
     public readonly Vector2 AscendingTileOffset = new Vector2(1, -1.73f).normalized;
-
-    private readonly MainGameManager _mainManager;
-    private readonly TileMouseInteraction _tileManager;
-
-    public Worldmap(MainGameManager mainManager)
+    
+    public Worldmap(GameObject tilePrefab, int rows, int columns)
     {
-        _mainManager = mainManager;
-        Tiles = MakeTiles();
+        Rows = rows;
+        Columns = columns;
+        Tiles = MakeTiles(tilePrefab);
         InitializeTiles();
-        _tileManager = new TileMouseInteraction(this);
     }
 
     private void InitializeTiles()
@@ -41,16 +33,7 @@ public class Worldmap
         }
     }
 
-    private void Update()
-    {
-        HighlitTile = _tileManager.GetTileUnderMouse();
-        //Shader.SetGlobalFloat("_TileMargin", TileMargin);
-        //Shader.SetGlobalMatrix("_MapUvs", MapUvs.worldToLocalMatrix);
-        //Shader.SetGlobalColor("_SideColor", BackgroundColor);
-        //SkyMat.SetColor("_Tint", BackgroundColor);
-    }
-
-    private TileDisplay[] MakeTiles()
+    private TileDisplay[] MakeTiles(GameObject tilePrefab)
     {
         TileDisplay[] ret = new TileDisplay[TilesCount];
         for (int row = 0; row < Rows; row++)
@@ -58,7 +41,7 @@ public class Worldmap
             for (int ascendingColumn = 0; ascendingColumn < Columns; ascendingColumn++)
             {
                 int index = (row * Columns) + ascendingColumn;
-                ret[index] = CreateTile(row, ascendingColumn);
+                ret[index] = CreateTile(row, ascendingColumn, tilePrefab);
             }
         }
         return ret;
@@ -81,11 +64,11 @@ public class Worldmap
         return (Math.Abs(value * modolus) + value) % modolus;
     }
 
-    private TileDisplay CreateTile(int row, int ascendingColumn)
+    private TileDisplay CreateTile(int row, int ascendingColumn, GameObject tilePrefab)
     {
         int descendingColumn = row + ascendingColumn;
         string providenceName = string.Format("Providence {0} {1} {2}", row, ascendingColumn, descendingColumn);
-        GameObject obj = GameObject.Instantiate(_mainManager.TilePrefab);
+        GameObject obj = GameObject.Instantiate(tilePrefab);
         obj.name = providenceName;
 
         Tile tile = new Tile(row, ascendingColumn);

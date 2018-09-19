@@ -61,18 +61,9 @@ public class ArmyDisplay
             // You will need to know the province where the army ended up
             // But their destination could have merged away
             Vector3 postMergePos = GetPostMergeDestinationPos(gameTurnTransition, originlDestination);
-
-            if (progression.ProvinceMergers >= 1)
-            {
-                return postMergePos;
-            }
-            else
-            {
-                // You will need to place it from the unmerged to the merged province
-
-                Vector3 preMergePos = GetPreMergeDestinationPos(gameTurnTransition, originlDestination);
-                return Vector3.Lerp(preMergePos, postMergePos, progression.ProvinceMergers);
-            }
+            Vector3 preMergePos = GetPreMergeDestinationPos(gameTurnTransition, originlDestination);
+            return Vector3.Lerp(preMergePos, postMergePos, progression.ProvinceMergers);
+            
         }
         else
         {

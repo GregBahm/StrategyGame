@@ -39,17 +39,21 @@ public class GameDisplayManager
     public void DisplayTurn(GameTurnTransition turn, float progression)
     {
         DisplayTimings timings = new DisplayTimings(progression);
-        // First new units are generated
 
-        // Then armies move
+        UpdateTiles(turn, timings);
         UpdateArmies(turn, timings);
-
-        // Then display upgrades
-        // Then display mergers
         UpdateProvinces(turn, timings);
 
         // Then display rally state changes
         // Then move units towards rally points
+    }
+
+    private void UpdateTiles(GameTurnTransition turn, DisplayTimings timings)
+    {
+        foreach (TileDisplay tileDisplay in _worldMap.Tiles)
+        {
+            tileDisplay.DisplayTile(turn, timings);
+        }
     }
 
     internal TileDisplay GetTile(Tile tile)

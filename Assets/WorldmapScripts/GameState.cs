@@ -5,6 +5,8 @@ using System.Linq;
 
 public class GameState
 {
+    private ReadOnlyDictionary<Tile, ProvinceState> _tileOwners;
+
     public ReadOnlyCollection<ProvinceState> Provinces { get; }
     public ReadOnlyCollection<ArmyState> Armies { get; }
 
@@ -12,6 +14,7 @@ public class GameState
     {
         Provinces = provinces.ToList().AsReadOnly();
         Armies = armies.ToList().AsReadOnly();
+        _tileOwners = GetTileOwnerDictionary();
     }
 
     public GameTurnTransition GetNextState(GameTurnMoves moves)
@@ -22,13 +25,31 @@ public class GameState
         MergerMovesResolver postMergers = new MergerMovesResolver(postUpgrades.NewGameState, moves.Mergers);
         RallyChangesResolver postRallyChanges = new RallyChangesResolver(postMergers.NewGameState, moves.RallyChanges);
         // TODO: Move units towards rally points and determine if a player has died
-        // TODO: Build the GameTurnTransition
         IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions();
-        GameTurnTransition transition = new GameTurnTransition(this, 
-            postRallyChanges.NewGameState, 
+
+        GameState initialState = this;
+        GameState postProvinceEffectsState = this; // TODO: Update when you add province effects
+        GameState postUpgradesState = postUpgrades.NewGameState;
+        GameState postOwnershipChangesState = postArmyMoves.NewGameState;
+        GameState postMergersState = postMergers.NewGameState;
+        GameState finalState = postRallyChanges.NewGameState;
+
+        GameTurnTransition transition = new GameTurnTransition(
+            initialState,
+            postProvinceEffectsState,
+            postUpgradesState,
+            postOwnershipChangesState,
+            postMergersState,
+            finalState,
             postMergers.MergeTable,
             armyTurnTransitions);
+
         return transition;
+    }
+
+    public ProvinceState GetTilesProvince(Tile tile)
+    {
+        return _tileOwners[tile];
     }
 
     private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions()
@@ -44,13 +65,22 @@ public class GameState
     {
         return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
     }
-
-    public ArmyState GetArmyState(ArmyState army)
-    {
-        return GetArmyState(army.Identifier);
-    }
+    
     public ArmyState GetArmyState(Army armyId)
     {
         return Armies.FirstOrDefault(item => item.Identifier == armyId);
+    }
+    
+    private ReadOnlyDictionary<Tile, ProvinceState> GetTileOwnerDictionary()
+    {
+        Dictionary<Tile, ProvinceState> ret = new Dictionary<Tile, ProvinceState>();
+        foreach (ProvinceState provinceState in Provinces)
+        {
+            foreach (Tile tile in provinceState.Tiles)
+            {
+                ret.Add(tile, provinceState);
+            }
+        }
+        return new ReadOnlyDictionary<Tile, ProvinceState>(ret);
     }
 }
