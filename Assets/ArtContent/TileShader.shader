@@ -1,4 +1,4 @@
-﻿Shader "Unlit/HexShader"
+﻿Shader "Unlit/TileShader"
 {
 	Properties
 	{
@@ -46,6 +46,7 @@
 			float3 _SideColor;
 			float3 _FactionColor;
 			float _HighlightPower;
+			float _Selected;
 
 			bool _PositiveRowConnected;
 			bool _NegativeRowConnected;

@@ -5,12 +5,12 @@ public class RallyTarget
     public Army TargetArmyId { get; }
     public Province TargetProvinceId { get; }
 
-    public RallyTarget(ArmyState targetArmy)
+    public RallyTarget(Army targetArmy)
     {
-        TargetArmyId = targetArmy.Identifier;
+        TargetArmyId = targetArmy;
     }
-    public RallyTarget(ProvinceState targetProvince)
+    public RallyTarget(Province targetProvince)
     {
-        TargetProvinceId = targetProvince.Identifier;
+        TargetProvinceId = targetProvince;
     }
 }

@@ -8,12 +8,14 @@ public class GameDisplayManager
     private readonly Dictionary<Army, ArmyDisplay> _armies;
     private readonly Dictionary<Province, ProvinceDisplay> _provinces;
     private readonly Worldmap _worldMap;
+    private readonly GameBindings _bindings;
 
-    public GameDisplayManager(Worldmap worldmap)
+    public GameDisplayManager(Worldmap worldmap, GameBindings bindings)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _worldMap = worldmap;
+        _bindings = bindings;
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -22,7 +24,7 @@ public class GameDisplayManager
         {
             if(!_armies.ContainsKey(army.Identifier))
             {
-                ArmyDisplay displayer = new ArmyDisplay(this, army.Identifier);
+                ArmyDisplay displayer = CreateNewArmy(army);
                 _armies.Add(army.Identifier, displayer);
             }
         }
@@ -34,6 +36,12 @@ public class GameDisplayManager
                 _provinces.Add(province.Identifier, displayer);
             }
         }
+    }
+
+    private ArmyDisplay CreateNewArmy(ArmyState army)
+    {
+        GameObject armyArt = GameObject.Instantiate(_bindings.ArmyPrefab);
+        return new ArmyDisplay(this, army.Identifier, armyArt);
     }
 
     public void DisplayTurn(GameTurnTransition turn, float progression)

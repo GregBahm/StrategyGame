@@ -16,20 +16,20 @@ public class MainGameManager
     public MainGameManager(GameBindings bindings, Worldmap worldMap)
     {
         WorldMap = worldMap;
-        _displayManager = new GameDisplayManager(worldMap);
+        _displayManager = new GameDisplayManager(worldMap, bindings);
         GameTurnTransition initialState = GetInitialState();
         _turns.Add(initialState);
-        _displayManager.UpdateDisplayWrappers(initialState.FinalState);
+        _displayManager.UpdateDisplayWrappers(initialState.PostMergersState);
     }
 
     private GameTurnTransition GetInitialState()
     {
-        IEnumerable<ProvinceState> provinces = GetInitialProvinces();
-        IEnumerable<ArmyState> armies = new ArmyState[0];
+        IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
+        IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups);
+        IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
         GameState initialState = new GameState(provinces, armies);
         MergeTable mergeTable = new MergeTable(new Dictionary<Province, Province>());
         return new GameTurnTransition(
-            initialState,
             initialState,
             initialState,
             initialState,
@@ -39,10 +39,32 @@ public class MainGameManager
             new ArmyTurnTransition[0]);
     }
 
-    private IEnumerable<ProvinceState> GetInitialProvinces()
+    private IEnumerable<ArmyState> GetInitialArmies(IEnumerable<PlayerSetup> playerSetups, IEnumerable<ProvinceState> provinces)
     {
-        Faction unownedFaction = new Faction(Color.gray);
-        Dictionary<Tile, Faction> startingLocations = GetStartingLocations();
+        List<ArmyState> ret = new List<ArmyState>();
+        foreach (PlayerSetup setup in playerSetups)
+        {
+            Army army = new Army(setup.Faction);
+            Province province = provinces.First(item => item.Owner == setup.Faction).Identifier;
+            ArmyState armyState = new ArmyState(army, province, new ArmyForces(), false);
+            ret.Add(armyState);
+        }
+        return ret;
+    }
+
+    private IEnumerable<PlayerSetup> GetPlayerSetups()
+    {
+        return new[]
+        {
+            new PlayerSetup("Player A", Color.cyan, 0, 0),
+            new PlayerSetup("Player B", Color.red, 10, 10)
+        };
+    }
+
+    private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups)
+    {
+        Faction unownedFaction = new Faction("Independent", Color.white);
+        Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups);
 
         List<ProvinceState> ret = new List<ProvinceState>();
         foreach (Tile tile in WorldMap.Tiles.Select(item => item.Tile))
@@ -65,27 +87,25 @@ public class MainGameManager
         return new ProvinceState(faction, upgrades, new Province(), tileSet);
     }
 
-    private Dictionary<Tile, Faction> GetStartingLocations()
+    private Dictionary<Tile, Faction> GetStartingLocations(IEnumerable<PlayerSetup> playerSetups)
     {
         Dictionary<Tile, Faction> ret = new Dictionary<Tile, Faction>();
 
-        Tile tileA = WorldMap.GetTile(0, 0).Tile;
-        Faction factionA = new Faction(Color.red);
-        ret.Add(tileA, factionA);
-
-        Tile tileB = WorldMap.GetTile(10, 10).Tile;
-        Faction factionB = new Faction(Color.blue);
-        ret.Add(tileB, factionB);
-
+        foreach (PlayerSetup player in playerSetups)
+        {
+            Tile tile = WorldMap.GetTile(player.StartRow, player.StartColumn).Tile;
+            ret.Add(tile, player.Faction);
+        }
+        
         return ret;
     }
 
     public void AdvanceGame(GameTurnMoves moves)
     {
-        GameTurnTransition newState = CurrentState.FinalState.GetNextState(moves);
+        GameTurnTransition newState = CurrentState.PostMergersState.GetNextState(moves);
         _turns.Add(newState);
         // TODO: Determine if a player is dead
-        _displayManager.UpdateDisplayWrappers(newState.FinalState);
+        _displayManager.UpdateDisplayWrappers(newState.PostMergersState);
     }
     
     public void DisplayGamestate(float gameTime)
@@ -93,5 +113,19 @@ public class MainGameManager
         GameTurnTransition turn = _turns[Mathf.FloorToInt(gameTime)];
         float progression = gameTime % 1;
         _displayManager.DisplayTurn(turn, progression);
+    }
+}
+
+public class PlayerSetup
+{
+    public Faction Faction { get; }
+    public int StartRow { get; }
+    public int StartColumn { get; }
+
+    public PlayerSetup(string name, Color color, int startRow, int startColumn)
+    {
+        Faction = new Faction(name, color);
+        StartRow = startRow;
+        StartColumn = startColumn;
     }
 }

@@ -256,12 +256,13 @@ MonoBehaviour:
   Rows: 20
   Columns: 20
   TilePrefab: {fileID: 1178486124817436, guid: 58720ad2c191c924a90c171846e43b03, type: 2}
+  ArmyPrefab: {fileID: 1120998763583048, guid: 72cfca8aea2958049bae80556c2f38fd, type: 2}
   TileMargin: 0.86
   MapUvs: {fileID: 898966889}
   SkyMat: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
   BackgroundColor: {r: 1, g: 1, b: 1, a: 0}
   HighlightDecaySpeed: 0.1
-  GameTime: 0
+  GameTime: -1.66
 --- !u!4 &2082271841
 Transform:
   m_ObjectHideFlags: 0

@@ -9,17 +9,11 @@ public class ArmyDisplay
 
     public Army Identifier { get; }
 
-    public ArmyDisplay(GameDisplayManager mothership, Army identifier)
+    public ArmyDisplay(GameDisplayManager mothership, Army identifier, GameObject artContent)
     {
         _mothership = mothership;
         Identifier = identifier;
-        ArtContent = MakeArtContent();
-    }
-
-    private GameObject MakeArtContent()
-    {
-        // TODO: Figure out how you're making art content
-        throw new NotImplementedException();
+        ArtContent = artContent;
     }
 
     internal void SetArmyAsDead()

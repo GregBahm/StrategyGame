@@ -6,7 +6,9 @@ public class DisplayTimings
     private static TimingsMaster _timingsMaster = new TimingsMaster();
     private readonly float _turnProgression;
 
+    public float RallyChangesAndNewArmies { get { return _timingsMaster.RallyChangesAndNewArmies.GetSubprogress(_turnProgression); } }
     public float NewUnits { get { return _timingsMaster.NewUnits.GetSubprogress(_turnProgression); } }
+    public float UnitsMove { get { return _timingsMaster.UnitsMove.GetSubprogress(_turnProgression); } }
     public float ProvinceEffects { get { return _timingsMaster.ProvinceEffects.GetSubprogress(_turnProgression); } }
     public float RoutingArmyRecovery { get { return _timingsMaster.RoutingArmyRecovery.GetSubprogress(_turnProgression); } }
 
@@ -19,8 +21,6 @@ public class DisplayTimings
     public float ProvinceMergers { get { return _timingsMaster.ProvinceMergers.GetSubprogress(_turnProgression); } }
     public float ProvinceUpgrades { get { return _timingsMaster.ProvinceUpgrades.GetSubprogress(_turnProgression); } }
 
-    public float RallyChangesAndNewArmies { get { return _timingsMaster.RallyChangesAndNewArmies.GetSubprogress(_turnProgression); } }
-    public float UnitsMove { get { return _timingsMaster.UnitsMove.GetSubprogress(_turnProgression); } }
     public float PlayersDead { get { return _timingsMaster.PlayersDead.GetSubprogress(_turnProgression); } }
 
     public DisplayTimings(float turnProgression)
@@ -65,7 +65,9 @@ public class DisplayTimings
 
             Phase[] phaseOrder = new Phase[]
             {
+                RallyChangesAndNewArmies,
                 NewUnits,
+                UnitsMove,
                 ProvinceEffects,
                 RoutingArmyRecovery,
                 ArmiesMoveToCollision,
@@ -75,8 +77,6 @@ public class DisplayTimings
                 ProvinceOwnershipChanges,
                 ProvinceMergers,
                 ProvinceUpgrades,
-                RallyChangesAndNewArmies,
-                UnitsMove,
                 PlayersDead
             };
             SetPhaseTimings(phaseOrder);

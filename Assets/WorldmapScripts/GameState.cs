@@ -19,32 +19,35 @@ public class GameState
 
     public GameTurnTransition GetNextState(GameTurnMoves moves)
     {
-        // TODO: Generate new units, apply province effects, and do routing army recovery
-        ArmyMovesResolver postArmyMoves = new ArmyMovesResolver(this, moves.ArmyMoves);
+        RallyChangesResolver postRallyChanges = new RallyChangesResolver(this, moves.RallyChanges);
+        ArmyMovesResolver postArmyMoves = new ArmyMovesResolver(postRallyChanges.NewGameState, moves.ArmyMoves);
         UpgradeMovesResolver postUpgrades = new UpgradeMovesResolver(postArmyMoves.NewGameState, moves.Upgrades);
         MergerMovesResolver postMergers = new MergerMovesResolver(postUpgrades.NewGameState, moves.Mergers);
-        RallyChangesResolver postRallyChanges = new RallyChangesResolver(postMergers.NewGameState, moves.RallyChanges);
-        // TODO: Move units towards rally points and determine if a player has died
-        IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions();
-
+        // TODO: determine if a player has died
+        
         GameState initialState = this;
         GameState postProvinceEffectsState = this; // TODO: Update when you add province effects
         GameState postUpgradesState = postUpgrades.NewGameState;
         GameState postOwnershipChangesState = postArmyMoves.NewGameState;
         GameState postMergersState = postMergers.NewGameState;
-        GameState finalState = postRallyChanges.NewGameState;
 
+        IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions(initialState, postArmyMoves);
+        
         GameTurnTransition transition = new GameTurnTransition(
             initialState,
             postProvinceEffectsState,
             postUpgradesState,
             postOwnershipChangesState,
             postMergersState,
-            finalState,
             postMergers.MergeTable,
             armyTurnTransitions);
 
         return transition;
+    }
+
+    private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions(GameState initialState, ArmyMovesResolver postArmyMoves)
+    {
+        throw new NotImplementedException();
     }
 
     public ProvinceState GetTilesProvince(Tile tile)
@@ -52,9 +55,44 @@ public class GameState
         return _tileOwners[tile];
     }
 
-    private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions()
+    private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions(RallyChangesResolver rallyChanges, ArmyMovesResolver movesResolver)
     {
-        throw new NotImplementedException();
+        Dictionary<Army, ArmyState> postRallyTable = rallyChanges.NewGameState.Armies.ToDictionary(item => item.Identifier, item => item);
+        List<ArmyTurnTransition> ret = new List<ArmyTurnTransition>();
+        foreach (ArmyState armyState in Armies)
+        {
+            ArmyState postRally = postRallyTable[armyState.Identifier];
+            Province armyDestination;
+            ArmyState afterCollisionFight;
+            ArmyState afterNonCollisionFight;
+            bool foughtInCollision;
+            bool foughtInNonCollision;
+            ArmyTurnTransition newTrans = new ArmyTurnTransition(
+                armyState,
+                postRally,
+                armyDestination,
+                afterCollisionFight,
+                afterNonCollisionFight,
+                false,
+                foughtInCollision,
+                foughtInNonCollision);
+
+        }
+        foreach (ArmyState armyState in rallyChanges.AddedArmies)
+        {
+            bool wasInvaded;
+            ArmyState postFight;
+            ArmyTurnTransition newTrans = new ArmyTurnTransition(
+                armyState,
+                armyState,
+                armyState.LocationId,
+                armyState,
+                postFight,
+                true,
+                false,
+                wasInvaded);
+        }
+        return ret;
     }
 
     public ProvinceState GetProvinceState(ProvinceState province)

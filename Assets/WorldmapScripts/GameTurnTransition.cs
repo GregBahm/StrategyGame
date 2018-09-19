@@ -7,7 +7,6 @@ public class GameTurnTransition
     public GameState PostOwnershipChangesState { get; }
     public GameState PostUpgradesState { get; }
     public GameState PostMergersState { get; }
-    public GameState FinalState { get; }
     public MergeTable MergeTable { get; }
     public IEnumerable<ArmyTurnTransition> ArmyTransitions { get; }
 
@@ -16,7 +15,6 @@ public class GameTurnTransition
         GameState postUpgradesState,
         GameState postOwnershipChangesState,
         GameState postMergersState,
-        GameState finalState,
         MergeTable mergeTable,
         IEnumerable<ArmyTurnTransition> armyTransitions)
     {
@@ -25,7 +23,6 @@ public class GameTurnTransition
         PostUpgradesState = postUpgradesState;
         PostOwnershipChangesState = postOwnershipChangesState;
         PostMergersState = postMergersState;
-        FinalState = finalState;
         MergeTable = mergeTable;
         ArmyTransitions = armyTransitions;
     }
