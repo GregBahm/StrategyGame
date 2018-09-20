@@ -18,4 +18,9 @@ public class MergeTable
     {
         return _dictionary[province];
     }
+
+    public bool WasChanged(Province province)
+    {
+        return _dictionary[province] != province;
+    }
 }

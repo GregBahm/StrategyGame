@@ -23,14 +23,14 @@ public class ProvinceDisplay
     private void DisplayProvinceUpgrades(GameTurnTransition transition, float provinceUpgrades)
     {
         ProvinceState initialProvince = transition.InitialState.GetProvinceState(Identifier);
-        ProvinceState finalProvince = transition.FinalState.GetProvinceState(Identifier);
+        ProvinceState finalProvince = transition.PostUpgradesState.GetProvinceState(Identifier);
 
     }
 
     private void DisplayProvinceEffects(GameTurnTransition transition, float provinceEffects)
     {
         ProvinceState initialProvince = transition.InitialState.GetProvinceState(Identifier);
-        ProvinceState finalProvince = transition.FinalState.GetProvinceState(Identifier);
+        ProvinceState finalProvince = transition.PostProvinceEffectsState.GetProvinceState(Identifier);
 
     }
 }

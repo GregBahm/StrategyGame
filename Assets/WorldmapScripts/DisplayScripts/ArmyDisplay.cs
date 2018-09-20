@@ -31,7 +31,7 @@ public class ArmyDisplay
     private Vector3 GetPostMergeDestinationPos(GameTurnTransition gameTurnTransition, Province originalDestination)
     {
         Province postMerge = gameTurnTransition.MergeTable.GetPostMerged(originalDestination);
-        ProvinceState postMergeState = gameTurnTransition.FinalState.GetProvinceState(postMerge);
+        ProvinceState postMergeState = gameTurnTransition.PostMergersState.GetProvinceState(postMerge);
         return GetProvincePosition(postMergeState);
     }
     private Vector3 GetPreMergeDestinationPos(GameTurnTransition gameTurnTransition, Province originalDestination)

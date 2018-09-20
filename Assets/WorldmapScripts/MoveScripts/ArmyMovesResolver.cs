@@ -4,30 +4,65 @@ using System.Linq;
 
 public class ArmyMovesResolver
 {
+    private readonly Dictionary<Army, Province> _destinationsDictionary;
+    private readonly Dictionary<Army, ArmyStateHistory> _armyHistory;
     public GameState NewGameState { get; }
 
-    public ArmyMovesResolver(GameState oldState, IEnumerable<ArmyMove> armyMoves)
+    public ArmyMovesResolver(GameState state, IEnumerable<ArmyMove> armyMoves)
     {
+        _destinationsDictionary = GetDestinationsDictionary(state, armyMoves);
         // First, find any situations where two armies try to move into each others provinces.
-        CollisionsSorter collisionsSorter = new CollisionsSorter(armyMoves);
+        CollisionsSorter collisionsSorter = new CollisionsSorter(armyMoves, state);
 
-        CollisionApplier collisionApplier = new CollisionApplier(oldState, collisionsSorter);
+        CollisionApplier collisionApplier = new CollisionApplier(state, collisionsSorter);
 
         // Resolve those first and get the new game state where only one army is attacking. 
         FinalCombatSetup finalFights = new FinalCombatSetup(collisionApplier);
 
         // Then resolve the remaining fights and moves
-        GameState postPeacefulMoves = GetPostPeacefulMoves(oldState, finalFights.PeacefulTransitions);
+        GameState postPeacefulMoves = GetPostPeacefulMoves(state, finalFights.PeacefulTransitions);
         NewGameState = GetPostFinalFights(postPeacefulMoves, finalFights.FinalFights);
+        _armyHistory = GetArmyHistory();
     }
 
+    private Dictionary<Army, ArmyStateHistory> GetArmyHistory(GameState startingState)
+    {
+        Dictionary<Army, ArmyStateHistory> ret = new Dictionary<Army, ArmyStateHistory>();
+        foreach (ArmyState armyState in startingState.Armies)
+        {
+            ArmyStateHistory history = new ArmyStateHistory();
+        }
+        return ret;
+    }
+
+    private Dictionary<Army, Province> GetDestinationsDictionary(GameState oldState, IEnumerable<ArmyMove> armyMoves)
+    {
+        Dictionary<Army, Province> ret = oldState.Armies.ToDictionary(item => item.Identifier, item => item.LocationId);
+        foreach (ArmyMove move in armyMoves)
+        {
+            ret[move.Army] = move.TargetProvince;
+        }
+        return ret;
+    }
+
+    public Province GetArmyDestination(Army army)
+    {
+        return _destinationsDictionary[army];
+    }
+
+    public ArmyStateHistory GetArmyHistory(Army army)
+    {
+        return _armyHistory[army];
+    }
+    
     private GameState GetPostPeacefulMoves(GameState state, IEnumerable<ArmyMove> peacefulTransitions)
     {
         Dictionary<Army, ArmyState> armyDictionary = state.Armies.ToDictionary(item => item.Identifier, item => item);
         foreach (ArmyMove move in peacefulTransitions)
         {
-            ArmyState newArmy = new ArmyState(move.Army.Identifier, move.TargetProvince.Identifier, move.Army.Forces, move.Army.Routed);
-            armyDictionary[newArmy.Identifier] = newArmy;
+            ArmyState oldArmyState = state.GetArmyState(move.Army);
+            ArmyState newArmyState = new ArmyState(move.Army, move.TargetProvince, oldArmyState.Forces, oldArmyState.Routed);
+            armyDictionary[newArmyState.Identifier] = newArmyState;
         }
         return new GameState(state.Provinces, armyDictionary.Values);
     }
@@ -45,7 +80,7 @@ public class ArmyMovesResolver
 
                 if(outcome.Victorious)
                 {
-                    ProvinceState oldProvince = outcome.ArmyBeforeCombat.TargetProvince;
+                    ProvinceState oldProvince = state.GetProvinceState(outcome.ArmyBeforeCombat.TargetProvince);
                     Faction faction = outcome.ArmyBeforeCombat.Faction;
                     ProvinceState province = GetChangedOwnership(oldProvince, faction);
                     provinceDictionary[province.Identifier] = province;
@@ -65,13 +100,13 @@ public class ArmyMovesResolver
         public IEnumerable<ArmyMove> NotCollisions { get; }
         public IEnumerable<CombatSetup> Collisions { get; }   
 
-        public CollisionsSorter(IEnumerable<ArmyMove> armyMoves)
+        public CollisionsSorter(IEnumerable<ArmyMove> armyMoves, GameState state)
         {
             List<ArmyMove> notCollisions = new List<ArmyMove>();
             List<CombatSetup> collisions = new List<CombatSetup>();
             foreach (ArmyMove move in armyMoves)
             {
-                ArmyMove collision = NotCollisions.FirstOrDefault(item => IsCollision(item, move));
+                ArmyMove collision = NotCollisions.FirstOrDefault(item => IsCollision(item, move, state));
                 if(collision == null)
                 {
                     notCollisions.Add(move);
@@ -79,7 +114,7 @@ public class ArmyMovesResolver
                 else
                 {
                     notCollisions.Remove(collision);
-                    CombatSetup setup = new CombatSetup(new ArmyMove[] { collision, move }, new ArmyState[0], null);
+                    CombatSetup setup = new CombatSetup(state, new ArmyMove[] { collision, move }, new ArmyState[0], null);
                     collisions.Add(setup);
                 }
             }
@@ -87,13 +122,16 @@ public class ArmyMovesResolver
             Collisions = collisions;
         }
 
-        private bool IsCollision(ArmyMove armyA, ArmyMove armyB)
+        private bool IsCollision(ArmyMove armyA, ArmyMove armyB, GameState state)
         {
             bool attack = armyA.Faction != armyB.Faction;
             if(attack)
             {
-                bool abAtttack = armyA.TargetProvince.Identifier == armyB.Army.LocationId;
-                bool baAttack = armyB.TargetProvince.Identifier == armyA.Army.LocationId;
+                Province armyALocation = state.GetArmyState(armyA.Army).LocationId;
+                Province armyBLocation = state.GetArmyState(armyB.Army).LocationId;
+
+                bool abAtttack = armyA.TargetProvince == armyBLocation;
+                bool baAttack = armyB.TargetProvince == armyALocation;
                 return abAtttack && baAttack;
             }
             return false;
@@ -120,7 +158,7 @@ public class ArmyMovesResolver
                 {
                     if(outcome.ArmyAfterCombat == null)
                     {
-                        newArmiesDictionary.Remove(outcome.ArmyBeforeCombat.Army.Identifier);
+                        newArmiesDictionary.Remove(outcome.ArmyBeforeCombat.Army);
                     }
                     else
                     {
@@ -130,7 +168,7 @@ public class ArmyMovesResolver
                 CombatOutcome winner = fight.Outcome.FirstOrDefault(item => item.Victorious);
                 if (winner != null)
                 {
-                    ArmyMove newMove = new ArmyMove(winner.ArmyBeforeCombat.Faction, winner.ArmyAfterCombat, winner.ArmyBeforeCombat.TargetProvince);
+                    ArmyMove newMove = new ArmyMove(winner.ArmyBeforeCombat.Faction, winner.ArmyAfterCombat.Identifier, winner.ArmyBeforeCombat.TargetProvince);
                     newMoves.Add(newMove);
                 }
             }
@@ -152,14 +190,14 @@ public class ArmyMovesResolver
             IEnumerable<ArmyState> stationaryArmies = GetStationaryArmies(collisionApplier);
             foreach (IEnumerable<ArmyMove> convergence in convergencies)
             {
-                bool peaceful = GetIsPeaceful(convergence);
+                bool peaceful = GetIsPeaceful(collisionApplier.NewGameState, convergence);
                 if(peaceful)
                 {
                     peacefulTransitions.AddRange(convergence);
                 }
                 else
                 {
-                    CombatSetup combatSetup = GetCombatSetup(convergence, stationaryArmies);
+                    CombatSetup combatSetup = GetCombatSetup(collisionApplier.NewGameState, convergence, stationaryArmies);
                     fights.Add(combatSetup);
                 }
             }
@@ -170,21 +208,23 @@ public class ArmyMovesResolver
 
         private IEnumerable<ArmyState> GetStationaryArmies(CollisionApplier collisionApplier)
         {
-            IEnumerable<Army> movingArmiesGuids = collisionApplier.MovesToGo.Select(item => item.Army.Identifier);
+            IEnumerable<Army> movingArmiesGuids = collisionApplier.MovesToGo.Select(item => item.Army);
             HashSet<Army> movingArmiesHash = new HashSet<Army>(movingArmiesGuids);
             return collisionApplier.NewGameState.Armies.Where(item => !movingArmiesHash.Contains(item.Identifier));
         }
 
-        private CombatSetup GetCombatSetup(IEnumerable<ArmyMove> convergence, IEnumerable<ArmyState> stationaryArmies)
+        private CombatSetup GetCombatSetup(GameState state, IEnumerable<ArmyMove> convergence, IEnumerable<ArmyState> stationaryArmies)
         {
-            ProvinceState defendingProvince = convergence.First().TargetProvince;
-            IEnumerable<ArmyState> immobileForces = stationaryArmies.Where(item => item.LocationId == defendingProvince.Identifier);
-            return new CombatSetup(convergence, immobileForces, defendingProvince);
+            Province defendingProvince = convergence.First().TargetProvince;
+            ProvinceState defendingProvinceState = state.GetProvinceState(defendingProvince);
+            IEnumerable<ArmyState> immobileForces = stationaryArmies.Where(item => item.LocationId == defendingProvince);
+            return new CombatSetup(state, convergence, immobileForces, defendingProvinceState);
         }
         
-        private bool GetIsPeaceful(IEnumerable<ArmyMove> convergence)
+        private bool GetIsPeaceful(GameState state, IEnumerable<ArmyMove> convergence)
         {
-            Faction firstFaction = convergence.First().TargetProvince.Owner;
+            Province province = convergence.First().TargetProvince;
+            Faction firstFaction = state.GetProvinceState(province).Owner;
             return convergence.All(item => item.Faction == firstFaction);
         }
 
@@ -194,7 +234,7 @@ public class ArmyMovesResolver
 
             foreach (ArmyMove item in collisionApplier.MovesToGo)
             {
-                Province provinceId = item.TargetProvince.Identifier;
+                Province provinceId = item.TargetProvince;
                 if(ret.ContainsKey(provinceId))
                 {
                     ret[provinceId].Add(item);
@@ -206,5 +246,13 @@ public class ArmyMovesResolver
             }
             return ret.Values;
         }
+    }
+
+    public class ArmyStateHistory
+    {
+        public bool FoughtInCollision { get; set; }
+        public bool FoughtInNonCollision { get; set; }
+        public ArmyState PostCollision { get; set; }
+        public ArmyState PostNonCollision { get; set; }
     }
 }

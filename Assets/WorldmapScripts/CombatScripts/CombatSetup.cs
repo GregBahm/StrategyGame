@@ -8,20 +8,24 @@ public class CombatSetup
 
     public IEnumerable<CombatOutcome> Outcome { get; }
 
-    public CombatSetup(IEnumerable<ArmyMove> movingArmies, IEnumerable<ArmyState> stationaryArmies, ProvinceState defendingProvince)
+    public CombatSetup(GameState state, IEnumerable<ArmyMove> movingArmies, IEnumerable<ArmyState> stationaryArmies, ProvinceState defendingProvince)
     {
         // TODO: Sort out how combat rounds are built and resolved
-        Location = GetLocation(movingArmies, defendingProvince);
+        Location = GetLocation(state, movingArmies, defendingProvince);
     }
 
-    private static CombatLocation GetLocation(IEnumerable<ArmyMove> movingArmies, ProvinceState defendingProvince)
+    private static CombatLocation GetLocation(GameState state, IEnumerable<ArmyMove> movingArmies, ProvinceState defendingProvince)
     {
         if(defendingProvince != null)
         {
             return new CombatLocation(defendingProvince.Identifier);
         }
-        Province provinceA = movingArmies.First().Army.LocationId;
-        Province provinceB = movingArmies.First(move => move.Army.LocationId != provinceA).Army.LocationId;
+        Army armyA = movingArmies.First().Army;
+        Province provinceA = state.GetArmyState(armyA).LocationId;
+
+        Army armyB = movingArmies.First(move => state.GetArmyState(move.Army).LocationId != provinceA).Army;
+        Province provinceB = state.GetArmyState(armyB).LocationId;
+
         return new CombatLocation(provinceA, provinceB);
     }
 }

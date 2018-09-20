@@ -31,7 +31,7 @@ public class GameState
         GameState postOwnershipChangesState = postArmyMoves.NewGameState;
         GameState postMergersState = postMergers.NewGameState;
 
-        IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions(initialState, postArmyMoves);
+        IEnumerable<ArmyTurnTransition> armyTurnTransitions = GetArmyTurnTransitions(postRallyChanges, postArmyMoves);
         
         GameTurnTransition transition = new GameTurnTransition(
             initialState,
@@ -44,12 +44,7 @@ public class GameState
 
         return transition;
     }
-
-    private IEnumerable<ArmyTurnTransition> GetArmyTurnTransitions(GameState initialState, ArmyMovesResolver postArmyMoves)
-    {
-        throw new NotImplementedException();
-    }
-
+    
     public ProvinceState GetTilesProvince(Tile tile)
     {
         return _tileOwners[tile];
@@ -61,12 +56,14 @@ public class GameState
         List<ArmyTurnTransition> ret = new List<ArmyTurnTransition>();
         foreach (ArmyState armyState in Armies)
         {
+            ArmyMovesResolver.ArmyStateHistory armyHistory = movesResolver.GetArmyHistory(armyState.Identifier);
+
             ArmyState postRally = postRallyTable[armyState.Identifier];
-            Province armyDestination;
-            ArmyState afterCollisionFight;
-            ArmyState afterNonCollisionFight;
-            bool foughtInCollision;
-            bool foughtInNonCollision;
+            Province armyDestination = movesResolver.GetArmyDestination(armyState.Identifier);
+            ArmyState afterCollisionFight = armyHistory.PostCollision;
+            ArmyState afterNonCollisionFight = armyHistory.PostNonCollision;
+            bool foughtInCollision = armyHistory.FoughtInCollision;
+            bool foughtInNonCollision = armyHistory.FoughtInNonCollision;
             ArmyTurnTransition newTrans = new ArmyTurnTransition(
                 armyState,
                 postRally,
@@ -80,8 +77,10 @@ public class GameState
         }
         foreach (ArmyState armyState in rallyChanges.AddedArmies)
         {
-            bool wasInvaded;
-            ArmyState postFight;
+            ArmyMovesResolver.ArmyStateHistory armyHistory = movesResolver.GetArmyHistory(armyState.Identifier);
+
+            bool wasInvaded = armyHistory.FoughtInNonCollision;
+            ArmyState postFight = armyHistory.PostNonCollision;
             ArmyTurnTransition newTrans = new ArmyTurnTransition(
                 armyState,
                 armyState,
@@ -94,11 +93,7 @@ public class GameState
         }
         return ret;
     }
-
-    public ProvinceState GetProvinceState(ProvinceState province)
-    {
-        return GetProvinceState(province.Identifier);
-    }
+    
     public ProvinceState GetProvinceState(Province provinceId)
     {
         return Provinces.FirstOrDefault(item => item.Identifier == provinceId);
