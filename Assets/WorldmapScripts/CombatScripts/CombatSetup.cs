@@ -4,12 +4,19 @@ using System.Linq;
 
 public class CombatSetup
 {
+    public IEnumerable<Army> Participants { get; }
+
     public CombatLocation Location {get;}
 
     public IEnumerable<CombatOutcome> Outcome { get; }
 
     public CombatSetup(GameState state, IEnumerable<ArmyMove> movingArmies, IEnumerable<ArmyState> stationaryArmies, ProvinceState defendingProvince)
     {
+        List<Army> participants = new List<Army>();
+        participants.AddRange(movingArmies.Select(item => item.Army));
+        participants.AddRange(stationaryArmies.Select(item => item.Identifier));
+        Participants = participants;
+
         // TODO: Sort out how combat rounds are built and resolved
         Location = GetLocation(state, movingArmies, defendingProvince);
     }
