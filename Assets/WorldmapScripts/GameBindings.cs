@@ -6,6 +6,7 @@ public class GameBindings : MonoBehaviour
     public int Columns = 20;
     public GameObject TilePrefab;
     public GameObject ArmyPrefab;
+    public GameObject FactionPrefab;
 
     [Range(0, 1)]
     public float TileMargin;
