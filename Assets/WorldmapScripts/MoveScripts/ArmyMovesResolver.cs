@@ -22,15 +22,26 @@ public class ArmyMovesResolver
         // Then resolve the remaining fights and moves
         GameState postPeacefulMoves = GetPostPeacefulMoves(state, finalFights.PeacefulTransitions);
         NewGameState = GetPostFinalFights(postPeacefulMoves, finalFights.FinalFights);
-        _armyHistory = GetArmyHistory();
+        _armyHistory = GetArmyHistory(state, collisionApplier.NewGameState, collisionsSorter, finalFights);
     }
 
-    private Dictionary<Army, ArmyStateHistory> GetArmyHistory(GameState startingState)
+    private Dictionary<Army, ArmyStateHistory> GetArmyHistory(GameState startingState, 
+        GameState postCollisionState, 
+        CollisionsSorter collisionsSorter,
+        FinalCombatSetup finalFights)
     {
+        HashSet<Army> nonCollisions = new HashSet<Army>(collisionsSorter.NotCollisions.Select(item => item.Army));
         Dictionary<Army, ArmyStateHistory> ret = new Dictionary<Army, ArmyStateHistory>();
         foreach (ArmyState armyState in startingState.Armies)
         {
-            ArmyStateHistory history = new ArmyStateHistory();
+            bool foughtInCollision = !nonCollisions.Contains(armyState.Identifier);
+            ArmyState postCollision = postCollisionState.GetArmyState(armyState.Identifier);
+            bool foughtInNonCollision = finalFights.GetDidFight(armyState.Identifier);
+            ArmyState postNonCollision = NewGameState.GetArmyState(armyState.Identifier);
+            ArmyStateHistory history = new ArmyStateHistory(foughtInCollision,
+                foughtInNonCollision,
+                postCollision,
+                postNonCollision);
         }
         return ret;
     }
@@ -180,11 +191,11 @@ public class ArmyMovesResolver
     {
         public IEnumerable<ArmyMove> PeacefulTransitions { get; }
         public IEnumerable<CombatSetup> FinalFights { get; }
+        private readonly HashSet<Army> _armiesThatFought;
 
         public FinalCombatSetup(CollisionApplier collisionApplier)
         {
             IEnumerable<List<ArmyMove>> convergencies = GetConvergencies(collisionApplier);
-
             List<ArmyMove> peacefulTransitions = new List<ArmyMove>();
             List<CombatSetup> fights = new List<CombatSetup>();
             IEnumerable<ArmyState> stationaryArmies = GetStationaryArmies(collisionApplier);
@@ -204,6 +215,23 @@ public class ArmyMovesResolver
 
             PeacefulTransitions = peacefulTransitions;
             FinalFights = fights;
+
+            _armiesThatFought = GetArmiesThatFought(fights);
+        }
+
+        private HashSet<Army> GetArmiesThatFought(List<CombatSetup> fights)
+        {
+            HashSet<Army> ret = new HashSet<Army>();
+            foreach (Army fighter in fights.SelectMany(item => item.Participants))
+            {
+                ret.Add(fighter);
+            }
+            return ret;
+        }
+
+        public bool GetDidFight(Army army)
+        {
+            return _armiesThatFought.Contains(army);
         }
 
         private IEnumerable<ArmyState> GetStationaryArmies(CollisionApplier collisionApplier)
@@ -250,9 +278,23 @@ public class ArmyMovesResolver
 
     public class ArmyStateHistory
     {
-        public bool FoughtInCollision { get; set; }
-        public bool FoughtInNonCollision { get; set; }
-        public ArmyState PostCollision { get; set; }
-        public ArmyState PostNonCollision { get; set; }
+        public bool FoughtInCollision { get; }
+        public bool FoughtInNonCollision { get; }
+        public ArmyState PostCollision { get; }
+        public ArmyState PostNonCollision { get; }
+
+        public ArmyStateHistory
+            (
+            bool foughtInCollision,
+            bool foughtInNonCollision,
+            ArmyState postCollision,
+            ArmyState postNonCollision
+            )
+        {
+            FoughtInCollision = foughtInCollision;
+            FoughtInNonCollision = FoughtInNonCollision;
+            PostCollision = postCollision;
+            PostNonCollision = postNonCollision;
+        }
     }
 }
