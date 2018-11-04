@@ -53,28 +53,29 @@ public class MergerMovesResolver
 
     private bool ValidateItem(MergerMove merger, GameState state)
     {
-        bool growerValid = ValidateProvinceOwner(merger.GrowingProvince, state);
-        bool absorberValid = ValidateProvinceOwner(merger.AbsorbedProvince, state);
+        Faction originalOwner = merger.Faction;
+        bool growerValid = ValidateProvinceOwner(originalOwner, merger.GrowingProvince, state);
+        bool absorberValid = ValidateProvinceOwner(originalOwner, merger.AbsorbedProvince, state);
         return growerValid && absorberValid;
     }
 
-    private bool ValidateProvinceOwner(ProvinceState provinceFromMove, GameState state)
+    private bool ValidateProvinceOwner(Faction originalOwner, Province provinceFromMove, GameState state)
     {
-        ProvinceState grower = state.GetProvinceState(provinceFromMove.Identifier);
-        return grower.Owner == provinceFromMove.Owner;
+        ProvinceState grower = state.GetProvinceState(provinceFromMove);
+        return grower.Owner == originalOwner;
     }
 
     private class MergerChain
     {
-        public List<ProvinceState> Provinces { get; }
+        public List<Province> Provinces { get; }
         public Province SourceProvince { get; }
         public IEnumerable<Province> EliminatedProvinces { get; }
 
         public MergerChain(MergerMove move)
         {
-            Provinces = new List<ProvinceState>() { move.GrowingProvince, move.AbsorbedProvince };
-            SourceProvince =  Provinces.FirstOrDefault().Identifier;
-            EliminatedProvinces = Provinces.Skip(1).Select(item => item.Identifier).ToArray();
+            Provinces = new List<Province>() { move.GrowingProvince, move.AbsorbedProvince };
+            SourceProvince =  Provinces.FirstOrDefault();
+            EliminatedProvinces = Provinces.Skip(1).ToArray();
         }
 
         public ProvinceState GetCompletedMerger(GameState state)
