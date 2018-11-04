@@ -22,9 +22,15 @@ public class MapInteraction
         Shader.SetGlobalColor("_SideColor", _gameSetup.BackgroundColor);
         _gameSetup.SkyMat.SetColor("_Tint", _gameSetup.BackgroundColor);
 
+        bool mouseDown = Input.GetMouseButton(0);
         foreach (TileDisplay tile in _worldMap.Tiles)
         {
-            tile.UpdateHighlighting(tile == _highlitTile, _gameSetup.HighlightDecaySpeed);
+            tile.UpdateHighlighting(tile == _highlitTile, _gameSetup.HighlightDecaySpeed, mouseDown);
+        }
+
+        if(Input.GetMouseButtonUp(0) && _highlitTile != null)
+        {
+            // Do something
         }
     }
 }

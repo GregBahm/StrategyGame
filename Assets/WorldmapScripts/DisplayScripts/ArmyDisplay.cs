@@ -73,7 +73,7 @@ public class ArmyDisplay
 
     private void DisplayForces(ArmyTurnTransition transition, DisplayTimings progression)
     {
-        throw new NotImplementedException();
+        // TODO: Display forces
     }
 
     private Vector3 GetProvincePosition(ProvinceState provinceState)

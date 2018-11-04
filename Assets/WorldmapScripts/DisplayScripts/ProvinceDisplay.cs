@@ -6,7 +6,7 @@ using UnityEngine;
 public class ProvinceDisplay
 {
     public Province Identifier { get; }
-    public GameDisplayManager _mothership;
+    private readonly GameDisplayManager _mothership;
 
     public ProvinceDisplay(Province identifier, GameDisplayManager mothership)
     {
@@ -31,6 +31,5 @@ public class ProvinceDisplay
     {
         ProvinceState initialProvince = transition.InitialState.GetProvinceState(Identifier);
         ProvinceState finalProvince = transition.PostProvinceEffectsState.GetProvinceState(Identifier);
-
     }
 }

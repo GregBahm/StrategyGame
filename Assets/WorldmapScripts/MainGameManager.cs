@@ -25,6 +25,7 @@ public class MainGameManager
         GameTurnTransition initialState = GetInitialState(playerSetups);
         _turns.Add(initialState);
         _displayManager.UpdateDisplayWrappers(initialState.PostMergersState);
+        _turnMovesProcessor = new TurnMovesProcessor(this, playerSetups.Select(item => item.Faction), playerSetups.First().Faction);
     }
 
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups)
@@ -33,14 +34,15 @@ public class MainGameManager
         IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
         GameState initialState = new GameState(provinces, armies);
         MergeTable mergeTable = new MergeTable(new Dictionary<Province, Province>());
+        ArmyTurnTransition[] initialTransition = armies.Select(army => new ArmyTurnTransition(army, army, army.LocationId, army, army, true, false, false)).ToArray();
         return new GameTurnTransition(
             initialState,
             initialState,
             initialState,
             initialState,
             initialState,
-            mergeTable, 
-            new ArmyTurnTransition[0]);
+            mergeTable,
+            initialTransition);
     }
 
     private IEnumerable<ArmyState> GetInitialArmies(IEnumerable<PlayerSetup> playerSetups, IEnumerable<ProvinceState> provinces)

@@ -81,10 +81,11 @@ public class TileDisplay
         return connected ? 1 : 0;
     }
 
-    public void UpdateHighlighting(bool isHighlit, float highlightDecaySpeed)
+    public void UpdateHighlighting(bool isHighlit, float highlightDecaySpeed, bool mouseDown)
     {
         _highlighting = Mathf.Lerp(_highlighting, isHighlit ? 1 : 0, highlightDecaySpeed);
-        _tileMat.SetFloat("_HighlightPower", _highlighting);
+        _tileMat.SetFloat("_HighlightPower", (isHighlit && mouseDown) ? 1 : 0);
+        _tileMat.SetFloat("_HoverPower", _highlighting);
     }
 
     public class TileNeighbors : IEnumerable<TileDisplay>

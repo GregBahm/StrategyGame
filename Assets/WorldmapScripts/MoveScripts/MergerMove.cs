@@ -3,7 +3,7 @@
     public ProvinceState GrowingProvince { get; }
     public ProvinceState AbsorbedProvince { get; }
 
-    public MergerMove(Faction faction, 
+    public MergerMove(Faction faction,
         ProvinceState growingProvince,
         ProvinceState absorbedProvince) 
         : base(faction, MoveCategory.ArmyMove)
