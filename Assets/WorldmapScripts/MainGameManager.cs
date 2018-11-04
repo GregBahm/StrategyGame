@@ -12,20 +12,28 @@ public class MainGameManager
 
     private readonly GameDisplayManager _displayManager;
     public Worldmap WorldMap { get; }
-    private readonly MapInteraction _mapInteraction;
+    private readonly InteractionManager _interactionManager;
 
     private readonly TurnMovesProcessor _turnMovesProcessor;
-
-    public MainGameManager(GameSetup gameSetup, Worldmap worldMap)
+    
+    public MainGameManager(GameSetup gameSetup)
     {
+        Worldmap worldMap = new Worldmap(gameSetup.TilePrefab, gameSetup.Rows, gameSetup.Columns);
         IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
         WorldMap = worldMap;
         _displayManager = new GameDisplayManager(worldMap, gameSetup, playerSetups.Select(item => item.Faction));
-        _mapInteraction = new MapInteraction(gameSetup, worldMap);
+        _interactionManager = new InteractionManager(gameSetup, worldMap);
         GameTurnTransition initialState = GetInitialState(playerSetups);
         _turns.Add(initialState);
         _displayManager.UpdateDisplayWrappers(initialState.PostMergersState);
         _turnMovesProcessor = new TurnMovesProcessor(this, playerSetups.Select(item => item.Faction), playerSetups.First().Faction);
+    }
+
+    internal void Update()
+    {
+        float gametime = _interactionManager.Timeline.MasterGameTime.Value;
+        DisplayGamestate(gametime);
+        _interactionManager.Update();
     }
 
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups)

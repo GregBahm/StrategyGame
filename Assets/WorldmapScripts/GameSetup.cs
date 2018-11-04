@@ -15,24 +15,17 @@ public class GameSetup : MonoBehaviour
     public Material SkyMat;
     public Color BackgroundColor;
     public float HighlightDecaySpeed;
+    public Canvas ScreenCanvas;
 
     private MainGameManager _mainManager;
-    private MapInteraction _uiManager;
-
-    public Canvas ScreenCanvas;
-    public float GameTime;
 
     private void Start()
     {
-        Worldmap worldMap = new Worldmap(TilePrefab, Rows, Columns);
-        _mainManager = new MainGameManager(this, worldMap);
-        _uiManager = new MapInteraction(this, _mainManager.WorldMap);
+        _mainManager = new MainGameManager(this);
     }
 
     private void Update()
     {
-        GameTime = Mathf.Clamp(GameTime, 0, _mainManager.TurnsCount - 1);
-        _mainManager.DisplayGamestate(GameTime);
-        _uiManager.Update();
+        _mainManager.Update();
     }
 }
