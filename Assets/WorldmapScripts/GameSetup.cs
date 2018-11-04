@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class GameBindings : MonoBehaviour
+public class GameSetup : MonoBehaviour
 {
     public int Rows = 20;
     public int Columns = 20;
@@ -17,15 +17,16 @@ public class GameBindings : MonoBehaviour
     public float HighlightDecaySpeed;
 
     private MainGameManager _mainManager;
-    private UiManager _uiManager;
+    private MapInteraction _uiManager;
 
+    public Canvas ScreenCanvas;
     public float GameTime;
 
     private void Start()
     {
         Worldmap worldMap = new Worldmap(TilePrefab, Rows, Columns);
         _mainManager = new MainGameManager(this, worldMap);
-        _uiManager = new UiManager(this, _mainManager.WorldMap);
+        _uiManager = new MapInteraction(this, _mainManager.WorldMap);
     }
 
     private void Update()

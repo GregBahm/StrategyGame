@@ -7,16 +7,15 @@ public class GameTurnMoves
     public List<ArmyMove> ArmyMoves { get; }
     public List<RallyPointChange> RallyChanges { get; }
 
-    public GameTurnMoves(string[] moveStack)
+    public GameTurnMoves(IEnumerable<PlayerMove> movesStack)
     {
         Mergers = new List<MergerMove>();
         Upgrades = new List<UpgradeMove>();
         ArmyMoves = new List<ArmyMove>();
         RallyChanges = new List<RallyPointChange>();
 
-        foreach (string serverString in moveStack)
+        foreach (PlayerMove move in movesStack)
         {
-            PlayerMove move = PlayerMove.LoadMoveFromServer(serverString);
             switch (move.Category)
             {
                 case PlayerMove.MoveCategory.Merger:

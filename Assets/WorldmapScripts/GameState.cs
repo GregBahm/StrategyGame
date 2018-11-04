@@ -17,6 +17,13 @@ public class GameState
         _tileOwners = GetTileOwnerDictionary();
     }
 
+    public IEnumerable<Faction> GetSurvivingFactions()
+    {
+        IEnumerable<Faction> factions = Provinces.Select(item => item.Owner);
+        HashSet<Faction> ret = new HashSet<Faction>(factions);
+        return ret;
+    }
+
     public GameTurnTransition GetNextState(GameTurnMoves moves)
     {
         RallyChangesResolver postRallyChanges = new RallyChangesResolver(this, moves.RallyChanges);

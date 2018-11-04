@@ -6,7 +6,7 @@ public class RallyChangesResolver
 {
     public IEnumerable<ArmyState> AddedArmies { get; }
     /// <summary>
-    /// Rally points are changed. New units are received. New armies are create
+    /// Rally points are changed. New units are received. New armies are created.
     /// </summary>
     public GameState NewGameState { get; }
 

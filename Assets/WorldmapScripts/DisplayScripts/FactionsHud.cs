@@ -1,26 +1,43 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FactionsHud
 {
     public IEnumerable<FactionDisplay> Factions { get; }
 
-    public FactionsHud(GameBindings bindings, IEnumerable<Faction> factions)
+    public FactionsHud(Canvas hudCanvas, GameObject factionsPrefab, IEnumerable<Faction> factions)
     {
-        Factions = factions.Select(faction => new FactionDisplay(bindings, faction)).ToArray();
+        Factions = InitializeFactions(hudCanvas, factionsPrefab, factions);
     }
-}
 
-public class FactionDisplay
-{
-    public GameObject GameObject { get; }
-
-    public Faction Faction { get; }
-
-    public FactionDisplay(GameBindings bindings, Faction faction)
+    private IEnumerable<FactionDisplay> InitializeFactions(Canvas hudCanvas, GameObject factionsPrefab, IEnumerable<Faction> factions)
     {
-        GameObject = GameObject.Instantiate(bindings.FactionPrefab);
-        Faction = faction;
+        List<FactionDisplay> ret = new List<FactionDisplay>();
+        int indexer = 0;
+        foreach (Faction faction in factions)
+        {
+            GameObject gameObject = GameObject.Instantiate(factionsPrefab, hudCanvas.transform);
+            gameObject.name = faction.Name + " hud";
+            Text textObject = gameObject.GetComponent<Text>();
+            ((RectTransform) gameObject.transform).offsetMax = new Vector2(0, -indexer * 20);
+            FactionDisplay factionDisplay = new FactionDisplay(textObject, faction);
+            gameObject.GetComponent<Button>().onClick.AddListener(() => OnFactionClick(factionDisplay));
+
+            ret.Add(factionDisplay);
+            indexer++;
+        }
+        return ret;
+    }
+
+    private void OnFactionClick(FactionDisplay factionDisplay)
+    {
+        foreach (FactionDisplay faction  in Factions)
+        {
+            bool isControlled = faction == factionDisplay;
+            faction.UpdateText(isControlled);
+        }
     }
 }

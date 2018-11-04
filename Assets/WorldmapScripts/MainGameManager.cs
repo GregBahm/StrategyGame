@@ -12,19 +12,23 @@ public class MainGameManager
 
     private readonly GameDisplayManager _displayManager;
     public Worldmap WorldMap { get; }
+    private readonly MapInteraction _mapInteraction;
 
-    public MainGameManager(GameBindings bindings, Worldmap worldMap)
+    private readonly TurnMovesProcessor _turnMovesProcessor;
+
+    public MainGameManager(GameSetup gameSetup, Worldmap worldMap)
     {
+        IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
         WorldMap = worldMap;
-        _displayManager = new GameDisplayManager(worldMap, bindings);
-        GameTurnTransition initialState = GetInitialState();
+        _displayManager = new GameDisplayManager(worldMap, gameSetup, playerSetups.Select(item => item.Faction));
+        _mapInteraction = new MapInteraction(gameSetup, worldMap);
+        GameTurnTransition initialState = GetInitialState(playerSetups);
         _turns.Add(initialState);
         _displayManager.UpdateDisplayWrappers(initialState.PostMergersState);
     }
 
-    private GameTurnTransition GetInitialState()
+    private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups)
     {
-        IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
         IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups);
         IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
         GameState initialState = new GameState(provinces, armies);
@@ -56,8 +60,8 @@ public class MainGameManager
     {
         return new[]
         {
-            new PlayerSetup("Player A", Color.cyan, 0, 0),
-            new PlayerSetup("Player B", Color.red, 10, 10)
+            new PlayerSetup("Player A", Color.blue, -5, -5),
+            new PlayerSetup("Player B", Color.red, 5, 5)
         };
     }
 
@@ -104,10 +108,22 @@ public class MainGameManager
     {
         GameTurnTransition newState = CurrentState.PostMergersState.GetNextState(moves);
         _turns.Add(newState);
-        // TODO: Determine if a player is dead
+
+        IEnumerable<Faction> survivingFactions = newState.PostMergersState.GetSurvivingFactions();
+        if(survivingFactions.Count() < 2)
+        {
+            HandleGameConclusion(survivingFactions);
+        }
         _displayManager.UpdateDisplayWrappers(newState.PostMergersState);
+        _turnMovesProcessor.RenewBuilders(survivingFactions);
     }
-    
+
+    private void HandleGameConclusion(IEnumerable<Faction> survivingFactions)
+    {
+        //TODO: Handle the completion of a game!
+        throw new NotImplementedException();
+    }
+
     public void DisplayGamestate(float gameTime)
     {
         GameTurnTransition turn = _turns[Mathf.FloorToInt(gameTime)];

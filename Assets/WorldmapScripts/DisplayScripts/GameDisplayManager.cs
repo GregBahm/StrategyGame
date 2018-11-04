@@ -8,14 +8,16 @@ public class GameDisplayManager
     private readonly Dictionary<Army, ArmyDisplay> _armies;
     private readonly Dictionary<Province, ProvinceDisplay> _provinces;
     private readonly Worldmap _worldMap;
-    private readonly GameBindings _bindings;
+    private readonly GameObject _armyPrefab;
+    private readonly FactionsHud _factionsHud;
 
-    public GameDisplayManager(Worldmap worldmap, GameBindings bindings)
+    public GameDisplayManager(Worldmap worldmap, GameSetup gameSetup, IEnumerable<Faction> factions)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _worldMap = worldmap;
-        _bindings = bindings;
+        _armyPrefab = gameSetup.ArmyPrefab;
+        _factionsHud = new FactionsHud(gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -40,7 +42,7 @@ public class GameDisplayManager
 
     private ArmyDisplay CreateNewArmy(ArmyState army)
     {
-        GameObject armyArt = GameObject.Instantiate(_bindings.ArmyPrefab);
+        GameObject armyArt = GameObject.Instantiate(_armyPrefab);
         return new ArmyDisplay(this, army.Identifier, armyArt);
     }
 
