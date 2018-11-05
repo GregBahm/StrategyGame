@@ -1,9 +1,15 @@
 ﻿public class TimelineInteraction
 {
-    public ObservableProperty<float> MasterGameTime { get; set; }
+    private readonly InteractionManager _interactionManager;
 
-    public TimelineInteraction()
+    public TimelineInteraction(InteractionManager interactionManager)
     {
-        MasterGameTime = new ObservableProperty<float>(0);
+        _interactionManager = interactionManager;
+        _interactionManager.MasterGameTime.ValueChangedEvent += OnTimeChanged;
+    }
+
+    private void OnTimeChanged(float oldValue, float newValue)
+    {
+        throw new System.NotImplementedException();
     }
 }

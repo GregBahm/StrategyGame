@@ -8,37 +8,34 @@ public class MainGameManager
 {
     private readonly List<GameTurnTransition> _turns = new List<GameTurnTransition>();
     public GameTurnTransition CurrentState { get { return _turns[_turns.Count - 1]; } }
+    public GameTurnTransition this[int index] { get { return _turns[index]; } }
     public int TurnsCount { get { return _turns.Count; } }
 
-    private readonly GameDisplayManager _displayManager;
+    public GameDisplayManager DisplayManager { get; }
     public Worldmap WorldMap { get; }
-    private readonly InteractionManager _interactionManager;
-
-    private readonly TurnMovesProcessor _turnMovesProcessor;
+    public InteractionManager InteractionManager { get; }
     
     public MainGameManager(GameSetup gameSetup)
     {
-        Worldmap worldMap = new Worldmap(gameSetup.TilePrefab, gameSetup.Rows, gameSetup.Columns);
+        WorldMap = new Worldmap(gameSetup.TilePrefab, gameSetup.Rows, gameSetup.Columns);
+
         IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
-        WorldMap = worldMap;
-        _displayManager = new GameDisplayManager(worldMap, gameSetup, playerSetups.Select(item => item.Faction));
-        _interactionManager = new InteractionManager(gameSetup, worldMap);
-        GameTurnTransition initialState = GetInitialState(playerSetups);
+        GameTurnTransition initialState = GetInitialState(playerSetups, WorldMap);
+
         _turns.Add(initialState);
-        _displayManager.UpdateDisplayWrappers(initialState.PostMergersState);
-        _turnMovesProcessor = new TurnMovesProcessor(this, playerSetups.Select(item => item.Faction), playerSetups.First().Faction);
+
+        InteractionManager = new InteractionManager(this, gameSetup, WorldMap, playerSetups);
+        DisplayManager = new GameDisplayManager(this, gameSetup, playerSetups.Select(item => item.Faction), initialState.PostMergersState);
     }
 
     internal void Update()
     {
-        float gametime = _interactionManager.Timeline.MasterGameTime.Value;
-        DisplayGamestate(gametime);
-        _interactionManager.Update();
+        InteractionManager.Update();
     }
 
-    private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups)
+    private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
     {
-        IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups);
+        IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups, worldmap);
         IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
         GameState initialState = new GameState(provinces, armies);
         MergeTable mergeTable = new MergeTable(new Dictionary<Province, Province>());
@@ -75,10 +72,10 @@ public class MainGameManager
         };
     }
 
-    private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups)
+    private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
     {
         Faction unownedFaction = new Faction("Independent", Color.white);
-        Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups);
+        Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups, worldmap);
 
         List<ProvinceState> ret = new List<ProvinceState>();
         foreach (Tile tile in WorldMap.Tiles.Select(item => item.Tile))
@@ -101,13 +98,13 @@ public class MainGameManager
         return new ProvinceState(faction, upgrades, new Province(), tileSet);
     }
 
-    private Dictionary<Tile, Faction> GetStartingLocations(IEnumerable<PlayerSetup> playerSetups)
+    private Dictionary<Tile, Faction> GetStartingLocations(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
     {
         Dictionary<Tile, Faction> ret = new Dictionary<Tile, Faction>();
 
         foreach (PlayerSetup player in playerSetups)
         {
-            Tile tile = WorldMap.GetTile(player.StartRow, player.StartColumn).Tile;
+            Tile tile = worldmap.GetTile(player.StartRow, player.StartColumn).Tile;
             ret.Add(tile, player.Faction);
         }
         
@@ -124,20 +121,13 @@ public class MainGameManager
         {
             HandleGameConclusion(survivingFactions);
         }
-        _displayManager.UpdateDisplayWrappers(newState.PostMergersState);
-        _turnMovesProcessor.RenewBuilders(survivingFactions);
+        DisplayManager.UpdateDisplayWrappers(newState.PostMergersState);
+        InteractionManager.TurnMovesProcessor.RenewBuilders(survivingFactions);
     }
 
     private void HandleGameConclusion(IEnumerable<Faction> survivingFactions)
     {
         //TODO: Handle the completion of a game!
         throw new NotImplementedException();
-    }
-
-    public void DisplayGamestate(float gameTime)
-    {
-        GameTurnTransition turn = _turns[Mathf.FloorToInt(gameTime)];
-        float progression = gameTime % 1;
-        _displayManager.DisplayTurn(turn, progression);
     }
 }

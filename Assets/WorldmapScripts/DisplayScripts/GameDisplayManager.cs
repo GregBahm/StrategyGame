@@ -7,17 +7,32 @@ public class GameDisplayManager
 {
     private readonly Dictionary<Army, ArmyDisplay> _armies;
     private readonly Dictionary<Province, ProvinceDisplay> _provinces;
-    private readonly Worldmap _worldMap;
+    private readonly MainGameManager _mainManager;
     private readonly GameObject _armyPrefab;
     private readonly FactionsHud _factionsHud;
 
-    public GameDisplayManager(Worldmap worldmap, GameSetup gameSetup, IEnumerable<Faction> factions)
+    public GameDisplayManager(MainGameManager mainManager, GameSetup gameSetup, IEnumerable<Faction> factions, GameState initialState)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
-        _worldMap = worldmap;
+        _mainManager = mainManager;
         _armyPrefab = gameSetup.ArmyPrefab;
         _factionsHud = new FactionsHud(gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
+        _mainManager.InteractionManager.MasterGameTime.ValueChangedEvent += OnTimeChanged;
+        UpdateDisplayWrappers(initialState);
+        DisplayGamestate(0);
+    }
+
+    private void OnTimeChanged(float oldValue, float newValue)
+    {
+        DisplayGamestate(newValue);
+    }
+
+    public void DisplayGamestate(float gameTime)
+    {
+        GameTurnTransition turn = _mainManager[Mathf.FloorToInt(gameTime)];
+        float progression = gameTime % 1;
+        DisplayTurn(turn, progression);
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -60,7 +75,7 @@ public class GameDisplayManager
 
     private void UpdateTiles(GameTurnTransition turn, DisplayTimings timings)
     {
-        foreach (TileDisplay tileDisplay in _worldMap.Tiles)
+        foreach (TileDisplay tileDisplay in _mainManager.WorldMap.Tiles)
         {
             tileDisplay.DisplayTile(turn, timings);
         }
@@ -68,7 +83,7 @@ public class GameDisplayManager
 
     internal TileDisplay GetTile(Tile tile)
     {
-        return _worldMap.GetTile(tile.Row, tile.AscendingColumn);
+        return _mainManager.WorldMap.GetTile(tile.Row, tile.AscendingColumn);
     }
 
     private void UpdateProvinces(GameTurnTransition transiation, DisplayTimings timings)

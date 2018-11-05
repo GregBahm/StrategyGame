@@ -9,11 +9,11 @@ public class TurnMovesProcessor
 
     private IEnumerable<PlayerMoveBuilder> _builders;
     
-    public TurnMovesProcessor(MainGameManager mainManager, IEnumerable<Faction> factions, Faction activeFaction)
+    public TurnMovesProcessor(MainGameManager mainManager, IEnumerable<PlayerSetup> playerSetups)
     {
         _mainManager = mainManager;
-        _builders = factions.Select(item => new PlayerMoveBuilder(this, item)).ToArray();
-        SwitchActiveFaction(activeFaction);
+        _builders = playerSetups.Select(item => new PlayerMoveBuilder(this, item.Faction)).ToArray();
+        SwitchActiveFaction(playerSetups.First().Faction);
     }
 
     public void RenewBuilders(IEnumerable<Faction> factions)
