@@ -68,7 +68,8 @@ public class MainGameManager
         return new[]
         {
             new PlayerSetup("Player A", Color.blue, -5, -5),
-            new PlayerSetup("Player B", Color.red, 5, 5)
+            new PlayerSetup("Player B", Color.red, 5, 5),
+            new PlayerSetup("Player C", Color.gray, 0, 5),
         };
     }
 

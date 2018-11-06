@@ -13,7 +13,13 @@ public class TurnMovesProcessor
     {
         _mainManager = mainManager;
         _builders = playerSetups.Select(item => new PlayerMoveBuilder(this, item.Faction)).ToArray();
+        _mainManager.InteractionManager.PlayerFaction.ValueChangedEvent += OnPlayerFactionChanged;
         SwitchActiveFaction(playerSetups.First().Faction);
+    }
+
+    private void OnPlayerFactionChanged(Faction oldValue, Faction newValue)
+    {
+        SwitchActiveFaction(newValue);
     }
 
     public void RenewBuilders(IEnumerable<Faction> factions)
