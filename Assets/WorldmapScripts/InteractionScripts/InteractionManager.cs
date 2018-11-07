@@ -22,7 +22,7 @@ public class InteractionManager
         PlayerFaction = new ObservableProperty<Faction>(playerSetups.First().Faction);
         Map = new MapInteraction(gameSetup, worldmap);
         Timeline = new TimelineInteraction(this);
-        TurnMovesProcessor = new TurnMovesProcessor(mainManager, playerSetups);
+        TurnMovesProcessor = new TurnMovesProcessor(mainManager, this, playerSetups);
     }
 
     internal void Update()

@@ -13,7 +13,7 @@ public class PlayerMoveBuilder
     public bool Submitted { get; private set; }
 
     private const int MaxMoves = 3;
-
+    
     public int RemainingMoves
     {
         get

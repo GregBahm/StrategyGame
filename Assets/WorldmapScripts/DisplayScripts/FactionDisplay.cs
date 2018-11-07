@@ -7,12 +7,19 @@ public class FactionDisplay
 
     public Faction Faction { get; }
 
-    public FactionDisplay(Text textGameObject, Faction faction)
+    public FactionDisplay(ObservableProperty<Faction> playerFactionProp, Text textGameObject, Faction faction)
     {
         _textObject = textGameObject;
         _textObject.text = faction.Name;
         _textObject.color = faction.Color;
         Faction = faction;
+        playerFactionProp.ValueChangedEvent += OnPlayerFactionChanged;
+        UpdateText(playerFactionProp.Value == faction);
+    }
+
+    private void OnPlayerFactionChanged(Faction oldValue, Faction newValue)
+    {
+        UpdateText(Faction == newValue);
     }
 
     public void UpdateText(bool isSelected)

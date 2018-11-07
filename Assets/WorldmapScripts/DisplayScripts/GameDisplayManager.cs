@@ -17,7 +17,7 @@ public class GameDisplayManager
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
         _armyPrefab = gameSetup.ArmyPrefab;
-        _factionsHud = new FactionsHud(gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
+        _factionsHud = new FactionsHud(mainManager.InteractionManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
         _mainManager.InteractionManager.MasterGameTime.ValueChangedEvent += OnTimeChanged;
         UpdateDisplayWrappers(initialState);
         DisplayGamestate(0);
