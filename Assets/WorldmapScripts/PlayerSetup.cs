@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class PlayerSetup
 {
@@ -11,5 +12,15 @@ public class PlayerSetup
         Faction = new Faction(name, color);
         StartRow = startRow;
         StartColumn = startColumn;
+    }
+
+    public static IEnumerable<PlayerSetup> GetTestSetups()
+    {
+        return new[]
+        {
+            new PlayerSetup("Player A", Color.blue, -5, -5),
+            new PlayerSetup("Player B", Color.red, 5, 5),
+            new PlayerSetup("Player C", Color.gray, -5, 5),
+        };
     }
 }

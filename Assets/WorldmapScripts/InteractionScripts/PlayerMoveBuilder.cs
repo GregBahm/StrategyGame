@@ -14,19 +14,15 @@ public class PlayerMoveBuilder
 
     private const int MaxMoves = 3;
     
-    public int RemainingMoves
-    {
-        get
-        {
-            return 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count);
-        }
-    }
+    public ObservableProperty<int> RemainingMoves { get; }
+
     private readonly List<ArmyMoveBuilder> _armyMoves;
     private readonly List<ProvinceMergeBuilder> _provinceMerges;
     private readonly List<ProvinceUpgradeBuilder> _provinceUpgrades;
 
     public PlayerMoveBuilder(TurnMovesProcessor moveProcessor, Faction playerFaction)
     {
+        RemainingMoves = new ObservableProperty<int>(MaxMoves);
         _moveProcessor = moveProcessor;
         PlayerFaction = playerFaction;
         _armyMoves = new List<ArmyMoveBuilder>();
@@ -38,6 +34,11 @@ public class PlayerMoveBuilder
     {
         Submitted = true;
         _moveProcessor.OnMoveSubmitted();
+    }
+
+    private void UpdateRemainingMoves()
+    {
+        RemainingMoves.Value = 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count);
     }
 
     internal IEnumerable<PlayerMove> GetMoves()

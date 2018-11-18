@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class FactionDisplay
@@ -7,30 +8,49 @@ public class FactionDisplay
 
     public Faction Faction { get; }
 
-    public FactionDisplay(ObservableProperty<Faction> playerFactionProp, Text textGameObject, Faction faction)
+    public bool IsSelected { get { return _interactionManager.PlayerFaction.Value == Faction; } }
+
+    public string DisplayText
     {
+        get
+        {
+            string ret = Faction.Name + " (" + _moveBuilder.RemainingMoves.Value + " moves)";
+            if(IsSelected)
+            {
+                ret += " - Controlled";
+            }
+            return ret;
+        }
+    }
+
+    private readonly PlayerMoveBuilder _moveBuilder;
+    private readonly InteractionManager _interactionManager;
+
+    public FactionDisplay(PlayerMoveBuilder moveBuilder, InteractionManager interactionManager, Text textGameObject, Faction faction)
+    {
+        _moveBuilder = moveBuilder;
+        _interactionManager = interactionManager;
         _textObject = textGameObject;
         _textObject.text = faction.Name;
         _textObject.color = faction.Color;
         Faction = faction;
-        playerFactionProp.ValueChangedEvent += OnPlayerFactionChanged;
-        UpdateText(playerFactionProp.Value == faction);
+        _moveBuilder.RemainingMoves.ValueChangedEvent += OnRemainingMovesChanged;
+        _interactionManager.PlayerFaction.ValueChangedEvent += OnPlayerFactionChanged;
+        UpdateText();
+    }
+
+    private void OnRemainingMovesChanged(int oldValue, int newValue)
+    {
+        UpdateText();
     }
 
     private void OnPlayerFactionChanged(Faction oldValue, Faction newValue)
     {
-        UpdateText(Faction == newValue);
+        UpdateText();
     }
 
-    public void UpdateText(bool isSelected)
+    public void UpdateText()
     {
-        if(isSelected)
-        {
-            _textObject.text = Faction.Name + " - Controlled";
-        }
-        else
-        {
-            _textObject.text = Faction.Name;
-        }
+        _textObject.text = DisplayText;
     }
 }

@@ -19,7 +19,7 @@ public class MainGameManager
     {
         WorldMap = new Worldmap(gameSetup.TilePrefab, gameSetup.Rows, gameSetup.Columns);
 
-        IEnumerable<PlayerSetup> playerSetups = GetPlayerSetups();
+        IEnumerable<PlayerSetup> playerSetups = PlayerSetup.GetTestSetups();
         GameTurnTransition initialState = GetInitialState(playerSetups, WorldMap);
 
         _turns.Add(initialState);
@@ -61,16 +61,6 @@ public class MainGameManager
             ret.Add(armyState);
         }
         return ret;
-    }
-
-    private IEnumerable<PlayerSetup> GetPlayerSetups()
-    {
-        return new[]
-        {
-            new PlayerSetup("Player A", Color.blue, -5, -5),
-            new PlayerSetup("Player B", Color.red, 5, 5),
-            new PlayerSetup("Player C", Color.gray, 0, 5),
-        };
     }
 
     private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
