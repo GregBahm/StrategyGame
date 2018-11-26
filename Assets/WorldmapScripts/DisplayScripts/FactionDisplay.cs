@@ -26,9 +26,9 @@ public class FactionDisplay
     private readonly PlayerMoveBuilder _moveBuilder;
     private readonly InteractionManager _interactionManager;
 
-    public FactionDisplay(PlayerMoveBuilder moveBuilder, InteractionManager interactionManager, Text textGameObject, Faction faction)
+    public FactionDisplay(InteractionManager interactionManager, Text textGameObject, Faction faction)
     {
-        _moveBuilder = moveBuilder;
+        _moveBuilder = interactionManager.TurnMovesProcessor.GetMoveBuilderFor(faction);
         _interactionManager = interactionManager;
         _textObject = textGameObject;
         _textObject.text = faction.Name;

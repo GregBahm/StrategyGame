@@ -26,6 +26,7 @@ public class FactionsHud
             gameObject.name = faction.Name + " hud";
             Text textObject = gameObject.GetComponent<Text>();
             ((RectTransform) gameObject.transform).offsetMax = new Vector2(0, -indexer * 20);
+            
             FactionDisplay factionDisplay = new FactionDisplay(interactionManager, textObject, faction);
             gameObject.GetComponent<Button>().onClick.AddListener(() => OnFactionClick(factionDisplay));
 

@@ -36,6 +36,11 @@ public class PlayerMoveBuilder
         _moveProcessor.OnMoveSubmitted();
     }
 
+    internal void Renew()
+    {
+        throw new NotImplementedException();
+    }
+
     private void UpdateRemainingMoves()
     {
         RemainingMoves.Value = 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count);

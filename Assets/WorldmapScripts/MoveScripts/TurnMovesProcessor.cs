@@ -22,17 +22,16 @@ public class TurnMovesProcessor
         SwitchActiveFaction(newValue);
     }
 
+    internal PlayerMoveBuilder GetMoveBuilderFor(Faction faction)
+    {
+        throw new NotImplementedException();
+    }
+
     public void RenewBuilders(IEnumerable<Faction> factions)
     {
-        Faction lastActiveFaction = ActiveBuilder.PlayerFaction;
-        _builders = factions.Select(item => new PlayerMoveBuilder(this, item)).ToArray();
-        if(factions.Contains(lastActiveFaction))
+        foreach (PlayerMoveBuilder builder in _builders)
         {
-            SwitchActiveFaction(lastActiveFaction);
-        }
-        else
-        {
-            SwitchActiveFaction(factions.First());
+            builder.Renew();
         }
     }
 
