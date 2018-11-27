@@ -24,7 +24,7 @@ public class TurnMovesProcessor
 
     internal PlayerMoveBuilder GetMoveBuilderFor(Faction faction)
     {
-        throw new NotImplementedException();
+        return _builders.First(item => item.PlayerFaction == faction);
     }
 
     public void RenewBuilders(IEnumerable<Faction> factions)

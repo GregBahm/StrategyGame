@@ -58,7 +58,10 @@ public class GameDisplayManager
     private ArmyDisplay CreateNewArmy(ArmyState army)
     {
         GameObject armyArt = GameObject.Instantiate(_armyPrefab);
-        return new ArmyDisplay(this, army.Identifier, armyArt);
+        ArmyDisplay ret = new ArmyDisplay(this, army.Identifier, armyArt);
+        ArmyDisplayBinding binding = armyArt.GetComponentInChildren<ArmyDisplayBinding>();
+        binding.ArmyDisplay = ret;
+        return ret;
     }
 
     public void DisplayTurn(GameTurnTransition turn, float progression)

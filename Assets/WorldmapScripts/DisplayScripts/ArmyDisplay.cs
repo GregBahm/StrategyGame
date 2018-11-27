@@ -6,6 +6,7 @@ public class ArmyDisplay
     private readonly GameDisplayManager _mothership;
 
     public GameObject ArtContent { get; }
+    public Material Mat { get; }
 
     public Army Identifier { get; }
 
@@ -14,6 +15,7 @@ public class ArmyDisplay
         _mothership = mothership;
         Identifier = identifier;
         ArtContent = artContent;
+        Mat = artContent.GetComponent<MeshRenderer>().material;
     }
 
     internal void SetArmyAsDead()

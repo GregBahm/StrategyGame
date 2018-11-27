@@ -13,7 +13,7 @@ public class InteractionManager
     public TurnMovesProcessor TurnMovesProcessor { get; }
 
     public ObservableProperty<float> MasterGameTime { get; }
-
+    
     public ObservableProperty<Faction> PlayerFaction { get; }
 
     public InteractionManager(MainGameManager mainManager, GameSetup gameSetup, Worldmap worldmap, IEnumerable<PlayerSetup> playerSetups)

@@ -38,7 +38,11 @@ public class PlayerMoveBuilder
 
     internal void Renew()
     {
-        throw new NotImplementedException();
+        _armyMoves.Clear();
+        _provinceMerges.Clear();
+        _provinceUpgrades.Clear();
+
+        UpdateRemainingMoves();
     }
 
     private void UpdateRemainingMoves()

@@ -418,9 +418,8 @@ MonoBehaviour:
   MapUvs: {fileID: 898966889}
   SkyMat: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
   BackgroundColor: {r: 1, g: 1, b: 1, a: 0}
-  HighlightDecaySpeed: 0.1
+  HighlightDecaySpeed: 0.01
   ScreenCanvas: {fileID: 1121700608}
-  GameTime: 0
 --- !u!4 &2082271841
 Transform:
   m_ObjectHideFlags: 0
