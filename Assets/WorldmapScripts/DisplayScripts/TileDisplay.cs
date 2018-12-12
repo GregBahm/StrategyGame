@@ -17,14 +17,15 @@ public class TileDisplay
 
     public TileNeighbors Neighbors { get; private set; }
     public CollisionCluster ColliderCluster { get; private set; }
-
-    private readonly Worldmap _map;
-    private float _highlighting;
     
-    public TileDisplay(Tile tile, Worldmap map, GameObject gameObject)
+    private readonly MapDisplay _mapDisplay;
+    private float _hoverPower;
+    private float _selectPower;
+    
+    public TileDisplay(Tile tile, MapDisplay map, GameObject gameObject)
     {
         Tile = tile;
-        _map = map;
+        _mapDisplay = map;
         GameObject = gameObject;
         Collider = gameObject.GetComponent<MeshCollider>();
         _tileMat = gameObject.GetComponent<MeshRenderer>().material;
@@ -32,10 +33,10 @@ public class TileDisplay
 
     public TileDisplay GetOffset(int rowOffset, int ascendingColumnOffset)
     {
-        return _map.GetTile(Tile.Row + rowOffset, Tile.AscendingColumn + ascendingColumnOffset);
+        return _mapDisplay.GetTile(Tile.Row + rowOffset, Tile.AscendingColumn + ascendingColumnOffset);
     }
 
-    public void SetNeighbors(Worldmap worldMap)
+    public void SetNeighbors(MapDisplay worldMap)
     {
         Neighbors = new TileNeighbors(this, worldMap);
     }
@@ -81,11 +82,14 @@ public class TileDisplay
         return connected ? 1 : 0;
     }
 
-    public void UpdateHighlighting(bool isHighlit, float highlightDecaySpeed, bool mouseDown)
+    public void UpdateHighlighting(MapInteraction mapInteraction, float highlightDecaySpeed)
     {
-        _highlighting = Mathf.Lerp(_highlighting, isHighlit ? 1 : 0, highlightDecaySpeed);
-        _tileMat.SetFloat("_HighlightPower", (isHighlit && mouseDown) ? 1 : 0);
-        _tileMat.SetFloat("_HoverPower", _highlighting);
+        bool isHovered = mapInteraction.HoveredTile == this;
+        bool isSelected = mapInteraction.SelectedTile == this;
+        _hoverPower = Mathf.Lerp(_hoverPower, isHovered ? 1 : 0, highlightDecaySpeed);
+        _selectPower = Mathf.Lerp(_selectPower, isSelected ? 1 : 0, highlightDecaySpeed);
+        _tileMat.SetFloat("_HighlightPower", _selectPower);
+        _tileMat.SetFloat("_HoverPower", _hoverPower);
     }
 
     public class TileNeighbors : IEnumerable<TileDisplay>
@@ -102,7 +106,7 @@ public class TileDisplay
 
         public ReadOnlyDictionary<Collider, TileDisplay> ColliderDictionary { get; }
 
-        public TileNeighbors(TileDisplay owner, Worldmap worldMap)
+        public TileNeighbors(TileDisplay owner, MapDisplay worldMap)
         {
             PositiveRow = owner.GetOffset(1, 0);
             NegativeRow = owner.GetOffset(-1, 0);

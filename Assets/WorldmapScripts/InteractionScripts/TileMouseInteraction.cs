@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class TileMouseInteraction
 {
-    private readonly Worldmap _map;
+    private readonly MapDisplay _map;
     private readonly Plane _groundPlane;
     private readonly int _tileLayermask;
 
-    public TileMouseInteraction(Worldmap map)
+    public TileMouseInteraction(MapDisplay map)
     {
         _tileLayermask = 1 << LayerMask.NameToLayer("TileLayer");
         _map = map;

@@ -4,15 +4,17 @@ using UnityEngine;
 public class ArmyDisplay
 {
     private readonly GameDisplayManager _mothership;
+    private readonly Transform _transform;
 
     public GameObject ArtContent { get; }
     public Material Mat { get; }
 
     public Army Identifier { get; }
 
-    public ArmyDisplay(GameDisplayManager mothership, Army identifier, GameObject artContent)
+    public ArmyDisplay(GameDisplayManager mothership, Army identifier, Transform transform, GameObject artContent)
     {
         _mothership = mothership;
+        _transform = transform;
         Identifier = identifier;
         ArtContent = artContent;
         Mat = artContent.GetComponent<MeshRenderer>().material;
@@ -26,7 +28,7 @@ public class ArmyDisplay
     internal void DisplayArmy(GameTurnTransition gameTurnTransition, ArmyTurnTransition transition, DisplayTimings progression)
     {
         ArtContent.SetActive(true);
-        ArtContent.transform.position = GetForcesPosition(gameTurnTransition, transition, progression);
+        _transform.position = GetForcesPosition(gameTurnTransition, transition, progression);
         DisplayForces(transition, progression);
     }
 

@@ -10,20 +10,21 @@ public class GameDisplayManager
     private readonly MainGameManager _mainManager;
     private readonly GameObject _armyPrefab;
     private readonly FactionsHud _factionsHud;
+    public MapDisplay Map { get; }
 
-    public GameDisplayManager(MainGameManager mainManager, GameSetup gameSetup, IEnumerable<Faction> factions, GameState initialState)
+    public GameDisplayManager(MainGameManager mainManager, GameSetup gameSetup, IEnumerable<Faction> factions, Map map, GameState initialState)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
         _armyPrefab = gameSetup.ArmyPrefab;
-        _factionsHud = new FactionsHud(mainManager.InteractionManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
-        _mainManager.InteractionManager.MasterGameTime.ValueChangedEvent += OnTimeChanged;
+        _factionsHud = new FactionsHud(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
+        Map = new MapDisplay(gameSetup, map);
         UpdateDisplayWrappers(initialState);
         DisplayGamestate(0);
     }
 
-    private void OnTimeChanged(float oldValue, float newValue)
+    public void OnTimeChanged(float newValue)
     {
         DisplayGamestate(newValue);
     }
@@ -33,6 +34,11 @@ public class GameDisplayManager
         GameTurnTransition turn = _mainManager[Mathf.FloorToInt(gameTime)];
         float progression = gameTime % 1;
         DisplayTurn(turn, progression);
+    }
+
+    internal void UpdateUi()
+    {
+        Map.UpdateUiState(_mainManager.InteractionManager.Map);
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -58,8 +64,8 @@ public class GameDisplayManager
     private ArmyDisplay CreateNewArmy(ArmyState army)
     {
         GameObject armyArt = GameObject.Instantiate(_armyPrefab);
-        ArmyDisplay ret = new ArmyDisplay(this, army.Identifier, armyArt);
         ArmyDisplayBinding binding = armyArt.GetComponentInChildren<ArmyDisplayBinding>();
+        ArmyDisplay ret = new ArmyDisplay(this, army.Identifier, armyArt.transform, binding.ArtContent);
         binding.ArmyDisplay = ret;
         return ret;
     }
@@ -78,7 +84,7 @@ public class GameDisplayManager
 
     private void UpdateTiles(GameTurnTransition turn, DisplayTimings timings)
     {
-        foreach (TileDisplay tileDisplay in _mainManager.WorldMap.Tiles)
+        foreach (TileDisplay tileDisplay in Map.TileDisplays)
         {
             tileDisplay.DisplayTile(turn, timings);
         }
@@ -86,7 +92,7 @@ public class GameDisplayManager
 
     internal TileDisplay GetTile(Tile tile)
     {
-        return _mainManager.WorldMap.GetTile(tile.Row, tile.AscendingColumn);
+        return Map.GetTile(tile.Row, tile.AscendingColumn);
     }
 
     private void UpdateProvinces(GameTurnTransition transiation, DisplayTimings timings)

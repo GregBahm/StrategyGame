@@ -16,11 +16,11 @@ public class InteractionManager
     
     public ObservableProperty<Faction> PlayerFaction { get; }
 
-    public InteractionManager(MainGameManager mainManager, GameSetup gameSetup, Worldmap worldmap, IEnumerable<PlayerSetup> playerSetups)
+    public InteractionManager(MainGameManager mainManager, GameSetup gameSetup, Map map, IEnumerable<PlayerSetup> playerSetups)
     {
         MasterGameTime = new ObservableProperty<float>(0);
         PlayerFaction = new ObservableProperty<Faction>(playerSetups.First().Faction);
-        Map = new MapInteraction(gameSetup, worldmap);
+        Map = new MapInteraction(gameSetup, map, mainManager.DisplayManager.Map);
         Timeline = new TimelineInteraction(this);
         TurnMovesProcessor = new TurnMovesProcessor(mainManager, this, playerSetups);
     }

@@ -12,30 +12,30 @@ public class MainGameManager
     public int TurnsCount { get { return _turns.Count; } }
 
     public GameDisplayManager DisplayManager { get; }
-    public Worldmap WorldMap { get; }
     public InteractionManager InteractionManager { get; }
     
     public MainGameManager(GameSetup gameSetup)
     {
-        WorldMap = new Worldmap(gameSetup.TilePrefab, gameSetup.Rows, gameSetup.Columns);
+        Map map = new Map(gameSetup.Rows, gameSetup.Columns);
 
         IEnumerable<PlayerSetup> playerSetups = PlayerSetup.GetTestSetups();
-        GameTurnTransition initialState = GetInitialState(playerSetups, WorldMap);
+        GameTurnTransition initialState = GetInitialState(playerSetups, map);
 
         _turns.Add(initialState);
 
-        InteractionManager = new InteractionManager(this, gameSetup, WorldMap, playerSetups);
-        DisplayManager = new GameDisplayManager(this, gameSetup, playerSetups.Select(item => item.Faction), initialState.PostMergersState);
+        DisplayManager = new GameDisplayManager(this, gameSetup, playerSetups.Select(item => item.Faction), map, initialState.PostMergersState);
+        InteractionManager = new InteractionManager(this, gameSetup, map, playerSetups);
     }
 
     internal void Update()
     {
         InteractionManager.Update();
+        DisplayManager.UpdateUi();
     }
 
-    private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
+    private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Map map)
     {
-        IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups, worldmap);
+        IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups, map);
         IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
         GameState initialState = new GameState(provinces, armies);
         MergeTable mergeTable = new MergeTable(new Dictionary<Province, Province>());
@@ -63,13 +63,13 @@ public class MainGameManager
         return ret;
     }
 
-    private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
+    private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Map map)
     {
         Faction unownedFaction = new Faction("Independent", Color.white);
-        Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups, worldmap);
+        Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups, map);
 
         List<ProvinceState> ret = new List<ProvinceState>();
-        foreach (Tile tile in WorldMap.Tiles.Select(item => item.Tile))
+        foreach (Tile tile in map)
         {
             Faction faction = unownedFaction;
             if(startingLocations.ContainsKey(tile))
@@ -89,13 +89,13 @@ public class MainGameManager
         return new ProvinceState(faction, upgrades, new Province(), tileSet);
     }
 
-    private Dictionary<Tile, Faction> GetStartingLocations(IEnumerable<PlayerSetup> playerSetups, Worldmap worldmap)
+    private Dictionary<Tile, Faction> GetStartingLocations(IEnumerable<PlayerSetup> playerSetups, Map tiles)
     {
         Dictionary<Tile, Faction> ret = new Dictionary<Tile, Faction>();
 
         foreach (PlayerSetup player in playerSetups)
         {
-            Tile tile = worldmap.GetTile(player.StartRow, player.StartColumn).Tile;
+            Tile tile = tiles.GetTile(player.StartRow, player.StartColumn);
             ret.Add(tile, player.Faction);
         }
         
