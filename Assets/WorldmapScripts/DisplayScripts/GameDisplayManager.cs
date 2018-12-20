@@ -12,14 +12,19 @@ public class GameDisplayManager
     private readonly FactionsHud _factionsHud;
     public MapDisplay Map { get; }
 
-    public GameDisplayManager(MainGameManager mainManager, GameSetup gameSetup, IEnumerable<Faction> factions, Map map, GameState initialState)
+    public GameDisplayManager(MainGameManager mainManager, 
+        GameSetup gameSetup, 
+        IEnumerable<Faction> factions, 
+        Map map, 
+        UnityObjectManager objectManager,
+        GameState initialState)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
         _armyPrefab = gameSetup.ArmyPrefab;
         _factionsHud = new FactionsHud(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
-        Map = new MapDisplay(gameSetup, map);
+        Map = new MapDisplay(gameSetup, map, objectManager);
         UpdateDisplayWrappers(initialState);
         DisplayGamestate(0);
     }
@@ -36,9 +41,9 @@ public class GameDisplayManager
         DisplayTurn(turn, progression);
     }
 
-    internal void UpdateUi()
+    internal void UpdateUi(float timeDelta)
     {
-        Map.UpdateUiState(_mainManager.InteractionManager.Map);
+        Map.UpdateUiState(_mainManager.InteractionManager.Map, timeDelta);
     }
 
     public void UpdateDisplayWrappers(GameState state)
@@ -47,7 +52,7 @@ public class GameDisplayManager
         {
             if(!_armies.ContainsKey(army.Identifier))
             {
-                ArmyDisplay displayer = CreateNewArmy(army);
+                ArmyDisplay displayer = RegisterNewArmy(army);
                 _armies.Add(army.Identifier, displayer);
             }
         }
@@ -61,13 +66,10 @@ public class GameDisplayManager
         }
     }
 
-    private ArmyDisplay CreateNewArmy(ArmyState army)
+    private ArmyDisplay RegisterNewArmy(ArmyState army)
     {
-        GameObject armyArt = GameObject.Instantiate(_armyPrefab);
-        ArmyDisplayBinding binding = armyArt.GetComponentInChildren<ArmyDisplayBinding>();
-        ArmyDisplay ret = new ArmyDisplay(this, army.Identifier, armyArt.transform, binding.ArtContent);
-        binding.ArmyDisplay = ret;
-        return ret;
+        ArmyUnityObject unityObject = _mainManager.ObjectManager.GetUnityObject(army.Identifier);
+        return new ArmyDisplay(this, army.Identifier, unityObject.transform, unityObject.ArtContent);
     }
 
     public void DisplayTurn(GameTurnTransition turn, float progression)

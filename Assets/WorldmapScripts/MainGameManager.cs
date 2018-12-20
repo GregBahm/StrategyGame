@@ -13,6 +13,7 @@ public class MainGameManager
 
     public GameDisplayManager DisplayManager { get; }
     public InteractionManager InteractionManager { get; }
+    public UnityObjectManager ObjectManager { get; }
     
     public MainGameManager(GameSetup gameSetup)
     {
@@ -23,14 +24,20 @@ public class MainGameManager
 
         _turns.Add(initialState);
 
-        DisplayManager = new GameDisplayManager(this, gameSetup, playerSetups.Select(item => item.Faction), map, initialState.PostMergersState);
+        ObjectManager = new UnityObjectManager(map, gameSetup.TilePrefab, gameSetup.ArmyPrefab, initialState.PostMergersState);
         InteractionManager = new InteractionManager(this, gameSetup, map, playerSetups);
+        DisplayManager = new GameDisplayManager(this, 
+            gameSetup, 
+            playerSetups.Select(item => item.Faction), 
+            map,
+            ObjectManager,
+            initialState.PostMergersState);
     }
 
     internal void Update()
     {
         InteractionManager.Update();
-        DisplayManager.UpdateUi();
+        DisplayManager.UpdateUi(Time.deltaTime);
     }
 
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Map map)
@@ -112,6 +119,7 @@ public class MainGameManager
         {
             HandleGameConclusion(survivingFactions);
         }
+        ObjectManager.UpdateGameobjects(newState.PostMergersState);
         DisplayManager.UpdateDisplayWrappers(newState.PostMergersState);
         InteractionManager.TurnMovesProcessor.RenewBuilders(survivingFactions);
     }

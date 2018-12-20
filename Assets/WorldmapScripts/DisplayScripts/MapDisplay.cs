@@ -7,26 +7,26 @@ using UnityEngine;
 public class MapDisplay
 {
     private readonly GameSetup _gameSetup;
-    private readonly Map _map;
+    public Map Map { get; }
     public Dictionary<Tile, TileDisplay> _dictionary;
     public IEnumerable<TileDisplay> TileDisplays { get { return _dictionary.Values; } }
 
-    public readonly Vector2 AscendingTileOffset = new Vector2(1, -1.73f).normalized;
+    public static Vector2 AscendingTileOffset { get; } = new Vector2(1, -1.73f).normalized;
     
-    public MapDisplay(GameSetup gameSetup, Map map)
+    public MapDisplay(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
-        _map = map;
+        Map = map;
         _gameSetup = gameSetup;
-        _dictionary = MakeTilesDictionary(gameSetup.TilePrefab, map);
+        _dictionary = MakeTilesDictionary(map, objectManager);
         InitializeTiles();
     }
 
-    public void UpdateUiState(MapInteraction mapInteraction)
+    public void UpdateUiState(MapInteraction mapInteraction, float timeDelta)
     {
         SetStandardShaderProperties();
         foreach (TileDisplay tile in TileDisplays)
         {
-            tile.UpdateHighlighting(mapInteraction, _gameSetup.HighlightDecaySpeed);
+            tile.UpdateHighlighting(mapInteraction, _gameSetup.HighlightDecaySpeed, timeDelta);
         }
     }
 
@@ -36,18 +36,15 @@ public class MapDisplay
         {
             tile.SetNeighbors(this);
         }
-        foreach (TileDisplay tile in TileDisplays)
-        {
-            tile.SetCollisionCluster();
-        }
     }
 
-    private Dictionary<Tile, TileDisplay> MakeTilesDictionary(GameObject tilePrefab, Map tiles)
+    private Dictionary<Tile, TileDisplay> MakeTilesDictionary(Map tiles, UnityObjectManager objectManager)
     {
         Dictionary<Tile, TileDisplay> ret = new Dictionary<Tile, TileDisplay>();
         foreach (Tile tile in tiles)
         {
-            TileDisplay display = CreateTileDisplay(tile, tilePrefab);
+            TileUnityObject tileObject = objectManager.GetUnityObject(tile);
+            TileDisplay display = CreateTileDisplay(tile, tileObject);
             ret.Add(tile, display);
         }
         return ret;
@@ -55,17 +52,13 @@ public class MapDisplay
     
     public TileDisplay GetTile(int row, int ascendingColumn)
     {
-        Tile tile = _map.GetTile(row, ascendingColumn);
+        Tile tile = Map.GetTile(row, ascendingColumn);
         return _dictionary[tile];
     }
 
-    private TileDisplay CreateTileDisplay(Tile tile, GameObject tilePrefab)
+    private TileDisplay CreateTileDisplay(Tile tile, TileUnityObject tileObject)
     {
-        int descendingColumn = tile.Row + tile.AscendingColumn;
-        string providenceName = string.Format("Providence {0} {1} {2}", tile.Row, tile.AscendingColumn, descendingColumn);
-        GameObject obj = GameObject.Instantiate(tilePrefab);
-        obj.name = providenceName;
-
+        GameObject obj = tileObject.gameObject;
         TileDisplay ret = new TileDisplay(tile, this, obj); 
         obj.transform.position = GetProvincePosition(tile.Row, tile.AscendingColumn);
         return ret;

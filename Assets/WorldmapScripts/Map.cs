@@ -20,6 +20,17 @@ public class Map : IEnumerable<Tile>
         _tiles = MakeTiles();
     }
 
+    public bool GetIsWithinBounds(int row, int column)
+    {
+        return row >= 0 && row < Rows && column >= 0 && column < Columns;
+    }
+    public bool GetIsWithinBounds(Tile tile, int rowOffset, int columnOffset)
+    {
+        int row = tile.Row + rowOffset;
+        int column = tile.AscendingColumn + columnOffset;
+        return GetIsWithinBounds(row, column);
+    }
+
     private List<Tile> MakeTiles()
     {
         List<Tile> ret = new List<Tile>(TilesCount);
@@ -27,22 +38,15 @@ public class Map : IEnumerable<Tile>
         {
             for (int ascendingColumn = 0; ascendingColumn < Columns; ascendingColumn++)
             {
-                ret.Add(new Tile(row, ascendingColumn));
+                ret.Add(new Tile(row, ascendingColumn, this));
             }
         }
         return ret;
     }
-    
-    private static int MathMod(int value, int modolus)
-    {
-        return (Math.Abs(value * modolus) + value) % modolus;
-    }
 
     public Tile GetTile(int row, int ascendingColumn)
     {
-        int modRow = MathMod(row, Rows);
-        int modColumn = MathMod(ascendingColumn, Columns);
-        int index = (modRow * Columns) + modColumn;
+        int index = row * Columns + ascendingColumn;
         if (index < 0 || index >= TilesCount)
         {
             throw new Exception("Bad index (" + index + ")");

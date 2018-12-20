@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 33379866120089922}
   - component: {fileID: 23400927753939020}
   - component: {fileID: 64899181692970164}
+  - component: {fileID: 114594258844109710}
   m_Layer: 8
   m_Name: Tile_pfb
   m_TagString: Untagged
@@ -98,3 +99,15 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: d20504de5e599df46b93a935d6f8e601, type: 3}
+--- !u!114 &114594258844109710
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1178486124817436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f9099e67ecc46648b69eb60eb1fd3b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Collider: {fileID: 64899181692970164}

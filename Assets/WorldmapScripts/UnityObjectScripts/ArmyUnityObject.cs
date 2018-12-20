@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArmyDisplayBinding : MonoBehaviour
+public class ArmyUnityObject : MonoBehaviour
 {
     public GameObject ArtContent;
-    public ArmyDisplay ArmyDisplay;
+    public Army Army;
 }

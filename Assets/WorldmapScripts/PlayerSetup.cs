@@ -18,9 +18,9 @@ public class PlayerSetup
     {
         return new[]
         {
-            new PlayerSetup("Player A", Color.blue, -5, -5),
-            new PlayerSetup("Player B", Color.red, 5, 5),
-            new PlayerSetup("Player C", Color.gray, -5, 5),
+            new PlayerSetup("Player A", Color.blue, 0,0),
+            new PlayerSetup("Player B", Color.red, 10, 10),
+            new PlayerSetup("Player C", Color.gray, 19, 19),
         };
     }
 }

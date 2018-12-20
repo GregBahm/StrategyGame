@@ -16,7 +16,6 @@ public class TileDisplay
     public Collider Collider { get; }
 
     public TileNeighbors Neighbors { get; private set; }
-    public CollisionCluster ColliderCluster { get; private set; }
     
     private readonly MapDisplay _mapDisplay;
     private float _hoverPower;
@@ -41,11 +40,6 @@ public class TileDisplay
         Neighbors = new TileNeighbors(this, worldMap);
     }
 
-    public void SetCollisionCluster()
-    {
-        ColliderCluster = new CollisionCluster(this);
-    }
-
     public void DisplayTile(GameTurnTransition gameTransition, DisplayTimings timings)
     {
         DisplayProvinceOwnershipChanges(gameTransition.InitialState, gameTransition.PostOwnershipChangesState, timings.ProvinceOwnershipChanges);
@@ -68,8 +62,8 @@ public class TileDisplay
         Province postMergeOwner = postMergeGame.GetTilesProvince(Tile).Identifier;
         foreach (MaterialConnection connection in Neighbors.MaterialConnections)
         {
-            float preMergeVal = GetConnectionVal(preMergeOwner, connection.Tile, preMergeGame);
-            float postMergeVal = GetConnectionVal(postMergeOwner, connection.Tile, postMergeGame);
+            float preMergeVal = GetConnectionVal(preMergeOwner, connection.Tile.Tile, preMergeGame);
+            float postMergeVal = GetConnectionVal(postMergeOwner, connection.Tile.Tile, postMergeGame);
             float finalVal = Mathf.Lerp(preMergeVal, postMergeVal, mergerProgress);
             _tileMat.SetFloat(connection.MaterialName, finalVal);
         }
@@ -82,110 +76,86 @@ public class TileDisplay
         return connected ? 1 : 0;
     }
 
-    public void UpdateHighlighting(MapInteraction mapInteraction, float highlightDecaySpeed)
+    public void UpdateHighlighting(MapInteraction mapInteraction, float highlightDecaySpeed, float timeDelta)
     {
-        bool isHovered = mapInteraction.HoveredTile == this;
-        bool isSelected = mapInteraction.SelectedTile == this;
-        _hoverPower = Mathf.Lerp(_hoverPower, isHovered ? 1 : 0, highlightDecaySpeed);
-        _selectPower = Mathf.Lerp(_selectPower, isSelected ? 1 : 0, highlightDecaySpeed);
+        bool isHovered = mapInteraction.HoveredTile == Tile;
+        bool isSelected = mapInteraction.SelectedTile == Tile;
+        float speed = highlightDecaySpeed * timeDelta;
+        _hoverPower = Mathf.Lerp(_hoverPower, isHovered ? 1 : 0, speed);
+        _selectPower = Mathf.Lerp(_selectPower, isSelected ? 1 : 0, speed);
         _tileMat.SetFloat("_HighlightPower", _selectPower);
         _tileMat.SetFloat("_HoverPower", _hoverPower);
     }
 
-    public class TileNeighbors : IEnumerable<TileDisplay>
+    public class TileNeighbors
     {
-        public TileDisplay PositiveRow { get; }
-        public TileDisplay NegativeRow { get; }
-        public TileDisplay PositiveAscending { get; }
-        public TileDisplay NegativeAscending { get; }
-        public TileDisplay PositiveDescending { get; }
-        public TileDisplay NegativeDescending { get; }
-
-        private readonly IEnumerable<TileDisplay> _neighbors;
+        private static readonly ConnectionBlueprint[] _connectionBlueprints = new ConnectionBlueprint[]
+        {
+            new ConnectionBlueprint("_PositiveRowConnected", 1, 0),
+            new ConnectionBlueprint("_NegativeRowConnected", -1, 0),
+            new ConnectionBlueprint("_PositiveAscendingConnected", 0, 1),
+            new ConnectionBlueprint("_NegativeAscendingConnected", 0, -1),
+            new ConnectionBlueprint("_PositiveDescendingConnected", -1, 1),
+            new ConnectionBlueprint("_NegativeDescendingConnected", 1, -1)
+        };
+        
         public IEnumerable<MaterialConnection> MaterialConnections { get; }
-
-        public ReadOnlyDictionary<Collider, TileDisplay> ColliderDictionary { get; }
 
         public TileNeighbors(TileDisplay owner, MapDisplay worldMap)
         {
-            PositiveRow = owner.GetOffset(1, 0);
-            NegativeRow = owner.GetOffset(-1, 0);
-            PositiveAscending = owner.GetOffset(0, 1);
-            NegativeAscending = owner.GetOffset(0, -1);
-            PositiveDescending = owner.GetOffset(-1, 1);
-            NegativeDescending = owner.GetOffset(1, -1);
-            _neighbors = new[]
+            MaterialConnections = GetMaterialConnections(owner, worldMap);
+        }
+
+        private IEnumerable<MaterialConnection> GetMaterialConnections(TileDisplay owner, MapDisplay worldMap)
+        {
+            List<MaterialConnection> ret = new List<MaterialConnection>();
+            foreach (ConnectionBlueprint blueprint in _connectionBlueprints)
             {
-                PositiveRow,
-                NegativeRow,
-                PositiveAscending,
-                NegativeAscending,
-                PositiveDescending,
-                NegativeDescending
-            };
-            MaterialConnections = new []
-            {       
-                new MaterialConnection("_PositiveRowConnected", PositiveRow.Tile),
-                new MaterialConnection("_NegativeRowConnected", NegativeRow.Tile),
-                new MaterialConnection("_PositiveAscendingConnected", PositiveAscending.Tile),
-                new MaterialConnection("_NegativeAscendingConnected", NegativeAscending.Tile),
-                new MaterialConnection("_PositiveDescendingConnected", PositiveDescending.Tile),
-                new MaterialConnection("_NegativeDescendingConnected", NegativeDescending.Tile),
-            };
+                bool tileExists = GetDoesTileExist(worldMap.Map, blueprint, owner.Tile);
+                if (tileExists)
+                {
+                    TileDisplay neighbor = GetNeighbor(worldMap, blueprint, owner.Tile);
+                    MaterialConnection retItem = new MaterialConnection(blueprint.MaterialPropertyName, neighbor);
+                    ret.Add(retItem);
+                }
+            }
+            return ret;
         }
 
-        public IEnumerator<TileDisplay> GetEnumerator()
+        private bool GetDoesTileExist(Map map, ConnectionBlueprint connectionMap, Tile tile)
         {
-            return _neighbors.GetEnumerator();
+            return map.GetIsWithinBounds(tile, connectionMap.RowOffset, connectionMap.ColumnOffset);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        private TileDisplay GetNeighbor(MapDisplay worldMap, ConnectionBlueprint connection, Tile tile)
         {
-            return this.GetEnumerator();
+            int row = tile.Row + connection.RowOffset;
+            int column = tile.AscendingColumn + connection.ColumnOffset;
+            return worldMap.GetTile(row, column);
+        }
+
+        private struct ConnectionBlueprint
+        {
+            public string MaterialPropertyName { get; }
+            public int RowOffset { get; }
+            public int ColumnOffset { get; }
+            public ConnectionBlueprint(string materialPropertyName, int rowOffset, int columnOffset)
+            {
+                MaterialPropertyName = materialPropertyName;
+                RowOffset = rowOffset;
+                ColumnOffset = columnOffset;
+            }
         }
     }
 
     public class MaterialConnection
     {
         public string MaterialName { get; }
-        public Tile Tile { get; }
-        public MaterialConnection(string materialName, Tile tile)
+        public TileDisplay Tile { get; }
+        public MaterialConnection(string materialName, TileDisplay tile)
         {
             MaterialName = materialName;
             Tile = tile;
-        }
-    }
-
-    public class CollisionCluster : IEnumerable<TileDisplay>
-    {
-        private readonly IEnumerable<TileDisplay> _cluster;
-        private readonly ReadOnlyDictionary<Collider, TileDisplay> _dictionary;
-
-        public TileDisplay this[Collider mesh] { get { return _dictionary[mesh]; } }
-
-        public CollisionCluster(TileDisplay source)
-        {
-            _cluster = GetCluster(source);
-            _dictionary = new ReadOnlyDictionary<Collider, TileDisplay>(
-                _cluster.ToDictionary(item => item.Collider, item => item));
-        }
-
-        private static IEnumerable<TileDisplay> GetCluster(TileDisplay source)
-        {
-            List<TileDisplay> ret = new List<TileDisplay>();
-            ret.Add(source);
-            ret.AddRange(source.Neighbors);
-            return ret;
-        }
-
-        public IEnumerator<TileDisplay> GetEnumerator()
-        {
-            return _cluster.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
         }
     }
 }
