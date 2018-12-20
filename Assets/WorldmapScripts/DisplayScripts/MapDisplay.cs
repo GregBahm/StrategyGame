@@ -6,7 +6,9 @@ using UnityEngine;
 
 public class MapDisplay
 {
-    private readonly GameSetup _gameSetup;
+    private Material _skyMat;
+    private Transform _mapUvs;
+
     public Map Map { get; }
     public Dictionary<Tile, TileDisplay> _dictionary;
     public IEnumerable<TileDisplay> TileDisplays { get { return _dictionary.Values; } }
@@ -15,18 +17,19 @@ public class MapDisplay
     
     public MapDisplay(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
+        _skyMat = gameSetup.SkyMat;
+        _mapUvs = gameSetup.MapUvs;
         Map = map;
-        _gameSetup = gameSetup;
         _dictionary = MakeTilesDictionary(map, objectManager);
         InitializeTiles();
     }
 
-    public void UpdateUiState(MapInteraction mapInteraction, float timeDelta)
+    public void UpdateUiState(MapInteraction mapInteraction, float timeDelta, UiAethetics aethetics)
     {
-        SetStandardShaderProperties();
+        SetStandardShaderProperties(aethetics);
         foreach (TileDisplay tile in TileDisplays)
         {
-            tile.UpdateHighlighting(mapInteraction, _gameSetup.HighlightDecaySpeed, timeDelta);
+            tile.UpdateHighlighting(mapInteraction, aethetics.TransitionSpeed, timeDelta);
         }
     }
 
@@ -72,11 +75,11 @@ public class MapDisplay
         return new Vector3(offset.x, 0, offset.y);
     }
 
-    private void SetStandardShaderProperties()
+    private void SetStandardShaderProperties(UiAethetics aethetics)
     {
-        Shader.SetGlobalFloat("_TileMargin", _gameSetup.TileMargin);
-        Shader.SetGlobalMatrix("_MapUvs", _gameSetup.MapUvs.worldToLocalMatrix);
-        Shader.SetGlobalColor("_SideColor", _gameSetup.BackgroundColor);
-        _gameSetup.SkyMat.SetColor("_Tint", _gameSetup.BackgroundColor);
+        Shader.SetGlobalFloat("_TileMargin", aethetics.TileMargin);
+        Shader.SetGlobalMatrix("_MapUvs", _mapUvs.worldToLocalMatrix);
+        Shader.SetGlobalColor("_SideColor", aethetics.BackgroundColor);
+        _skyMat.SetColor("_Tint", aethetics.BackgroundColor);
     }
 }

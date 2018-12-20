@@ -414,12 +414,17 @@ MonoBehaviour:
   ArmyPrefab: {fileID: 1120998763583048, guid: 72cfca8aea2958049bae80556c2f38fd, type: 2}
   FactionPrefab: {fileID: 1376200271034840, guid: 621199bf42229b24fb5ffc7ce8e59fb5,
     type: 2}
-  TileMargin: 0.85
   MapUvs: {fileID: 898966889}
   SkyMat: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
-  BackgroundColor: {r: 1, g: 1, b: 1, a: 0}
-  HighlightDecaySpeed: 0.01
   ScreenCanvas: {fileID: 1121700608}
+  Aethetics:
+    HoverColor: {r: 1, g: 0.92892253, b: 0, a: 0}
+    SelectedColor: {r: 1, g: 0.68073237, b: 0, a: 0}
+    DraggingColor: {r: 1, g: 0.47757196, b: 0, a: 0}
+    SelectingColor: {r: 0.7959391, g: 1, b: 0, a: 0}
+    TransitionSpeed: 20
+    BackgroundColor: {r: 1, g: 1, b: 1, a: 0}
+    TileMargin: 0.85
 --- !u!4 &2082271841
 Transform:
   m_ObjectHideFlags: 0

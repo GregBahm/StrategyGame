@@ -7,17 +7,14 @@ public class GameSetup : MonoBehaviour
     public GameObject TilePrefab;
     public GameObject ArmyPrefab;
     public GameObject FactionPrefab;
-
-    [Range(0, 1)]
-    public float TileMargin;
     public Transform MapUvs;
 
     public Material SkyMat;
-    public Color BackgroundColor;
-    public float HighlightDecaySpeed;
     public Canvas ScreenCanvas;
 
     private MainGameManager _mainManager;
+
+    public UiAethetics Aethetics;
 
     private void Start()
     {
@@ -26,6 +23,6 @@ public class GameSetup : MonoBehaviour
 
     private void Update()
     {
-        _mainManager.Update();
+        _mainManager.Update(Aethetics);
     }
 }

@@ -41,9 +41,22 @@ public class GameDisplayManager
         DisplayTurn(turn, progression);
     }
 
-    internal void UpdateUi(float timeDelta)
+    internal void UpdateUi(float timeDelta, UiAethetics aethetics)
     {
-        Map.UpdateUiState(_mainManager.InteractionManager.Map, timeDelta);
+        UpdateUiAethetics(aethetics);
+        Map.UpdateUiState(_mainManager.InteractionManager.Map, timeDelta, aethetics);
+        foreach (ArmyDisplay army in _armies.Values)
+        {
+            army.UpdateUi(_mainManager.InteractionManager.Map, aethetics, timeDelta);
+        }
+    }
+
+    private void UpdateUiAethetics(UiAethetics aethetics)
+    {
+        Shader.SetGlobalColor("_HoverColor", aethetics.HoverColor);
+        Shader.SetGlobalColor("_SelectedColor", aethetics.SelectedColor);
+        Shader.SetGlobalColor("_DraggingColor", aethetics.DraggingColor);
+        Shader.SetGlobalColor("_SelectingColor", aethetics.SelectingColor);
     }
 
     public void UpdateDisplayWrappers(GameState state)

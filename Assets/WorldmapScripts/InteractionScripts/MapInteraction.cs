@@ -11,8 +11,17 @@ public class MapInteraction
 
     public Army HoveredArmy { get; private set; }
     public Army SelectedArmy { get; private set; }
+    public Army SelectingArmy { get; private set; }
+    public Army DraggingArmy { get; private set; }
+
     public Tile HoveredTile { get; private set; }
     public Tile SelectedTile { get; private set; }
+    public Tile SelectingTile { get; private set; }
+    public Tile DraggingTile { get; private set; }
+
+    public bool AnythingSelected { get { return SelectedTile != null || SelectedArmy != null; } }
+    public bool AnythingHovered { get { return HoveredTile != null || HoveredArmy != null; } }
+    public bool AnythingDragging { get { return DraggingTile != null || DraggingArmy != null; } }
 
     public MapInteraction(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
@@ -26,7 +35,78 @@ public class MapInteraction
     public void Update()
     {
         SetHover();
-        SetSelected();
+        bool mouseDown = Input.GetMouseButton(0);
+        if(mouseDown)
+        {
+            bool mouseJustDown = Input.GetMouseButtonDown(0);
+            if(mouseJustDown)
+            {
+                HandleSelectedToDragging();
+                HandleHoveredToSelecting();
+            }
+        }
+        else
+        {
+            bool mouseJustUp = Input.GetMouseButtonUp(0);
+            if(mouseJustUp)
+            {
+                HandleSelectingToSelected();
+            }
+
+            DraggingArmy = null;
+            DraggingTile = null;
+            SelectingArmy = null;
+            SelectingTile = null;
+        }
+    }
+
+    private void HandleSelectingToSelected()
+    {
+        if(HoveredTile == SelectingTile)
+        {
+            SelectedTile = SelectingTile;
+        }
+        if(HoveredArmy == SelectingArmy)
+        {
+            SelectedArmy = SelectingArmy;
+        }
+    }
+
+    private void HandleSelectedToDragging()
+    {
+        if(HoveredTile == SelectedTile)
+        {
+            DraggingTile = SelectedTile;
+        }
+        if(HoveredArmy == SelectedArmy)
+        {
+            DraggingArmy = SelectedArmy;
+        }
+    }
+
+    private void HandleHoveredToSelecting()
+    {
+        if(HoveredTile != null)
+        {
+            SelectingTile = HoveredTile;
+        }
+        if(HoveredArmy != null)
+        {
+            SelectingArmy = HoveredArmy;
+        }
+    }
+
+    private void SetHover()
+    {
+        HoveredArmy = GetArmyHover();
+        if (HoveredArmy != null)
+        {
+            HoveredTile = null;
+        }
+        else
+        {
+            HoveredTile = GetTileUnderMouse();
+        }
     }
 
     private Tile GetTileUnderMouse()
@@ -93,36 +173,7 @@ public class MapInteraction
 
         return new Vector2(lineAStart.x + lineADiff.x * t1, lineAStart.y + lineADiff.y * t1);
     }
-
-    private void SetHover()
-    {
-        HoveredArmy = GetArmyHover();
-        if (HoveredArmy != null)
-        {
-            HoveredTile = null;
-        }
-        else
-        {
-            HoveredTile = GetTileUnderMouse();
-        }
-    }
-
-    private void SetSelected()
-    {
-        bool mouseDown = Input.GetMouseButton(0);
-        if (mouseDown)
-        {
-            if(HoveredArmy != null)
-            {
-                SelectedArmy = HoveredArmy;
-            }
-            if(HoveredTile != null)
-            {
-                SelectedTile = HoveredTile;
-            }
-        }
-    }
-
+    
     private Army GetArmyHover()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);

@@ -18,8 +18,10 @@ public class TileDisplay
     public TileNeighbors Neighbors { get; private set; }
     
     private readonly MapDisplay _mapDisplay;
-    private float _hoverPower;
-    private float _selectPower;
+    private float _hover;
+    private float _selecting;
+    private float _selected;
+    private float _dragging;
     
     public TileDisplay(Tile tile, MapDisplay map, GameObject gameObject)
     {
@@ -76,15 +78,22 @@ public class TileDisplay
         return connected ? 1 : 0;
     }
 
-    public void UpdateHighlighting(MapInteraction mapInteraction, float highlightDecaySpeed, float timeDelta)
+    public void UpdateHighlighting(MapInteraction mapInteraction, float transitionSpeed, float timeDelta)
     {
+        float speed = transitionSpeed * timeDelta;
+
         bool isHovered = mapInteraction.HoveredTile == Tile;
         bool isSelected = mapInteraction.SelectedTile == Tile;
-        float speed = highlightDecaySpeed * timeDelta;
-        _hoverPower = Mathf.Lerp(_hoverPower, isHovered ? 1 : 0, speed);
-        _selectPower = Mathf.Lerp(_selectPower, isSelected ? 1 : 0, speed);
-        _tileMat.SetFloat("_HighlightPower", _selectPower);
-        _tileMat.SetFloat("_HoverPower", _hoverPower);
+        bool isDragging = mapInteraction.DraggingTile == Tile;
+        bool isSelecting = mapInteraction.SelectingTile == Tile && isHovered;
+        _hover = Mathf.Lerp(_hover, isHovered ? 1 : 0, speed);
+        _selected = Mathf.Lerp(_selected, isSelected ? 1 : 0, speed);
+        _selecting = Mathf.Lerp(_selecting, isSelecting ? 1 : 0, speed);
+        _dragging = Mathf.Lerp(_dragging, isDragging ? 1 : 0, speed);
+        _tileMat.SetFloat("_Hover", _hover);
+        _tileMat.SetFloat("_Selected", _selected);
+        _tileMat.SetFloat("_Selecting", _selecting);
+        _tileMat.SetFloat("_Dragging", _dragging);
     }
 
     public class TileNeighbors

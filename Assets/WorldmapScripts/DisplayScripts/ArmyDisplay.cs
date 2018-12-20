@@ -6,28 +6,33 @@ public class ArmyDisplay
     private readonly GameDisplayManager _mothership;
     private readonly Transform _transform;
 
-    public GameObject ArtContent { get; }
-    public Material Mat { get; }
+    public readonly GameObject _artContent;
+    private readonly Material _mat;
 
     public Army Identifier { get; }
+
+    private float _hover;
+    private float _selecting;
+    private float _selected;
+    private float _dragging;
 
     public ArmyDisplay(GameDisplayManager mothership, Army identifier, Transform transform, GameObject artContent)
     {
         _mothership = mothership;
         _transform = transform;
         Identifier = identifier;
-        ArtContent = artContent;
-        Mat = artContent.GetComponent<MeshRenderer>().material;
+        _artContent = artContent;
+        _mat = artContent.GetComponent<MeshRenderer>().material;
     }
 
     internal void SetArmyAsDead()
     {
-        ArtContent.SetActive(false);
+        _artContent.SetActive(false);
     }
 
     internal void DisplayArmy(GameTurnTransition gameTurnTransition, ArmyTurnTransition transition, DisplayTimings progression)
     {
-        ArtContent.SetActive(true);
+        _artContent.SetActive(true);
         _transform.position = GetForcesPosition(gameTurnTransition, transition, progression);
         DisplayForces(transition, progression);
     }
@@ -43,6 +48,30 @@ public class ArmyDisplay
         ProvinceState preMergeState = gameTurnTransition.InitialState.GetProvinceState(originalDestination);
         return GetProvincePosition(preMergeState);
     }
+
+    public void UpdateUi(MapInteraction mapInteraction, UiAethetics aethetics, float timeDelta)
+    {
+        UpdateHighlighting(mapInteraction, aethetics.TransitionSpeed, timeDelta);
+    }
+
+    private void UpdateHighlighting(MapInteraction mapInteraction, float transitionSpeed, float timeDelta)
+    {
+        float speed = transitionSpeed * timeDelta;
+
+        bool isHovered = mapInteraction.HoveredArmy == Identifier;
+        bool isSelected = mapInteraction.SelectedArmy == Identifier;
+        bool isDragging = mapInteraction.DraggingArmy == Identifier;
+        bool isSelecting = mapInteraction.SelectingArmy == Identifier && isHovered;
+        _hover = Mathf.Lerp(_hover, isHovered ? 1 : 0, speed);
+        _selected = Mathf.Lerp(_selected, isSelected ? 1 : 0, speed);
+        _selecting = Mathf.Lerp(_selecting, isSelecting ? 1 : 0, speed);
+        _dragging = Mathf.Lerp(_dragging, isDragging ? 1 : 0, speed);
+        _mat.SetFloat("_Hover", _hover);
+        _mat.SetFloat("_Selected", _selected);
+        _mat.SetFloat("_Selecting", _selecting);
+        _mat.SetFloat("_Dragging", _dragging);
+    }
+
     private Vector3 GetStartingPos(GameTurnTransition gameTurnTransition, Province start)
     {
         ProvinceState startState = gameTurnTransition.InitialState.GetProvinceState(start);

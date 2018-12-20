@@ -45,9 +45,18 @@
 			float _TileMargin;
 			float3 _SideColor;
 			float3 _FactionColor;
-			float _HoverPower;
+
+			float _Hover;
+			float3 _HoverColor;
+
 			float _Selected;
-			float _HighlightPower;
+			float3 _SelectedColor;
+
+			float _Dragging;
+			float3 _DraggingColor;
+
+			float _Selecting;
+			float3 _SelectingColor;
 
 			bool _PositiveRowConnected;
 			bool _NegativeRowConnected;
@@ -89,7 +98,7 @@
 				v2f o;
 				o.objPos = v.vertex.xyz;
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
-				v.vertex.y += _HoverPower;
+				v.vertex.y += _Hover;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = mul(_MapUvs, worldPos).xz + .5;
 				o.vertex = UnityObjectToClipPos(v.vertex);
@@ -98,6 +107,16 @@
 				o.uv = uv;
 				o.color = v.color;
 				return o;
+			}
+
+			float3 GetUiManipulatedColor(float3 baseColor)
+			{
+				//return _Selecting;
+				float3 ret = baseColor;
+				ret = lerp(ret, _SelectingColor, _Selecting);
+				ret = lerp(ret, _SelectedColor, _Selected);
+				ret = lerp(ret, _DraggingColor, _Dragging);
+				return ret;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
@@ -117,9 +136,9 @@
 				float3 topColor = heightColor + saturate(specColor * theDot);
 				topColor = saturate(topColor);
 				topColor *= _FactionColor;
+				topColor = GetUiManipulatedColor(topColor);
 				float3 sideColor = lerp(_SideColor, topColor, pow(height, 5));
 				float3 ret = lerp(sideColor, topColor, mapKey);
-				ret = lerp(ret, float3(1, 1, 0), _HighlightPower);
 				return float4(ret, 1);
 			}
 			ENDCG

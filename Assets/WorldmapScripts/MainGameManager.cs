@@ -34,10 +34,10 @@ public class MainGameManager
             initialState.PostMergersState);
     }
 
-    internal void Update()
+    internal void Update(UiAethetics aethetics)
     {
         InteractionManager.Update();
-        DisplayManager.UpdateUi(Time.deltaTime);
+        DisplayManager.UpdateUi(Time.deltaTime, aethetics);
     }
 
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Map map)
