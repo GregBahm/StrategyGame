@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 
 public class MapMakerScript : MonoBehaviour
@@ -8,14 +11,92 @@ public class MapMakerScript : MonoBehaviour
     public GameObject TilePrefab;
     public int BaseExtent;
     private RingSideBlueprint[] _ringSideBlueprints;
+    private List<TileRotationSet> _rotationSets;
+
+    public bool SaveMap;
+    public bool LoadMap;
+    public bool ForceUpdateShaders;
+    private const string MapSaveFile = @"C:\Users\Lisa\Documents\StrategyGame\MapDefinition.txt";
+
+    public int StartingLocations;
 
     private void Start()
     {
         _ringSideBlueprints = CreateRingSideBlueprints();
-        List<TileBlueprint> blueprints = GetBlueprints();
-        foreach (TileBlueprint item in blueprints)
+        _rotationSets = GetRotationSets();
+
+        foreach (TileRotationSet rotationSet in _rotationSets)
         {
-            item.CreateGameobject(TilePrefab);
+            rotationSet.MasterTile.CreateGameobject(TilePrefab);
+            foreach (MapmakerTile tile in rotationSet.MirroredTiles)
+            {
+                tile.CreateGameobject(TilePrefab);
+            }
+            rotationSet.SetAllMaterials();
+            rotationSet.UpdateMaterials();
+            rotationSet.MasterTile.TileBehavior.RotationSet = rotationSet;
+        }
+    }
+
+    public void UpdateStartingLocations()
+    {
+        StartingLocations = _rotationSets.Count(item => item.MasterTile.TileBehavior.IsStartPosition) * 6;
+    }
+
+    private void Update()
+    {
+        if(SaveMap)
+        {
+            SaveMap = false;
+            DoSaveMap();
+        }
+        if(LoadMap)
+        {
+            LoadMap = false;
+            DoLoadMap();
+        }
+        if(ForceUpdateShaders)
+        {
+            ForceUpdateShaders = false;
+            DoForceUpdateShaders();
+        }
+    }
+
+    private void DoForceUpdateShaders()
+    {
+        foreach (TileRotationSet set in _rotationSets)
+        {
+            set.UpdateMaterials();
+        }
+    }
+
+    private void DoSaveMap()
+    {
+        StringBuilder builder = new StringBuilder();
+        foreach (TileRotationSet set in _rotationSets)
+        {
+            string line = set.MasterTile.GetSaveLine();
+            builder.AppendLine(line);
+        }
+        File.WriteAllText(MapSaveFile, builder.ToString());
+    }
+
+    private void DoLoadMap()
+    {
+        string[] saveFile = File.ReadAllLines(MapSaveFile);
+        Dictionary<string, string> lookupTable = new Dictionary<string, string>();
+        foreach (string line in saveFile)
+        {
+            string[] split = line.Split(',');
+            if(split.Length == 2) // Avoids last empty line
+            {
+                lookupTable.Add(split[0], split[1]);
+            }
+        }
+        foreach (TileRotationSet set in _rotationSets)
+        {
+            string loadData = lookupTable[set.MasterTile.Key];
+            set.MasterTile.LoadFromSave(loadData);
         }
     }
 
@@ -33,10 +114,9 @@ public class MapMakerScript : MonoBehaviour
         return ret;
     }
 
-    private List<TileBlueprint> GetBlueprints()
+    private List<TileRotationSet> GetRotationSets()
     {
-        List<TileBlueprint> ret = new List<TileBlueprint>();
-        ret.Add(new TileBlueprint(false, 0, 0, 0));
+        List<TileRotationSet> ret = new List<TileRotationSet>();
         for (int i = 1; i < BaseExtent; i++)
         {
             ret.AddRange(MakeRing(i));
@@ -44,21 +124,32 @@ public class MapMakerScript : MonoBehaviour
         return ret;
     }
 
-    private IEnumerable<TileBlueprint> MakeRing(int ring)
+    private IEnumerable<TileRotationSet> MakeRing(int ring)
     {
-        List<TileBlueprint> ret = new List<TileBlueprint>();
+        List<TileRotationSet> ret = new List<TileRotationSet>();
         for (int i = 0; i < ring; i++)
         {
+            MapmakerTile masterTile = null;
+            List<MapmakerTile> tiles = new List<MapmakerTile>();
             foreach (RingSideBlueprint blueprint in _ringSideBlueprints)
             {
-                TileBlueprint retItem = DoRingSide(blueprint, ring, i);
-                ret.Add(retItem);
+                MapmakerTile tile = DoRingSide(blueprint, ring, i);
+                if(blueprint.IsMasterSide)
+                {
+                    masterTile = tile;
+                }
+                else
+                {
+                    tiles.Add(tile);
+                }
             }
+            TileRotationSet retItem = new TileRotationSet(this, masterTile, tiles);
+            ret.Add(retItem);
         }
         return ret;
     }
 
-    private TileBlueprint DoRingSide(RingSideBlueprint blueprint, int ring, int ringSideIndex)
+    private MapmakerTile DoRingSide(RingSideBlueprint blueprint, int ring, int ringSideIndex)
     {
         int startRow = blueprint.BaseRowMultiplier * ring;
         int startColumn = blueprint.BaseColumnMultiplier * ring;
@@ -68,7 +159,7 @@ public class MapMakerScript : MonoBehaviour
 
         int finalRow = startRow + rowOffset;
         int finalColumn = startColumn + columnOffset;
-        return new TileBlueprint(blueprint.IsMasterSide, ring, finalRow, finalColumn);
+        return new MapmakerTile(blueprint.IsMasterSide, ring, finalRow, finalColumn);
     }
 
     class RingSideBlueprint
@@ -90,45 +181,6 @@ public class MapMakerScript : MonoBehaviour
             RowOffsetIncrement = rowOffsetIncrement;
             ColumnOffsetIncrement = columnOffsetIncrement;
             IsMasterSide = isMasterSide;
-        }
-    }
-    
-    class TileRotationSet
-    {
-        public TileBlueprint BaseTile { get; }
-        public IEnumerable<TileBlueprint> MirroredTiles { get; }
-    }
-
-    class TileBlueprint
-    {
-        public bool IsMasterTile { get; }
-        public Material TileMat { get; set; }
-        public int Ring { get; }
-        public int Row { get; }
-        public int Column { get; }
-        public TileBlueprint(bool isMaster,
-            int ring, 
-            int row, 
-            int column)
-        {
-            IsMasterTile = isMaster;
-            Ring = ring;
-            Row = row;
-            Column = column;
-        }
-
-        internal void CreateGameobject(GameObject tilePrefab)
-        {
-            GameObject obj = Instantiate(tilePrefab);
-            obj.name = "Ring " + Ring + " row:" + Row + " column:" + Column;
-            obj.transform.position = GetProvincePosition(Row, Column);
-        }
-        private Vector3 GetProvincePosition(int row, int ascendingColumn)
-        {
-            Vector2 ascendingOffset = MapDisplay.AscendingTileOffset * ascendingColumn;
-            Vector2 offset = ascendingOffset + new Vector2(row, 0);
-            offset *= 2;
-            return new Vector3(offset.x, 0, offset.y);
         }
     }
 }
