@@ -4,27 +4,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class PlayerMoveBuilder
+public class FactionInteraction
 {
-    private readonly TurnMovesProcessor _moveProcessor;
+    private readonly FactionsInteractionManager _manager;
 
-    public Faction PlayerFaction { get; }
+    public Faction Faction { get; }
 
     public bool Submitted { get; private set; }
 
     private const int MaxMoves = 3;
     
-    public ObservableProperty<int> RemainingMoves { get; }
+    public int RemainingMoves { get { return 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count); } }
 
     private readonly List<ArmyMoveBuilder> _armyMoves;
     private readonly List<ProvinceMergeBuilder> _provinceMerges;
     private readonly List<ProvinceUpgradeBuilder> _provinceUpgrades;
 
-    public PlayerMoveBuilder(TurnMovesProcessor moveProcessor, Faction playerFaction)
+    public FactionInteraction(FactionsInteractionManager manager, Faction faction)
     {
-        RemainingMoves = new ObservableProperty<int>(MaxMoves);
-        _moveProcessor = moveProcessor;
-        PlayerFaction = playerFaction;
+        _manager = manager;
+        Faction = faction;
         _armyMoves = new List<ArmyMoveBuilder>();
         _provinceMerges = new List<ProvinceMergeBuilder>();
         _provinceUpgrades = new List<ProvinceUpgradeBuilder>();
@@ -33,7 +32,7 @@ public class PlayerMoveBuilder
     public void SubmitMove()
     {
         Submitted = true;
-        _moveProcessor.OnMoveSubmitted();
+        _manager.OnMoveSubmitted();
     }
 
     internal void Renew()
@@ -41,13 +40,6 @@ public class PlayerMoveBuilder
         _armyMoves.Clear();
         _provinceMerges.Clear();
         _provinceUpgrades.Clear();
-
-        UpdateRemainingMoves();
-    }
-
-    private void UpdateRemainingMoves()
-    {
-        RemainingMoves.Value = 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count);
     }
 
     internal IEnumerable<PlayerMove> GetMoves()
@@ -77,7 +69,7 @@ public class PlayerMoveBuilder
         //With the army selected, they can right click on the province again to remove the move, or right click on the army's home province, 
         //    or right click on a different province to replace the move
 
-        private readonly PlayerMoveBuilder _source;
+        private readonly FactionInteraction _source;
 
         public ArmyDisplay Army { get; }
 
@@ -91,7 +83,7 @@ public class PlayerMoveBuilder
             }
         }
 
-        public ArmyMoveBuilder(PlayerMoveBuilder source, ArmyDisplay army)
+        public ArmyMoveBuilder(FactionInteraction source, ArmyDisplay army)
         {
             _source = source;
             Army = army;
@@ -103,7 +95,7 @@ public class PlayerMoveBuilder
             {
                 throw new InvalidOperationException("Can't convert Invalid ArmyMoveBuilder to ArmyMove.");
             }
-            return new ArmyMove(_source.PlayerFaction, Army.Identifier, Target.Identifier);
+            return new ArmyMove(_source.Faction, Army.Identifier, Target.Identifier);
         }
     }
 
@@ -115,7 +107,7 @@ public class PlayerMoveBuilder
 
         //With province selected, they can click on the upgrade again to remove it, or click on a different upgrade to replace it
 
-        private readonly PlayerMoveBuilder _source;
+        private readonly FactionInteraction _source;
 
         public ProvinceDisplay SourceProvince { get; }
 
@@ -130,7 +122,7 @@ public class PlayerMoveBuilder
             }
         }
 
-        public ProvinceUpgradeBuilder(PlayerMoveBuilder source)
+        public ProvinceUpgradeBuilder(FactionInteraction source)
         {
             _source = source;
         }
@@ -142,7 +134,7 @@ public class PlayerMoveBuilder
                 throw new InvalidOperationException("Can't convert Invalid Province Upgrade Builder to Province Upgrade Move");
             }
             ProvinceUpgrade upgrade = new ProvinceUpgrade(SelectedUpgrade, TargetTile, 0);
-            return new UpgradeMove(_source.PlayerFaction, SourceProvince.Identifier, upgrade);
+            return new UpgradeMove(_source.Faction, SourceProvince.Identifier, upgrade);
         }
     }
 
@@ -154,7 +146,7 @@ public class PlayerMoveBuilder
 
         //With province selected, they can right click on province again to remove merge, or right click on neighboring title to replace merge
 
-        private readonly PlayerMoveBuilder _source;
+        private readonly FactionInteraction _source;
 
         public ProvinceDisplay GrowingProvince { get; }
         public ProvinceDisplay AbsorbedProvince { get; private set; }
@@ -167,7 +159,7 @@ public class PlayerMoveBuilder
             }
         }
 
-        public ProvinceMergeBuilder(PlayerMoveBuilder source, ProvinceDisplay growingProvince)
+        public ProvinceMergeBuilder(FactionInteraction source, ProvinceDisplay growingProvince)
         {
             _source = source;
             GrowingProvince = growingProvince;
@@ -179,7 +171,7 @@ public class PlayerMoveBuilder
             {
                 throw new InvalidOperationException("Can't convert invalid ProvinceMergeBuilder to MergeMove");
             }
-            return new MergerMove(_source.PlayerFaction, GrowingProvince.Identifier, AbsorbedProvince.Identifier);
+            return new MergerMove(_source.Faction, GrowingProvince.Identifier, AbsorbedProvince.Identifier);
         }
     }
 }

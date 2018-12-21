@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 114587358688159736}
   - component: {fileID: 114186459623835718}
   - component: {fileID: 114581437594059664}
+  - component: {fileID: 114327386545404724}
   m_Layer: 5
   m_Name: FactionHud_pfb
   m_TagString: Untagged
@@ -71,6 +72,18 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114327386545404724
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1376200271034840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5be3060bb21a124b9e006e9cb546a74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Text: {fileID: 114587358688159736}
 --- !u!114 &114581437594059664
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -140,5 +153,5 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}

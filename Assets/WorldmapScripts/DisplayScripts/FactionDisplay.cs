@@ -4,37 +4,38 @@ using UnityEngine.UI;
 
 public class FactionDisplay
 {
-    private readonly Text _textObject;
+    private readonly FactionUnityObject _unityObject;
+    private readonly FactionsInteractionManager _interactionManager;
+    private readonly FactionInteraction _interaction;
 
     public Faction Faction { get; }
 
-    //public bool IsSelected { get { return _interactionManager.PlayerFaction.Value == Faction; } }
-
-    public string DisplayText
+    public FactionDisplay(FactionUnityObject unityObject, 
+        FactionsInteractionManager interactionManager)
     {
-        get
+        _unityObject = unityObject;
+        Faction = _unityObject.Faction;
+        _unityObject.Text.text = Faction.Name;
+        _unityObject.Text.color = Faction.Color;
+        _interactionManager = interactionManager;
+        _interaction = _interactionManager.GetFactionInteraction(Faction);
+
+    }
+
+    public void UpdateUi()
+    {
+        bool isSelected = _interactionManager.ActiveFaction == Faction;
+        string displayText = GetDisplayText(isSelected);
+        _unityObject.Text.text = displayText;
+    }
+
+    private string GetDisplayText(bool isSelected)
+    {
+        string ret = Faction.Name + " (" + _interaction.RemainingMoves + " moves)";
+        if (isSelected)
         {
-            return "TODO";
-            //string ret = Faction.Name + " (" + _moveBuilder.RemainingMoves.Value + " moves)";
-            //if(IsSelected)
-            //{
-            //    ret += " - Controlled";
-            //}
-            //return ret;
+            ret += " - Controlled";
         }
-    }
-
-    public FactionDisplay(Text textGameObject, Faction faction)
-    {
-        _textObject = textGameObject;
-        _textObject.text = faction.Name;
-        _textObject.color = faction.Color;
-        Faction = faction;
-        UpdateText();
-    }
-
-    public void UpdateText()
-    {
-        _textObject.text = DisplayText;
+        return ret;
     }
 }

@@ -24,13 +24,24 @@ public class MainGameManager
 
         _turns.Add(initialState);
 
-        ObjectManager = new UnityObjectManager(map, gameSetup.TilePrefab, gameSetup.ArmyPrefab, initialState.PostMergersState);
-        InteractionManager = new InteractionManager(this, gameSetup, map, playerSetups);
+        ObjectManager = new UnityObjectManager(map, 
+            gameSetup.TilePrefab, 
+            gameSetup.ArmyPrefab, 
+            gameSetup.FactionPrefab, 
+            gameSetup.ScreenCanvas, 
+            initialState.PostMergersState,
+            playerSetups);
+        InteractionManager = new InteractionManager(this, 
+            gameSetup, 
+            map, 
+            ObjectManager, 
+            playerSetups);
         DisplayManager = new GameDisplayManager(this, 
             gameSetup, 
             playerSetups.Select(item => item.Faction), 
             map,
             ObjectManager,
+            InteractionManager.Factions,
             initialState.PostMergersState);
     }
 
@@ -121,7 +132,7 @@ public class MainGameManager
         }
         ObjectManager.UpdateGameobjects(newState.PostMergersState);
         DisplayManager.UpdateDisplayWrappers(newState.PostMergersState);
-        InteractionManager.TurnMovesProcessor.RenewBuilders(survivingFactions);
+        InteractionManager.Factions.RenewBuilders(survivingFactions);
     }
 
     private void HandleGameConclusion(IEnumerable<Faction> survivingFactions)

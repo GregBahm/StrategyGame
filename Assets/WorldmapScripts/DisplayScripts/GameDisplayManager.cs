@@ -9,7 +9,7 @@ public class GameDisplayManager
     private readonly Dictionary<Province, ProvinceDisplay> _provinces;
     private readonly MainGameManager _mainManager;
     private readonly GameObject _armyPrefab;
-    private readonly FactionsHud _factionsHud;
+    private readonly FactionsDisplayManager _factions;
     public MapDisplay Map { get; }
 
     public GameDisplayManager(MainGameManager mainManager, 
@@ -17,13 +17,14 @@ public class GameDisplayManager
         IEnumerable<Faction> factions, 
         Map map, 
         UnityObjectManager objectManager,
+        FactionsInteractionManager interactionManager,
         GameState initialState)
     {
         _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
         _armyPrefab = gameSetup.ArmyPrefab;
-        _factionsHud = new FactionsHud(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, factions);
+        _factions = new FactionsDisplayManager(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, objectManager, interactionManager);
         Map = new MapDisplay(gameSetup, map, objectManager);
         UpdateDisplayWrappers(initialState);
         DisplayGamestate(0);
@@ -49,6 +50,7 @@ public class GameDisplayManager
         {
             army.UpdateUi(_mainManager.InteractionManager.Map, aethetics, timeDelta);
         }
+        _factions.UpdateUi();
     }
 
     private void UpdateUiAethetics(UiAethetics aethetics)

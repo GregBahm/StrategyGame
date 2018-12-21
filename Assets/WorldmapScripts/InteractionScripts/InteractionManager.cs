@@ -8,24 +8,19 @@ public class InteractionManager
 {
     public MapInteraction Map { get; }
 
+    public FactionsInteractionManager Factions { get; }
+
     public TimelineInteraction Timeline { get; }
-
-    public TurnMovesProcessor TurnMovesProcessor { get; }
-
-    public ObservableProperty<float> MasterGameTime { get; }
-    
-    public ObservableProperty<Faction> PlayerFaction { get; }
 
     public InteractionManager(MainGameManager mainManager, 
         GameSetup gameSetup, 
         Map map, 
+        UnityObjectManager unityObjectManager,
         IEnumerable<PlayerSetup> playerSetups)
     {
-        MasterGameTime = new ObservableProperty<float>(0);
-        PlayerFaction = new ObservableProperty<Faction>(playerSetups.First().Faction);
         Map = new MapInteraction(gameSetup, map, mainManager.ObjectManager);
         Timeline = new TimelineInteraction(this);
-        TurnMovesProcessor = new TurnMovesProcessor(mainManager, this, playerSetups);
+        Factions = new FactionsInteractionManager(mainManager, unityObjectManager.Factions);
     }
 
     internal void Update()
