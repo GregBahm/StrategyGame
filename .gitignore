@@ -12,3 +12,7 @@
 /.vs/
 /Unity.PackageManagerUI.Editor.csproj
 *.csproj
+/~$$HexExperiment.~vsdx
+/HexExperiment.vsdx
+/~$$HexExperiment2.~vsdx
+/HexExperiment2.vsdx
