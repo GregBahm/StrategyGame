@@ -23,7 +23,6 @@ public class UnityObjectManager
         IEnumerable<PlayerSetup> playerSetups)
     {
         _tiles = MakeTileObjects(map, tilePrefab);
-        SetCollisionClusters(map);
         _armyPrefab = armyPrefab;
         _armies = new Dictionary<Army, ArmyUnityObject>();
         _factions = MakeFactionObjects(hudCanvas, factionPrefab, playerSetups);
@@ -49,14 +48,6 @@ public class UnityObjectManager
             indexer++;
         }
         return new ReadOnlyDictionary<Faction, FactionUnityObject>(ret);
-    }
-
-    private void SetCollisionClusters(Map map)
-    {
-        foreach (TileUnityObject obj in _tiles.Values)
-        {
-            obj.SetCollisionCluster(this, map);
-        }
     }
 
     public TileUnityObject GetUnityObject(Tile tile)
