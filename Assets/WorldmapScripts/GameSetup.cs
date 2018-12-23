@@ -2,13 +2,11 @@
 
 public class GameSetup : MonoBehaviour
 {
-    public int Rows = 20;
-    public int Columns = 20;
     public GameObject TilePrefab;
     public GameObject ArmyPrefab;
     public GameObject FactionPrefab;
     public Transform MapUvs;
-
+    public TextAsset MapDefinition;
     public Material SkyMat;
     public Canvas ScreenCanvas;
 

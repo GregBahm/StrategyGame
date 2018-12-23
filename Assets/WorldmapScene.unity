@@ -415,6 +415,7 @@ MonoBehaviour:
   FactionPrefab: {fileID: 1376200271034840, guid: 621199bf42229b24fb5ffc7ce8e59fb5,
     type: 2}
   MapUvs: {fileID: 898966889}
+  MapDefinition: {fileID: 4900000, guid: 53bd134486b141649845b958962398f7, type: 3}
   SkyMat: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
   ScreenCanvas: {fileID: 1121700608}
   Aethetics:

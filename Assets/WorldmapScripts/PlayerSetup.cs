@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PlayerSetup
@@ -14,13 +16,18 @@ public class PlayerSetup
         StartColumn = startColumn;
     }
 
-    public static IEnumerable<PlayerSetup> GetTestSetups()
+    internal static IEnumerable<PlayerSetup> CreateFromMapDefinition(MapDefinition mapDefinition)
     {
-        return new[]
+        List<PlayerSetup> ret = new List<PlayerSetup>();
+        int index = 0;
+        foreach (MapTileDefinition item in mapDefinition.Tiles.Where(item => item.IsStartPosition))
         {
-            new PlayerSetup("Player A", Color.blue, 0,0),
-            new PlayerSetup("Player B", Color.red, 10, 10),
-            new PlayerSetup("Player C", Color.gray, 19, 19),
-        };
+            index++;
+            string name = "Player " + index;
+            Color randomColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+            PlayerSetup retItem = new PlayerSetup(name, randomColor, item.Row, item.Column);
+            ret.Add(retItem);
+        }
+        return ret;
     }
 }

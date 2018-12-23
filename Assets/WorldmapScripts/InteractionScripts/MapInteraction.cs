@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using UnityEngine;
 
 public class MapInteraction
 {
     private readonly Plane _groundPlane;
     private readonly UnityObjectManager _objectManager;
+    private readonly ReadOnlyDictionary<Collider, Tile> _collisionDictionary;
     private readonly Map _map;
     private readonly int _armyLayerMask;
     private readonly int _tileLayermask;
@@ -26,20 +30,27 @@ public class MapInteraction
     public MapInteraction(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
         _objectManager = objectManager;
+        _collisionDictionary = CreateCollisionDictionary(objectManager);
         _map = map;
-        _armyLayerMask =  1 << LayerMask.NameToLayer("ArmyLayer");
+        _armyLayerMask = 1 << LayerMask.NameToLayer("ArmyLayer");
         _tileLayermask = 1 << LayerMask.NameToLayer("TileLayer");
         _groundPlane = new Plane(Vector3.up, 0);
+    }
+
+    private ReadOnlyDictionary<Collider, Tile> CreateCollisionDictionary(UnityObjectManager objectManager)
+    {
+        Dictionary<Collider, Tile> ret = objectManager.Tiles.ToDictionary(item => item.Collider, item => item.Tile);
+        return new ReadOnlyDictionary<Collider, Tile>(ret);
     }
 
     public void Update()
     {
         SetHover();
         bool mouseDown = Input.GetMouseButton(0);
-        if(mouseDown)
+        if (mouseDown)
         {
             bool mouseJustDown = Input.GetMouseButtonDown(0);
-            if(mouseJustDown)
+            if (mouseJustDown)
             {
                 HandleSelectedToDragging();
                 HandleHoveredToSelecting();
@@ -48,7 +59,7 @@ public class MapInteraction
         else
         {
             bool mouseJustUp = Input.GetMouseButtonUp(0);
-            if(mouseJustUp)
+            if (mouseJustUp)
             {
                 HandleSelectingToSelected();
             }
@@ -62,11 +73,11 @@ public class MapInteraction
 
     private void HandleSelectingToSelected()
     {
-        if(HoveredTile == SelectingTile)
+        if (HoveredTile == SelectingTile)
         {
             SelectedTile = SelectingTile;
         }
-        if(HoveredArmy == SelectingArmy)
+        if (HoveredArmy == SelectingArmy)
         {
             SelectedArmy = SelectingArmy;
         }
@@ -74,11 +85,11 @@ public class MapInteraction
 
     private void HandleSelectedToDragging()
     {
-        if(HoveredTile == SelectedTile)
+        if (HoveredTile == SelectedTile)
         {
             DraggingTile = SelectedTile;
         }
-        if(HoveredArmy == SelectedArmy)
+        if (HoveredArmy == SelectedArmy)
         {
             DraggingArmy = SelectedArmy;
         }
@@ -86,11 +97,11 @@ public class MapInteraction
 
     private void HandleHoveredToSelecting()
     {
-        if(HoveredTile != null)
+        if (HoveredTile != null)
         {
             SelectingTile = HoveredTile;
         }
-        if(HoveredArmy != null)
+        if (HoveredArmy != null)
         {
             SelectingArmy = HoveredArmy;
         }
@@ -115,6 +126,18 @@ public class MapInteraction
     }
 
     private Tile GetTileAtScreenPoint(Vector3 pos)
+    {
+        Ray mouseRay = Camera.main.ScreenPointToRay(pos);
+        RaycastHit hitInfo;
+        bool hit = Physics.Raycast(mouseRay, out hitInfo, Mathf.Infinity, _tileLayermask, QueryTriggerInteraction.UseGlobal);
+        if(hit)
+        {
+            return _collisionDictionary[hitInfo.collider];
+        }
+        return null;
+    }
+
+    private Tile GetTileAtScreenPointOld(Vector3 pos)
     {
         Ray mouseRay = Camera.main.ScreenPointToRay(pos);
         float enter;
@@ -150,13 +173,15 @@ public class MapInteraction
     private TileUnityObject GetApproximateTile(Vector2 pos)
     {
         Vector2 intersection = FindIntersection(pos, pos + MapDisplay.AscendingTileOffset, Vector2.zero, Vector2.right);
+
         int row = (int)(intersection.x / 2 + .5f);
-        row = Mathf.Clamp(row, 0, _map.Rows - 1);
+
         Tile rowTile = _map.GetTile(row, 0);
         TileUnityObject rowTileObject = _objectManager.GetUnityObject(rowTile);
         Vector2 basePoint = new Vector2(rowTileObject.transform.position.x, rowTileObject.transform.position.z);
+
         int column = (int)((pos - basePoint).magnitude / 2 + .5f);
-        column = Mathf.Clamp(column, 0, _map.Columns - 1);
+
         Tile retTile = _map.GetTile(row, column);
         return _objectManager.GetUnityObject(retTile);
     }
@@ -173,17 +198,17 @@ public class MapInteraction
 
         return new Vector2(lineAStart.x + lineADiff.x * t1, lineAStart.y + lineADiff.y * t1);
     }
-    
+
     private Army GetArmyHover()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
         bool hit = Physics.Raycast(ray, out hitInfo, Mathf.Infinity, _armyLayerMask, QueryTriggerInteraction.UseGlobal);
-        if(hit)
+        if (hit)
         {
             return hitInfo.transform.parent.gameObject.GetComponent<ArmyUnityObject>().Army;
         }
         return null;
     }
-    
+
 }

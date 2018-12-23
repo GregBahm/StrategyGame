@@ -17,9 +17,10 @@ public class MainGameManager
     
     public MainGameManager(GameSetup gameSetup)
     {
-        Map map = new Map(gameSetup.Rows, gameSetup.Columns);
+        MapDefinition mapDefinition = new MapDefinition(gameSetup.MapDefinition);
+        Map map = new Map(mapDefinition);
 
-        IEnumerable<PlayerSetup> playerSetups = PlayerSetup.GetTestSetups();
+        IEnumerable<PlayerSetup> playerSetups = PlayerSetup.CreateFromMapDefinition(mapDefinition);
         GameTurnTransition initialState = GetInitialState(playerSetups, map);
 
         _turns.Add(initialState);
