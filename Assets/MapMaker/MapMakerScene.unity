@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TilePrefab: {fileID: 1360092396013702, guid: 68fa136645bf64a4ca3a6ca92313e56b, type: 2}
-  BaseExtent: 48
+  BaseExtent: 12
   SaveMap: 0
   LoadMap: 0
   ForceUpdateShaders: 0

@@ -41,7 +41,6 @@
 			sampler2D _HeightMap;
 			sampler2D _NormalMap;
 			float _Height;
-			float4x4 _MapUvs;
 			float _TileMargin;
 			float3 _SideColor;
 			float3 _FactionColor;
@@ -100,7 +99,7 @@
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
 				v.vertex.y += _Hover;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-				float2 uv = mul(_MapUvs, worldPos).xz + .5;
+				float2 uv = worldPos.xz + .5;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.normal = v.normal;
 				o.viewDir = WorldSpaceViewDir(v.vertex);

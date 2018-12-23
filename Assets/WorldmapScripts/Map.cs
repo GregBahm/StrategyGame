@@ -15,8 +15,8 @@ public class Map : IEnumerable<Tile>
 
     public Map(MapDefinition mapDefinition)
     {
-        _maxRow = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Row));
-        _maxColumn = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Column));
+        _maxRow = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Row)) + 1;
+        _maxColumn = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Column)) + 1;
         _tiles = MakeTiles(mapDefinition.Tiles);
     }
 
@@ -159,21 +159,5 @@ public class MapDefinition
         bool isStartPosition = Convert.ToBoolean(isStartPositionString);
 
         return new MapTileDefinition(row, column, isImpassable, isStartPosition);
-    }
-}
-
-public class MapTileDefinition
-{
-    public int Row { get; }
-    public int Column { get; }
-    public bool IsImpassable { get; }
-    public bool IsStartPosition { get; }
-
-    public MapTileDefinition(int row, int column, bool isImpassable, bool isStartPosition)
-    {
-        Row = row;
-        Column = column;
-        IsImpassable = isImpassable;
-        IsStartPosition = isStartPosition;
     }
 }

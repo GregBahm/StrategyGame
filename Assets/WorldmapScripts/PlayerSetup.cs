@@ -24,10 +24,17 @@ public class PlayerSetup
         {
             index++;
             string name = "Player " + index;
-            Color randomColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
-            PlayerSetup retItem = new PlayerSetup(name, randomColor, item.Row, item.Column);
+            Color playerColor = GetPlayerColor();
+            PlayerSetup retItem = new PlayerSetup(name, playerColor, item.Row, item.Column);
             ret.Add(retItem);
         }
         return ret;
+    }
+
+    private static Color GetPlayerColor()
+    {
+        Vector3 vect = new Vector3(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+        vect.Normalize();
+        return new Color(vect.x, vect.y, vect.z);
     }
 }

@@ -5,7 +5,6 @@ public class GameSetup : MonoBehaviour
     public GameObject TilePrefab;
     public GameObject ArmyPrefab;
     public GameObject FactionPrefab;
-    public Transform MapUvs;
     public TextAsset MapDefinition;
     public Material SkyMat;
     public Canvas ScreenCanvas;

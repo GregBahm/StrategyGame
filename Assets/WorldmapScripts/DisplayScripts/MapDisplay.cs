@@ -7,7 +7,6 @@ using UnityEngine;
 public class MapDisplay
 {
     private Material _skyMat;
-    private Transform _mapUvs;
 
     public Map Map { get; }
     public Dictionary<Tile, TileDisplay> _dictionary;
@@ -18,7 +17,6 @@ public class MapDisplay
     public MapDisplay(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
         _skyMat = gameSetup.SkyMat;
-        _mapUvs = gameSetup.MapUvs;
         Map = map;
         _dictionary = MakeTilesDictionary(map, objectManager);
         InitializeTiles();
@@ -78,7 +76,6 @@ public class MapDisplay
     private void SetStandardShaderProperties(UiAethetics aethetics)
     {
         Shader.SetGlobalFloat("_TileMargin", aethetics.TileMargin);
-        Shader.SetGlobalMatrix("_MapUvs", _mapUvs.worldToLocalMatrix);
         Shader.SetGlobalColor("_SideColor", aethetics.BackgroundColor);
         _skyMat.SetColor("_Tint", aethetics.BackgroundColor);
     }
