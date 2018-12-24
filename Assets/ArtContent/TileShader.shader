@@ -54,8 +54,12 @@
 			float _Dragging;
 			float3 _DraggingColor;
 
-			float _Selecting;
-			float3 _SelectingColor;
+			float _Dragged;
+			float3 _ValidDraggedColor;
+			float3 _InvalidDraggedColor;
+
+			float _Targetable;
+			float3 _TargetableColor;
 
 			bool _PositiveRowConnected;
 			bool _NegativeRowConnected;
@@ -110,11 +114,12 @@
 
 			float3 GetUiManipulatedColor(float3 baseColor)
 			{
-				//return _Selecting;
+				float3 draggedColor = lerp(_InvalidDraggedColor, _ValidDraggedColor, _Targetable);
 				float3 ret = baseColor;
-				ret = lerp(ret, _SelectingColor, _Selecting);
+				ret = lerp(ret, _TargetableColor, _Targetable);
 				ret = lerp(ret, _SelectedColor, _Selected);
 				ret = lerp(ret, _DraggingColor, _Dragging);
+				ret = lerp(ret, draggedColor, _Dragged);
 				return ret;
 			}
 			

@@ -23,8 +23,8 @@ public class InteractionManager
         Factions = new FactionsInteractionManager(mainManager, unityObjectManager.Factions);
     }
 
-    internal void Update()
+    internal void Update(GameState gameState, ProvinceNeighborsTable neighbors)
     {
-        Map.Update();
+        Map.Update(gameState, neighbors);
     }
 }

@@ -15,17 +15,16 @@ public class MapInteraction
 
     public Army HoveredArmy { get; private set; }
     public Army SelectedArmy { get; private set; }
-    public Army SelectingArmy { get; private set; }
     public Army DraggingArmy { get; private set; }
 
-    public Tile HoveredTile { get; private set; }
-    public Tile SelectedTile { get; private set; }
-    public Tile SelectingTile { get; private set; }
-    public Tile DraggingTile { get; private set; }
+    public Province HoveredProvince { get; private set; }
+    public Province SelectedProvince { get; private set; }
+    public Province DraggingProvince { get; private set; }
+    public Province DraggedOnProvince { get; private set; }
 
-    public bool AnythingSelected { get { return SelectedTile != null || SelectedArmy != null; } }
-    public bool AnythingHovered { get { return HoveredTile != null || HoveredArmy != null; } }
-    public bool AnythingDragging { get { return DraggingTile != null || DraggingArmy != null; } }
+    public bool AnythingSelected { get { return SelectedProvince != null || SelectedArmy != null; } }
+    public bool AnythingHovered { get { return HoveredProvince != null || HoveredArmy != null; } }
+    public bool AnythingDragging { get { return DraggingProvince != null || DraggingArmy != null; } }
 
     public MapInteraction(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
@@ -43,51 +42,59 @@ public class MapInteraction
         return new ReadOnlyDictionary<Collider, Tile>(ret);
     }
 
-    public void Update()
+    public void Update(GameState currentGamestate, ProvinceNeighborsTable neighbors)
     {
-        SetHover();
+        SetHover(currentGamestate);
         bool mouseDown = Input.GetMouseButton(0);
         if (mouseDown)
         {
             bool mouseJustDown = Input.GetMouseButtonDown(0);
             if (mouseJustDown)
             {
+                HandleHoverToSelected();
                 HandleSelectedToDragging();
-                HandleHoveredToSelecting();
             }
+            HandleDraggedUpon();
         }
         else
         {
-            bool mouseJustUp = Input.GetMouseButtonUp(0);
-            if (mouseJustUp)
-            {
-                HandleSelectingToSelected();
-            }
-
+            DraggedOnProvince = null;
             DraggingArmy = null;
-            DraggingTile = null;
-            SelectingArmy = null;
-            SelectingTile = null;
+            DraggingProvince = null;
         }
     }
 
-    private void HandleSelectingToSelected()
+    private void HandleDraggedUpon()
     {
-        if (HoveredTile == SelectingTile)
+        if (HoveredProvince != null && DraggingProvince != HoveredProvince && AnythingDragging)
         {
-            SelectedTile = SelectingTile;
+            DraggedOnProvince = HoveredProvince;
         }
-        if (HoveredArmy == SelectingArmy)
+        else
         {
-            SelectedArmy = SelectingArmy;
+            DraggedOnProvince = null;
+        }
+    }
+
+    private void HandleHoverToSelected()
+    {
+        if (HoveredProvince != null)
+        {
+            SelectedProvince = HoveredProvince;
+            SelectedArmy = null;
+        }
+        if (HoveredArmy != null)
+        {
+            SelectedArmy = HoveredArmy;
+            SelectedProvince = null;
         }
     }
 
     private void HandleSelectedToDragging()
     {
-        if (HoveredTile == SelectedTile)
+        if (HoveredProvince == SelectedProvince)
         {
-            DraggingTile = SelectedTile;
+            DraggingProvince = SelectedProvince;
         }
         if (HoveredArmy == SelectedArmy)
         {
@@ -95,29 +102,27 @@ public class MapInteraction
         }
     }
 
-    private void HandleHoveredToSelecting()
-    {
-        if (HoveredTile != null)
-        {
-            SelectingTile = HoveredTile;
-        }
-        if (HoveredArmy != null)
-        {
-            SelectingArmy = HoveredArmy;
-        }
-    }
-
-    private void SetHover()
+    private void SetHover(GameState currentGamestate)
     {
         HoveredArmy = GetArmyHover();
         if (HoveredArmy != null)
         {
-            HoveredTile = null;
+            HoveredProvince = null;
         }
         else
         {
-            HoveredTile = GetTileUnderMouse();
+            HoveredProvince = GetProvinceUnderMouse(currentGamestate);
         }
+    }
+
+    private Province GetProvinceUnderMouse(GameState currentGamestate)
+    {
+        Tile tile = GetTileUnderMouse();
+        if(tile != null)
+        {
+            return currentGamestate.GetTilesProvince(tile).Identifier;
+        }
+        return null;
     }
 
     private Tile GetTileUnderMouse()

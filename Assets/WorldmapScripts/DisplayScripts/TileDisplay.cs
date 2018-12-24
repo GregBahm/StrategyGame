@@ -19,10 +19,11 @@ public class TileDisplay
     
     private readonly MapDisplay _mapDisplay;
     private float _hover;
-    private float _selecting;
     private float _selected;
     private float _dragging;
-    
+    private float _dragged;
+    private float _targetable;
+
     public TileDisplay(Tile tile, MapDisplay map, GameObject gameObject)
     {
         Tile = tile;
@@ -78,22 +79,50 @@ public class TileDisplay
         return connected ? 1 : 0;
     }
 
-    public void UpdateHighlighting(MapInteraction mapInteraction, float transitionSpeed, float timeDelta)
+    public void UpdateHighlighting(GameState gameState, 
+        MapInteraction mapInteraction, 
+        float transitionSpeed, 
+        float timeDelta, 
+        ProvinceNeighborsTable neighbors)
     {
+        Province myProvince = gameState.GetTilesProvince(Tile).Identifier;
+        bool isNeighborSelected = GetIsNeighborSelected(gameState, neighbors, mapInteraction, myProvince);
+
         float speed = transitionSpeed * timeDelta;
 
-        bool isHovered = mapInteraction.HoveredTile == Tile;
-        bool isSelected = mapInteraction.SelectedTile == Tile;
-        bool isDragging = mapInteraction.DraggingTile == Tile;
-        bool isSelecting = mapInteraction.SelectingTile == Tile && isHovered;
+        bool isHovered = mapInteraction.HoveredProvince == myProvince;
+        bool isSelected = mapInteraction.SelectedProvince == myProvince;
+        bool isDragging = mapInteraction.DraggingProvince == myProvince;
+        bool isDragged = mapInteraction.DraggedOnProvince == myProvince;
         _hover = Mathf.Lerp(_hover, isHovered ? 1 : 0, speed);
         _selected = Mathf.Lerp(_selected, isSelected ? 1 : 0, speed);
-        _selecting = Mathf.Lerp(_selecting, isSelecting ? 1 : 0, speed);
         _dragging = Mathf.Lerp(_dragging, isDragging ? 1 : 0, speed);
+        _dragged = Mathf.Lerp(_dragged, isDragged ? 1 : 0, speed);
+        _targetable = Mathf.Lerp(_targetable, isNeighborSelected ? 1 : 0, speed);
         _tileMat.SetFloat("_Hover", _hover);
         _tileMat.SetFloat("_Selected", _selected);
-        _tileMat.SetFloat("_Selecting", _selecting);
         _tileMat.SetFloat("_Dragging", _dragging);
+        _tileMat.SetFloat("_Dragged", _dragged);
+        _tileMat.SetFloat("_Targetable", _targetable);
+    }
+
+    private bool GetIsNeighborSelected(GameState gameState, 
+        ProvinceNeighborsTable neighborsTable, 
+        MapInteraction mapInteraction, 
+        Province myProvince)
+    {
+        if(mapInteraction.SelectedProvince != null)
+        {
+            HashSet<Province> neighbors = neighborsTable.GetNeighborsFor(mapInteraction.SelectedProvince);
+            return neighbors.Contains(myProvince);
+        }
+        if(mapInteraction.SelectedArmy != null)
+        {
+            Province armysProvince = gameState.GetArmyState(mapInteraction.SelectedArmy).LocationId;
+            HashSet<Province> neighbors = neighborsTable.GetNeighborsFor(armysProvince);
+            return neighbors.Contains(myProvince);
+        }
+        return false;
     }
 
     public class TileNeighbors

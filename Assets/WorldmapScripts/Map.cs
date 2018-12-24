@@ -8,8 +8,10 @@ using System.Collections.ObjectModel;
 public class Map : IEnumerable<Tile>
 {
     private readonly int _maxRow;
+
     private readonly int _maxColumn;
     private readonly ReadOnlyDictionary<int, Tile> _tiles;
+    private readonly ReadOnlyDictionary<Tile, IEnumerable<Tile>> _neighbors;
     
     public int TilesCount { get { return _tiles.Count; } }
 
@@ -18,6 +20,37 @@ public class Map : IEnumerable<Tile>
         _maxRow = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Row)) + 1;
         _maxColumn = mapDefinition.Tiles.Max(item => Mathf.Abs(item.Column)) + 1;
         _tiles = MakeTiles(mapDefinition.Tiles);
+        _neighbors = GetNeighborsDictionary();
+    }
+
+    private ReadOnlyDictionary<Tile, IEnumerable<Tile>> GetNeighborsDictionary()
+    {
+        Dictionary<Tile, IEnumerable<Tile>> ret = new Dictionary<Tile, IEnumerable<Tile>>();
+        foreach (Tile tile in _tiles.Values)
+        {
+            List<Tile> neighbors = GetNeighborsList(tile).Where(item => item != null).ToList();
+            ret.Add(tile, neighbors);
+        }
+        return new ReadOnlyDictionary<Tile, IEnumerable<Tile>>(ret);
+    }
+
+    private IEnumerable<Tile> GetNeighborsList(Tile tile)
+    {
+        yield return TryGetTile(tile, 1, 0);
+        yield return TryGetTile(tile, 0, 1);
+        yield return TryGetTile(tile, -1, 0);
+        yield return TryGetTile(tile, 0, -1);
+        yield return TryGetTile(tile, 1, -1);
+        yield return TryGetTile(tile, -1, 1);
+    }
+
+    private Tile TryGetTile(Tile tile, int rowOffset, int tileOffset)
+    {
+        if (GetIsWithinBounds(tile, rowOffset, tileOffset))
+        {
+            return tile.GetOffset(rowOffset, tileOffset);
+        }
+        return null;
     }
 
     private int GetKey(int row, int ascendingColumn)
@@ -27,6 +60,11 @@ public class Map : IEnumerable<Tile>
         int offsetColumn = ascendingColumn + _maxColumn;
 
         return offsetRow * (_maxColumn * 2) + offsetColumn;
+    }
+
+    internal IEnumerable<Tile> GetNeighborsFor(Tile tile)
+    {
+        return _neighbors[tile];
     }
 
     public bool GetIsWithinBounds(int row, int ascendingColumn)
@@ -49,14 +87,7 @@ public class Map : IEnumerable<Tile>
         {
             int key = GetKey(item.Row, item.Column);
             Tile tile = new Tile(item.Row, item.Column, this);
-            if(ret.ContainsKey(key))
-            {
-                Debug.Log("row " + item.Row + " column " + item.Column);
-            }
-            else
-            {
-                ret.Add(key, tile);
-            }
+            ret.Add(key, tile);
         }
         return new ReadOnlyDictionary<int, Tile>(ret);
     }

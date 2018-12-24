@@ -12,7 +12,6 @@ public class ArmyDisplay
     public Army Identifier { get; }
 
     private float _hover;
-    private float _selecting;
     private float _selected;
     private float _dragging;
 
@@ -51,6 +50,7 @@ public class ArmyDisplay
 
     public void UpdateUi(MapInteraction mapInteraction, UiAethetics aethetics, float timeDelta)
     {
+        _mat.SetColor("_FactionColor", Identifier.Owner.Color);
         UpdateHighlighting(mapInteraction, aethetics.TransitionSpeed, timeDelta);
     }
 
@@ -61,14 +61,11 @@ public class ArmyDisplay
         bool isHovered = mapInteraction.HoveredArmy == Identifier;
         bool isSelected = mapInteraction.SelectedArmy == Identifier;
         bool isDragging = mapInteraction.DraggingArmy == Identifier;
-        bool isSelecting = mapInteraction.SelectingArmy == Identifier && isHovered;
         _hover = Mathf.Lerp(_hover, isHovered ? 1 : 0, speed);
         _selected = Mathf.Lerp(_selected, isSelected ? 1 : 0, speed);
-        _selecting = Mathf.Lerp(_selecting, isSelecting ? 1 : 0, speed);
         _dragging = Mathf.Lerp(_dragging, isDragging ? 1 : 0, speed);
         _mat.SetFloat("_Hover", _hover);
         _mat.SetFloat("_Selected", _selected);
-        _mat.SetFloat("_Selecting", _selecting);
         _mat.SetFloat("_Dragging", _dragging);
     }
 

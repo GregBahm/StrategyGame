@@ -6,6 +6,7 @@ public class Tile
     private Map _map;
     public int Row { get; }
     public int AscendingColumn { get; }
+    public IEnumerable<Tile> Neighbors { get { return _map.GetNeighborsFor(this); } }
     
     public Tile(int row, int ascendingColumn, Map map)
     {

@@ -7,7 +7,8 @@ using UnityEngine;
 public class MainGameManager
 {
     private readonly List<GameTurnTransition> _turns = new List<GameTurnTransition>();
-    public GameTurnTransition CurrentState { get { return _turns[_turns.Count - 1]; } }
+    public GameState CurrentState { get { return _turns[_turns.Count - 1].PostMergersState; } }
+    private ProvinceNeighborsTable _provinceNeighbors;
     public GameTurnTransition this[int index] { get { return _turns[index]; } }
     public int TurnsCount { get { return _turns.Count; } }
 
@@ -24,6 +25,7 @@ public class MainGameManager
         GameTurnTransition initialState = GetInitialState(playerSetups, map);
 
         _turns.Add(initialState);
+        _provinceNeighbors = new ProvinceNeighborsTable(CurrentState);
 
         ObjectManager = new UnityObjectManager(map, 
             gameSetup.TilePrefab, 
@@ -48,8 +50,8 @@ public class MainGameManager
 
     internal void Update(UiAethetics aethetics)
     {
-        InteractionManager.Update();
-        DisplayManager.UpdateUi(Time.deltaTime, aethetics);
+        InteractionManager.Update(CurrentState, _provinceNeighbors);
+        DisplayManager.UpdateUi(CurrentState, Time.deltaTime, aethetics, _provinceNeighbors);
     }
 
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Map map)
@@ -123,7 +125,7 @@ public class MainGameManager
 
     public void AdvanceGame(GameTurnMoves moves)
     {
-        GameTurnTransition newState = CurrentState.PostMergersState.GetNextState(moves);
+        GameTurnTransition newState = CurrentState.GetNextState(moves);
         _turns.Add(newState);
 
         IEnumerable<Faction> survivingFactions = newState.PostMergersState.GetSurvivingFactions();
@@ -131,8 +133,9 @@ public class MainGameManager
         {
             HandleGameConclusion(survivingFactions);
         }
-        ObjectManager.UpdateGameobjects(newState.PostMergersState);
-        DisplayManager.UpdateDisplayWrappers(newState.PostMergersState);
+        ObjectManager.UpdateGameobjects(CurrentState);
+        DisplayManager.UpdateDisplayWrappers(CurrentState);
+        _provinceNeighbors = new ProvinceNeighborsTable(CurrentState);
         InteractionManager.Factions.RenewBuilders(survivingFactions);
     }
 

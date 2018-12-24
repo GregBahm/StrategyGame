@@ -16,6 +16,8 @@
 
 			#include "UnityCG.cginc"
 
+			float3 _FactionColor;
+
 			float _Hover;
 			float3 _HoverColor;
 
@@ -24,9 +26,6 @@
 
 			float _Dragging;
 			float3 _DraggingColor;
-
-			float _Selecting;
-			float3 _SelectingColor;
 
 			struct appdata
 			{
@@ -51,7 +50,6 @@
 			{
 				float3 ret = baseColor;
 				ret = lerp(ret, _HoverColor, _Hover);
-				ret = lerp(ret, _SelectingColor, _Selecting);
 				ret = lerp(ret, _SelectedColor, _Selected);
 				ret = lerp(ret, _DraggingColor, _Dragging);
 				return ret;
@@ -59,7 +57,7 @@
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float3 baseColor = .5;
+				float3 baseColor = _FactionColor;
 				float3 manipulatedColor = GetUiManipulatedColor(baseColor);
 				return float4(manipulatedColor, 1);
 			}

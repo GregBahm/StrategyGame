@@ -67,7 +67,7 @@ public class CameraController : MonoBehaviour
         bool alt = (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt));
         bool shouldPan = Input.GetMouseButton(2);
         bool shouldZoom = Input.GetMouseButton(1) && alt;
-        bool shouldOrbit = Input.GetMouseButton(1) && !alt;
+        bool shouldOrbit = (Input.GetMouseButton(1) && !alt);
         if (shouldOrbit)
         {
             DoOrbit();

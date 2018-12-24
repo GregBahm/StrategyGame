@@ -22,12 +22,16 @@ public class MapDisplay
         InitializeTiles();
     }
 
-    public void UpdateUiState(MapInteraction mapInteraction, float timeDelta, UiAethetics aethetics)
+    public void UpdateUiState(GameState gameState, 
+        MapInteraction mapInteraction, 
+        float timeDelta, 
+        UiAethetics aethetics, 
+        ProvinceNeighborsTable neighbors)
     {
         SetStandardShaderProperties(aethetics);
         foreach (TileDisplay tile in TileDisplays)
         {
-            tile.UpdateHighlighting(mapInteraction, aethetics.TransitionSpeed, timeDelta);
+            tile.UpdateHighlighting(gameState, mapInteraction, aethetics.TransitionSpeed, timeDelta,  neighbors);
         }
     }
 

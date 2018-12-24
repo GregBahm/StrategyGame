@@ -334,8 +334,10 @@ MonoBehaviour:
     HoverColor: {r: 1, g: 0.92892253, b: 0, a: 0}
     SelectedColor: {r: 1, g: 0.68073237, b: 0, a: 0}
     DraggingColor: {r: 1, g: 0.47757196, b: 0, a: 0}
-    SelectingColor: {r: 0.7959391, g: 1, b: 0, a: 0}
-    TransitionSpeed: 20
+    ValidDraggedColor: {r: 0, g: 0.81803536, b: 1, a: 0}
+    InvalidDraggedColor: {r: 0.3773585, g: 0.3773585, b: 0.3773585, a: 0}
+    TargetableColor: {r: 0, g: 0.47320843, b: 1, a: 0}
+    TransitionSpeed: 10
     BackgroundColor: {r: 1, g: 1, b: 1, a: 0}
     TileMargin: 0.85
 --- !u!4 &2082271841
