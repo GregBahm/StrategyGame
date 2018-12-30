@@ -41,6 +41,17 @@ public class FactionInteraction
         _provinceMerges.Clear();
         _provinceUpgrades.Clear();
     }
+    
+    internal void RequestAttackOrMerge(ProvinceState selectedProvince, ProvinceState draggedOnProvince)
+    {
+        // TODO: First, see if there is already an attack or merge request from this province
+        // Then see if this request is different from the existing request
+        // If it is, delete the old request and replace it with the new request
+        // Otherwise, check and see if they are at their max moves request
+        // If they aren't make a new move
+        // Then you need to figure out how the art hooks for these moves are going to work
+        throw new NotImplementedException();
+    }
 
     internal IEnumerable<PlayerMove> GetMoves()
     {

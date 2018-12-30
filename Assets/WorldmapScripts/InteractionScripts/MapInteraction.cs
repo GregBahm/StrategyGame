@@ -6,26 +6,38 @@ using UnityEngine;
 
 public class MapInteraction
 {
-    private readonly Plane _groundPlane;
+    public InteractionManager InteractionMain { get; }
     private readonly UnityObjectManager _objectManager;
     private readonly ReadOnlyDictionary<Collider, Tile> _collisionDictionary;
     private readonly Map _map;
-    private readonly int _armyLayerMask;
     private readonly int _tileLayermask;
 
-    public Province HoveredProvince { get; private set; }
-    public Province SelectedProvince { get; private set; }
-    public Province DraggingProvince { get; private set; }
-    public Province DraggedOnProvince { get; private set; }
-
-    public MapInteraction(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
+    private ProvinceState _hoveredProvince;
+    public Province HoveredProvince { get { return _hoveredProvince?.Identifier; } }
+    private ProvinceState _selectedProvince;
+    public Province SelectedProvince { get { return _selectedProvince?.Identifier; } }
+    public bool Dragging { get; private set; }
+    private ProvinceState _draggedOnProvince;
+    public Province DraggedOnProvince { get { return _draggedOnProvince?.Identifier; } }
+    public bool OwnedProvinceSelected
     {
+        get
+        {
+            if(SelectedProvince != null)
+            {
+                return _selectedProvince.Owner == InteractionMain.Factions.ActiveFaction;
+            }
+            return false;
+        }
+    }
+
+    public MapInteraction(InteractionManager main, GameSetup gameSetup, Map map, UnityObjectManager objectManager)
+    {
+        InteractionMain = main;
         _objectManager = objectManager;
         _collisionDictionary = CreateCollisionDictionary(objectManager);
         _map = map;
-        _armyLayerMask = 1 << LayerMask.NameToLayer("ArmyLayer");
         _tileLayermask = 1 << LayerMask.NameToLayer("TileLayer");
-        _groundPlane = new Plane(Vector3.up, 0);
     }
 
     private ReadOnlyDictionary<Collider, Tile> CreateCollisionDictionary(UnityObjectManager objectManager)
@@ -36,44 +48,70 @@ public class MapInteraction
 
     public void Update(GameState currentGamestate, ProvinceNeighborsTable neighbors)
     {
-        HoveredProvince = GetProvinceUnderMouse(currentGamestate);
+        _hoveredProvince = GetProvinceUnderMouse(currentGamestate);
         bool mouseDown = Input.GetMouseButton(0);
         if (mouseDown)
         {
             bool mouseJustDown = Input.GetMouseButtonDown(0);
             if (mouseJustDown)
             {
-                HandleHoverToSelected();
+                HandleHoverToSelected(currentGamestate);
                 HandleSelectedToDragging();
             }
             HandleDraggedUpon();
         }
         else
         {
-            DraggedOnProvince = null;
-            DraggingProvince = null;
+            HandleDragDrop(neighbors);
+            _draggedOnProvince = null;
+            Dragging = false;
         }
+    }
+
+    private void HandleDragDrop(ProvinceNeighborsTable neighbors)
+    {
+        bool validDrag = GetWasValidDragDrop(neighbors);
+        if(validDrag)
+        {
+            InteractionMain.Factions.ActiveInteraction.RequestAttackOrMerge(_selectedProvince, _draggedOnProvince);
+        }
+    }
+
+    private bool GetWasValidDragDrop(ProvinceNeighborsTable neighbors)
+    {
+        bool mouseJustUp = Input.GetMouseButtonUp(0);
+        bool wasDragDrop = OwnedProvinceSelected
+            && Dragging
+            && _draggedOnProvince != null
+            && _selectedProvince != _draggedOnProvince
+            && mouseJustUp;
+
+        if (wasDragDrop)
+        {
+            return neighbors.GetNeighborsFor(_selectedProvince.Identifier).Contains(_draggedOnProvince.Identifier);
+        }
+        return false;
     }
 
     private void HandleDraggedUpon()
     {
         if (HoveredProvince != null 
-            && DraggingProvince != HoveredProvince 
-            && DraggingProvince != null)
+            && SelectedProvince != HoveredProvince 
+            && Dragging)
         {
-            DraggedOnProvince = HoveredProvince;
+            _draggedOnProvince = _hoveredProvince;
         }
         else
         {
-            DraggedOnProvince = null;
+            _draggedOnProvince = null;
         }
     }
 
-    private void HandleHoverToSelected()
+    private void HandleHoverToSelected(GameState currentGamestate)
     {
         if (HoveredProvince != null)
         {
-            SelectedProvince = HoveredProvince;
+            _selectedProvince = _hoveredProvince;
         }
     }
 
@@ -81,16 +119,16 @@ public class MapInteraction
     {
         if (HoveredProvince == SelectedProvince)
         {
-            DraggingProvince = SelectedProvince;
+            Dragging = true;
         }
     }
 
-    private Province GetProvinceUnderMouse(GameState currentGamestate)
+    private ProvinceState GetProvinceUnderMouse(GameState currentGamestate)
     {
         Tile tile = GetTileUnderMouse();
         if(tile != null)
         {
-            return currentGamestate.GetTilesProvince(tile).Identifier;
+            return currentGamestate.GetTilesProvince(tile);
         }
         return null;
     }

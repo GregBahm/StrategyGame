@@ -12,6 +12,7 @@ public class FactionsInteractionManager
     public IEnumerable<FactionInteraction> Factions { get { return _factions.Values; } }
     
     public Faction ActiveFaction { get; private set; }
+    public FactionInteraction ActiveInteraction { get { return _factions[ActiveFaction]; } }
 
     public FactionsInteractionManager(MainGameManager mainManager, IEnumerable<FactionUnityObject> factionUnities)
     {

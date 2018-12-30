@@ -86,13 +86,14 @@ public class TileDisplay
         ProvinceNeighborsTable neighbors)
     {
         Province myProvince = gameState.GetTilesProvince(Tile).Identifier;
-        bool isNeighborSelected = GetIsNeighborSelected(gameState, neighbors, mapInteraction, myProvince);
+        bool isNeighborSelected = mapInteraction.OwnedProvinceSelected && 
+            GetIsNeighborSelected(gameState, neighbors, mapInteraction, myProvince);
 
         float speed = transitionSpeed * timeDelta;
 
         bool isHovered = mapInteraction.HoveredProvince == myProvince;
         bool isSelected = mapInteraction.SelectedProvince == myProvince;
-        bool isDragging = mapInteraction.DraggingProvince == myProvince;
+        bool isDragging = isSelected && mapInteraction.Dragging;
         bool isDragged = mapInteraction.DraggedOnProvince == myProvince;
         _hover = Mathf.Lerp(_hover, isHovered ? 1 : 0, speed);
         _selected = Mathf.Lerp(_selected, isSelected ? 1 : 0, speed);

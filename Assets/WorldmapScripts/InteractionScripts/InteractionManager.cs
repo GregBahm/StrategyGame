@@ -18,7 +18,7 @@ public class InteractionManager
         UnityObjectManager unityObjectManager,
         IEnumerable<PlayerSetup> playerSetups)
     {
-        Map = new MapInteraction(gameSetup, map, mainManager.ObjectManager);
+        Map = new MapInteraction(this, gameSetup, map, mainManager.ObjectManager);
         Timeline = new TimelineInteraction(this);
         Factions = new FactionsInteractionManager(mainManager, unityObjectManager.Factions);
     }
