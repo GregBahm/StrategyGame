@@ -16,20 +16,13 @@ public class ProvinceDisplay
 
     public void DisplayProvince(GameTurnTransition transition, DisplayTimings timings)
     {
-        DisplayProvinceEffects(transition, timings.ProvinceEffects);
         DisplayProvinceUpgrades(transition, timings.ProvinceUpgrades);
     }
 
     private void DisplayProvinceUpgrades(GameTurnTransition transition, float provinceUpgrades)
     {
-        ProvinceState initialProvince = transition.InitialState.GetProvinceState(Identifier);
-        ProvinceState finalProvince = transition.PostUpgradesState.GetProvinceState(Identifier);
+        ProvinceState initialProvince = transition.BeforeEverything.GetProvinceState(Identifier);
+        ProvinceState finalProvince = transition.AfterWarsAndUpgrades.GetProvinceState(Identifier);
 
-    }
-
-    private void DisplayProvinceEffects(GameTurnTransition transition, float provinceEffects)
-    {
-        ProvinceState initialProvince = transition.InitialState.GetProvinceState(Identifier);
-        ProvinceState finalProvince = transition.PostProvinceEffectsState.GetProvinceState(Identifier);
     }
 }

@@ -16,7 +16,7 @@ public class FactionInteraction
     
     public int RemainingMoves { get { return 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count); } }
 
-    private readonly List<ArmyMoveBuilder> _armyMoves;
+    private readonly List<AttackMoveBuilder> _armyMoves;
     private readonly List<ProvinceMergeBuilder> _provinceMerges;
     private readonly List<ProvinceUpgradeBuilder> _provinceUpgrades;
 
@@ -24,7 +24,7 @@ public class FactionInteraction
     {
         _manager = manager;
         Faction = faction;
-        _armyMoves = new List<ArmyMoveBuilder>();
+        _armyMoves = new List<AttackMoveBuilder>();
         _provinceMerges = new List<ProvinceMergeBuilder>();
         _provinceUpgrades = new List<ProvinceUpgradeBuilder>();
     }
@@ -44,7 +44,7 @@ public class FactionInteraction
 
     internal IEnumerable<PlayerMove> GetMoves()
     {
-        foreach (ArmyMoveBuilder armyMove in _armyMoves.Where(item => item.IsValid))
+        foreach (AttackMoveBuilder armyMove in _armyMoves.Where(item => item.IsValid))
         {
             yield return armyMove.ToMove();
         }
@@ -58,44 +58,34 @@ public class FactionInteraction
         }
     }
 
-    private class ArmyMoveBuilder
+    private class AttackMoveBuilder
     {
-        //Player clicks on an army they control.
-        //Provinces that are available to move to are highlit.
-        //The army's home province is also highlit in a different way.
-
-        //Player can right click on a neighboring province to define move.
-
-        //With the army selected, they can right click on the province again to remove the move, or right click on the army's home province, 
-        //    or right click on a different province to replace the move
-
         private readonly FactionInteraction _source;
 
-        public ArmyDisplay Army { get; }
+        public Province SourceProvince { get; private set; }
 
-        public ProvinceDisplay Target { get; private set; }
+        public Province Target { get; private set; }
 
         public bool IsValid
         {
             get
             {
-                return Target != null;
+                return true;// TODO: Attack Move Builder Validation
             }
         }
 
-        public ArmyMoveBuilder(FactionInteraction source, ArmyDisplay army)
+        public AttackMoveBuilder(FactionInteraction source)
         {
             _source = source;
-            Army = army;
         }
 
-        internal ArmyMove ToMove()
+        internal AttackMove ToMove()
         {
             if(!IsValid)
             {
                 throw new InvalidOperationException("Can't convert Invalid ArmyMoveBuilder to ArmyMove.");
             }
-            return new ArmyMove(_source.Faction, Army.Identifier, Target.Identifier);
+            return new AttackMove(_source.Faction, SourceProvince, Target);
         }
     }
 
@@ -112,7 +102,7 @@ public class FactionInteraction
         public ProvinceDisplay SourceProvince { get; }
 
         public ProvinceUpgradeBlueprint SelectedUpgrade { get; set; }
-        public TileDisplay TargetTile { get; set; }
+        public Tile TargetTile { get; set; }
 
         public bool IsValid
         {
@@ -133,7 +123,7 @@ public class FactionInteraction
             {
                 throw new InvalidOperationException("Can't convert Invalid Province Upgrade Builder to Province Upgrade Move");
             }
-            ProvinceUpgrade upgrade = new ProvinceUpgrade(SelectedUpgrade, TargetTile, 0);
+            ProvinceUpgrade upgrade = new ProvinceUpgrade(SelectedUpgrade, TargetTile);
             return new UpgradeMove(_source.Faction, SourceProvince.Identifier, upgrade);
         }
     }

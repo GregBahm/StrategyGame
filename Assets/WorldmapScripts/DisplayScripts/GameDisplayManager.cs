@@ -5,10 +5,8 @@ using UnityEngine;
 
 public class GameDisplayManager
 {
-    private readonly Dictionary<Army, ArmyDisplay> _armies;
     private readonly Dictionary<Province, ProvinceDisplay> _provinces;
     private readonly MainGameManager _mainManager;
-    private readonly GameObject _armyPrefab;
     private readonly FactionsDisplayManager _factions;
     public MapDisplay Map { get; }
 
@@ -20,10 +18,8 @@ public class GameDisplayManager
         FactionsInteractionManager interactionManager,
         GameState initialState)
     {
-        _armies = new Dictionary<Army, ArmyDisplay>();
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
-        _armyPrefab = gameSetup.ArmyPrefab;
         _factions = new FactionsDisplayManager(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, objectManager, interactionManager);
         Map = new MapDisplay(gameSetup, map, objectManager);
         UpdateDisplayWrappers(initialState);
@@ -46,10 +42,6 @@ public class GameDisplayManager
     {
         UpdateUiAethetics(aethetics);
         Map.UpdateUiState(gameState, _mainManager.InteractionManager.Map, timeDelta, aethetics, neighbors);
-        foreach (ArmyDisplay army in _armies.Values)
-        {
-            army.UpdateUi(_mainManager.InteractionManager.Map, aethetics, timeDelta);
-        }
         _factions.UpdateUi();
     }
 
@@ -65,14 +57,6 @@ public class GameDisplayManager
 
     public void UpdateDisplayWrappers(GameState state)
     {
-        foreach (ArmyState army in state.Armies)
-        {
-            if(!_armies.ContainsKey(army.Identifier))
-            {
-                ArmyDisplay displayer = RegisterNewArmy(army);
-                _armies.Add(army.Identifier, displayer);
-            }
-        }
         foreach (ProvinceState province in state.Provinces)
         {
             if (!_provinces.ContainsKey(province.Identifier))
@@ -83,18 +67,11 @@ public class GameDisplayManager
         }
     }
 
-    private ArmyDisplay RegisterNewArmy(ArmyState army)
-    {
-        ArmyUnityObject unityObject = _mainManager.ObjectManager.GetUnityObject(army.Identifier);
-        return new ArmyDisplay(this, army.Identifier, unityObject.transform, unityObject.ArtContent);
-    }
-
     public void DisplayTurn(GameTurnTransition turn, float progression)
     {
         DisplayTimings timings = new DisplayTimings(progression);
 
         UpdateTiles(turn, timings);
-        UpdateArmies(turn, timings);
         UpdateProvinces(turn, timings);
 
         // Then display rally state changes
@@ -119,25 +96,6 @@ public class GameDisplayManager
         foreach (ProvinceDisplay province in _provinces.Values)
         {
             province.DisplayProvince(transiation, timings);
-        }
-    }
-
-    private void UpdateArmies(GameTurnTransition gameTurnTransition, DisplayTimings progression)
-    {
-        Dictionary<Army, ArmyTurnTransition> armyTransitions =
-            gameTurnTransition.ArmyTransitions.ToDictionary(transition => transition.StartingState.Identifier, transition => transition);
-
-        foreach (ArmyDisplay displayer in _armies.Values)
-        {
-            if(armyTransitions.ContainsKey(displayer.Identifier))
-            {
-                ArmyTurnTransition armyTransition = armyTransitions[displayer.Identifier];
-                displayer.DisplayArmy(gameTurnTransition, armyTransition, progression);
-            }
-            else
-            {
-                displayer.SetArmyAsDead();
-            }
         }
     }
 

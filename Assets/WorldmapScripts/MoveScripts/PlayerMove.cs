@@ -6,8 +6,7 @@ public abstract class PlayerMove
     {
         Merger, 
         Upgrade,
-        ArmyMove,
-        RallyPointChange,
+        Attack,
     }
 
     public Faction Faction { get; }

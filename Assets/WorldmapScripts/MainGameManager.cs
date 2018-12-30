@@ -7,7 +7,7 @@ using UnityEngine;
 public class MainGameManager
 {
     private readonly List<GameTurnTransition> _turns = new List<GameTurnTransition>();
-    public GameState CurrentState { get { return _turns[_turns.Count - 1].PostMergersState; } }
+    public GameState CurrentState { get { return _turns[_turns.Count - 1].AfterEverything; } }
     private ProvinceNeighborsTable _provinceNeighbors;
     public GameTurnTransition this[int index] { get { return _turns[index]; } }
     public int TurnsCount { get { return _turns.Count; } }
@@ -29,10 +29,9 @@ public class MainGameManager
 
         ObjectManager = new UnityObjectManager(map, 
             gameSetup.TilePrefab, 
-            gameSetup.ArmyPrefab, 
             gameSetup.FactionPrefab, 
             gameSetup.ScreenCanvas, 
-            initialState.PostMergersState,
+            initialState.AfterEverything,
             playerSetups);
         InteractionManager = new InteractionManager(this, 
             gameSetup, 
@@ -45,7 +44,7 @@ public class MainGameManager
             map,
             ObjectManager,
             InteractionManager.Factions,
-            initialState.PostMergersState);
+            initialState.AfterEverything);
     }
 
     internal void Update(UiAethetics aethetics)
@@ -57,31 +56,15 @@ public class MainGameManager
     private GameTurnTransition GetInitialState(IEnumerable<PlayerSetup> playerSetups, Map map)
     {
         IEnumerable<ProvinceState> provinces = GetInitialProvinces(playerSetups, map);
-        IEnumerable<ArmyState> armies = GetInitialArmies(playerSetups, provinces);
-        GameState initialState = new GameState(provinces, armies);
+        GameState initialState = new GameState(provinces);
         MergeTable mergeTable = new MergeTable(new Dictionary<Province, Province>());
-        ArmyTurnTransition[] initialTransition = armies.Select(army => new ArmyTurnTransition(army, army, army.LocationId, army, army, true, false, false)).ToArray();
         return new GameTurnTransition(
             initialState,
             initialState,
             initialState,
             initialState,
-            initialState,
             mergeTable,
-            initialTransition);
-    }
-
-    private IEnumerable<ArmyState> GetInitialArmies(IEnumerable<PlayerSetup> playerSetups, IEnumerable<ProvinceState> provinces)
-    {
-        List<ArmyState> ret = new List<ArmyState>();
-        foreach (PlayerSetup setup in playerSetups)
-        {
-            Army army = new Army(setup.Faction);
-            Province province = provinces.First(item => item.Owner == setup.Faction).Identifier;
-            ArmyState armyState = new ArmyState(army, province, new ArmyForces(), false);
-            ret.Add(armyState);
-        }
-        return ret;
+            new War[0]);
     }
 
     private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Map map)
@@ -128,12 +111,11 @@ public class MainGameManager
         GameTurnTransition newState = CurrentState.GetNextState(moves);
         _turns.Add(newState);
 
-        IEnumerable<Faction> survivingFactions = newState.PostMergersState.GetSurvivingFactions();
+        IEnumerable<Faction> survivingFactions = newState.AfterEverything.GetSurvivingFactions();
         if(survivingFactions.Count() < 2)
         {
             HandleGameConclusion(survivingFactions);
         }
-        ObjectManager.UpdateGameobjects(CurrentState);
         DisplayManager.UpdateDisplayWrappers(CurrentState);
         _provinceNeighbors = new ProvinceNeighborsTable(CurrentState);
         InteractionManager.Factions.RenewBuilders(survivingFactions);

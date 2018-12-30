@@ -6,11 +6,11 @@ public class UpgradeMovesResolver
 {
     public GameState NewGameState { get; }
 
-    public UpgradeMovesResolver(GameState oldState, List<UpgradeMove> upgrades)
+    public UpgradeMovesResolver(GameState oldState, IEnumerable<UpgradeMove> upgrades)
     {
         IEnumerable<UpgradeMove> validUpgrades = upgrades.Where(item => ValidateUpgrade(item, oldState));
         IEnumerable<ProvinceState> upgradedProvinces = GetUpgradedProvinces(oldState, validUpgrades);
-        NewGameState = new GameState(upgradedProvinces, oldState.Armies);
+        NewGameState = new GameState(upgradedProvinces);
     }
 
     private IEnumerable<ProvinceState> GetUpgradedProvinces(GameState oldState, IEnumerable<UpgradeMove> validUpgrades)

@@ -3,7 +3,6 @@
 public class GameSetup : MonoBehaviour
 {
     public GameObject TilePrefab;
-    public GameObject ArmyPrefab;
     public GameObject FactionPrefab;
     public TextAsset MapDefinition;
     public Material SkyMat;

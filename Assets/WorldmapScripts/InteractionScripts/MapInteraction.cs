@@ -13,18 +13,10 @@ public class MapInteraction
     private readonly int _armyLayerMask;
     private readonly int _tileLayermask;
 
-    public Army HoveredArmy { get; private set; }
-    public Army SelectedArmy { get; private set; }
-    public Army DraggingArmy { get; private set; }
-
     public Province HoveredProvince { get; private set; }
     public Province SelectedProvince { get; private set; }
     public Province DraggingProvince { get; private set; }
     public Province DraggedOnProvince { get; private set; }
-
-    public bool AnythingSelected { get { return SelectedProvince != null || SelectedArmy != null; } }
-    public bool AnythingHovered { get { return HoveredProvince != null || HoveredArmy != null; } }
-    public bool AnythingDragging { get { return DraggingProvince != null || DraggingArmy != null; } }
 
     public MapInteraction(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
@@ -44,7 +36,7 @@ public class MapInteraction
 
     public void Update(GameState currentGamestate, ProvinceNeighborsTable neighbors)
     {
-        SetHover(currentGamestate);
+        HoveredProvince = GetProvinceUnderMouse(currentGamestate);
         bool mouseDown = Input.GetMouseButton(0);
         if (mouseDown)
         {
@@ -59,14 +51,15 @@ public class MapInteraction
         else
         {
             DraggedOnProvince = null;
-            DraggingArmy = null;
             DraggingProvince = null;
         }
     }
 
     private void HandleDraggedUpon()
     {
-        if (HoveredProvince != null && DraggingProvince != HoveredProvince && AnythingDragging)
+        if (HoveredProvince != null 
+            && DraggingProvince != HoveredProvince 
+            && DraggingProvince != null)
         {
             DraggedOnProvince = HoveredProvince;
         }
@@ -81,12 +74,6 @@ public class MapInteraction
         if (HoveredProvince != null)
         {
             SelectedProvince = HoveredProvince;
-            SelectedArmy = null;
-        }
-        if (HoveredArmy != null)
-        {
-            SelectedArmy = HoveredArmy;
-            SelectedProvince = null;
         }
     }
 
@@ -95,23 +82,6 @@ public class MapInteraction
         if (HoveredProvince == SelectedProvince)
         {
             DraggingProvince = SelectedProvince;
-        }
-        if (HoveredArmy == SelectedArmy)
-        {
-            DraggingArmy = SelectedArmy;
-        }
-    }
-
-    private void SetHover(GameState currentGamestate)
-    {
-        HoveredArmy = GetArmyHover();
-        if (HoveredArmy != null)
-        {
-            HoveredProvince = null;
-        }
-        else
-        {
-            HoveredProvince = GetProvinceUnderMouse(currentGamestate);
         }
     }
 
@@ -141,17 +111,4 @@ public class MapInteraction
         }
         return null;
     }
-
-    private Army GetArmyHover()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hitInfo;
-        bool hit = Physics.Raycast(ray, out hitInfo, Mathf.Infinity, _armyLayerMask, QueryTriggerInteraction.UseGlobal);
-        if (hit)
-        {
-            return hitInfo.transform.parent.gameObject.GetComponent<ArmyUnityObject>().Army;
-        }
-        return null;
-    }
-
 }

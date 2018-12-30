@@ -45,8 +45,8 @@ public class TileDisplay
 
     public void DisplayTile(GameTurnTransition gameTransition, DisplayTimings timings)
     {
-        DisplayProvinceOwnershipChanges(gameTransition.InitialState, gameTransition.PostOwnershipChangesState, timings.ProvinceOwnershipChanges);
-        DisplayProvinceMergers(gameTransition.InitialState, gameTransition.PostMergersState, timings.ProvinceMergers);
+        DisplayProvinceOwnershipChanges(gameTransition.BeforeEverything, gameTransition.AfterWars, timings.ProvinceOwnershipChanges);
+        DisplayProvinceMergers(gameTransition.BeforeEverything, gameTransition.AfterEverything, timings.ProvinceMergers);
     }
 
     private void DisplayProvinceOwnershipChanges(GameState preOwnerGame, GameState postOwnerGame, float progression)
@@ -114,12 +114,6 @@ public class TileDisplay
         if(mapInteraction.SelectedProvince != null)
         {
             HashSet<Province> neighbors = neighborsTable.GetNeighborsFor(mapInteraction.SelectedProvince);
-            return neighbors.Contains(myProvince);
-        }
-        if(mapInteraction.SelectedArmy != null)
-        {
-            Province armysProvince = gameState.GetArmyState(mapInteraction.SelectedArmy).LocationId;
-            HashSet<Province> neighbors = neighborsTable.GetNeighborsFor(armysProvince);
             return neighbors.Contains(myProvince);
         }
         return false;
