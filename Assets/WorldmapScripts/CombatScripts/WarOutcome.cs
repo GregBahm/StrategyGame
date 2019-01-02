@@ -4,10 +4,12 @@ using System.Collections;
 public class War
 {
     public Faction Winner { get; }
-    public Province AffectedProvince { get; }
+    public Province Location { get; }
 
-    public War(WarForces sideA, WarForces sideB)
+    public War(Province location, WarForces sideA, WarForces sideB)
     {
-        // TOOD: Implement war
+        // TOOD: Implement war for realz
+        Winner = sideB.Faction;
+        Location = location;
     }
 }

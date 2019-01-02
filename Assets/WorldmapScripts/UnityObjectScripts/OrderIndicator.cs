@@ -4,20 +4,24 @@ using UnityEngine;
 
 public class OrderIndicator : MonoBehaviour
 {
+    public Color Color;
     public Transform Target;
     public float ArcCurvature = 1;
     public int Resolution = 100;
 
+    private Material _mat;
     private LineRenderer _lineRender;
 
     private void Start()
     {
         _lineRender = GetComponent<LineRenderer>();
+        _mat = _lineRender.material;
     }
 
     private void Update()
     {
         SetLineRenderer();
+        _mat.SetColor("_Color", Color);
     }
     private void SetLineRenderer()
     {

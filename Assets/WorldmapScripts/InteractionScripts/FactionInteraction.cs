@@ -6,101 +6,113 @@ using UnityEngine;
 
 public class FactionInteraction
 {
-    private readonly FactionsInteractionManager _manager;
-
     public Faction Faction { get; }
-
     public bool Submitted { get; private set; }
+    public int RemainingMoves { get { return 3 - (_attacks.Count + _mergers.Count + _upgrades.Count); } }
 
-    private const int MaxMoves = 3;
-    
-    public int RemainingMoves { get { return 3 - (_armyMoves.Count + _provinceMerges.Count + _provinceUpgrades.Count); } }
+    public IEnumerable<IIndicatableMove> IndicatableMoves
+    {
+        get
+        {
+            foreach (IIndicatableMove item in _attacks)
+            {
+                yield return item;
+            }
+            foreach (IIndicatableMove item in _mergers)
+            {
+                yield return item;
+            }
+        }
+    }
 
-    private readonly List<AttackMoveBuilder> _armyMoves;
-    private readonly List<ProvinceMergeBuilder> _provinceMerges;
-    private readonly List<ProvinceUpgradeBuilder> _provinceUpgrades;
+    private readonly FactionsInteractionManager _manager;
+    public const int MaxMoves = 3;
+    private readonly List<AttackIntention> _attacks;
+    private readonly List<MergerIntention> _mergers;
+    private readonly List<UpgradeIntention> _upgrades;
 
     public FactionInteraction(FactionsInteractionManager manager, Faction faction)
     {
         _manager = manager;
         Faction = faction;
-        _armyMoves = new List<AttackMoveBuilder>();
-        _provinceMerges = new List<ProvinceMergeBuilder>();
-        _provinceUpgrades = new List<ProvinceUpgradeBuilder>();
-    }
-
-    public void SubmitMove()
-    {
-        Submitted = true;
-        _manager.OnMoveSubmitted();
+        _attacks = new List<AttackIntention>();
+        _mergers = new List<MergerIntention>();
+        _upgrades = new List<UpgradeIntention>();
     }
 
     internal void Renew()
     {
-        _armyMoves.Clear();
-        _provinceMerges.Clear();
-        _provinceUpgrades.Clear();
+        _attacks.Clear();
+        _mergers.Clear();
+        _upgrades.Clear();
     }
     
     internal void RequestAttackOrMerge(ProvinceState selectedProvince, ProvinceState draggedOnProvince)
     {
-        // TODO: First, see if there is already an attack or merge request from this province
-        // Then see if this request is different from the existing request
-        // If it is, delete the old request and replace it with the new request
-        // Otherwise, check and see if they are at their max moves request
-        // If they aren't make a new move
-        // Then you need to figure out how the art hooks for these moves are going to work
-        throw new NotImplementedException();
+        ClearExistingMove(selectedProvince);
+        if(RemainingMoves > 0)
+        {
+            if (selectedProvince.Owner == draggedOnProvince.Owner)
+            {
+                // Merge
+                MergerIntention merger = new MergerIntention(selectedProvince.Owner, selectedProvince.Identifier, draggedOnProvince.Identifier);
+                _mergers.Add(merger);
+            }
+            else
+            {
+                // Attack
+                AttackIntention attack = new AttackIntention(selectedProvince.Owner, selectedProvince.Identifier, draggedOnProvince.Identifier);
+                _attacks.Add(attack);
+            }
+        }
+    }
+
+    private void ClearExistingMove(ProvinceState selectedProvince)
+    {
+        MergerIntention existingMerge = _mergers.FirstOrDefault(item => item.From == selectedProvince.Identifier);
+        if(existingMerge != null)
+        {
+            _mergers.Remove(existingMerge);
+        }
+        AttackIntention existingAttack = _attacks.FirstOrDefault(item => item.From == selectedProvince.Identifier);
+        if(existingAttack != null)
+        {
+            _attacks.Remove(existingAttack);
+        }
     }
 
     internal IEnumerable<PlayerMove> GetMoves()
     {
-        foreach (AttackMoveBuilder armyMove in _armyMoves.Where(item => item.IsValid))
+        foreach (AttackIntention attack in _attacks)
         {
-            yield return armyMove.ToMove();
+            yield return attack;
         }
-        foreach (ProvinceMergeBuilder merge in _provinceMerges.Where(item => item.IsValid))
+        foreach (MergerIntention merge in _mergers)
         {
-            yield return merge.ToMove();
+            yield return merge;
         }
-        foreach (ProvinceUpgradeBuilder upgrade in _provinceUpgrades.Where(item => item.IsValid))
+        foreach (UpgradeIntention upgrade in _upgrades)
         {
             yield return upgrade.ToMove();
         }
     }
 
-    private class AttackMoveBuilder
+    private class AttackIntention : AttackMove, IIndicatableMove
     {
         private readonly FactionInteraction _source;
 
-        public Province SourceProvince { get; private set; }
-
-        public Province Target { get; private set; }
-
-        public bool IsValid
+        public Province From { get; set; }
+        public Province To { get; set; }
+        
+        public AttackIntention(Faction faction, Province from, Province to)
+            : base(faction, from, to)
         {
-            get
-            {
-                return true;// TODO: Attack Move Builder Validation
-            }
-        }
-
-        public AttackMoveBuilder(FactionInteraction source)
-        {
-            _source = source;
-        }
-
-        internal AttackMove ToMove()
-        {
-            if(!IsValid)
-            {
-                throw new InvalidOperationException("Can't convert Invalid ArmyMoveBuilder to ArmyMove.");
-            }
-            return new AttackMove(_source.Faction, SourceProvince, Target);
+            From = from;
+            To = to;
         }
     }
 
-    private class ProvinceUpgradeBuilder
+    private class UpgradeIntention
     {
         //Player clicks on province they control.
         //Upgrades display along right side of the screen.
@@ -113,66 +125,30 @@ public class FactionInteraction
         public ProvinceDisplay SourceProvince { get; }
 
         public ProvinceUpgradeBlueprint SelectedUpgrade { get; set; }
-        public Tile TargetTile { get; set; }
+        public Tile TargetTile { get; }
 
-        public bool IsValid
-        {
-            get
-            {
-                return SelectedUpgrade != null;
-            }
-        }
-
-        public ProvinceUpgradeBuilder(FactionInteraction source)
+        public UpgradeIntention(FactionInteraction source)
         {
             _source = source;
         }
 
         internal UpgradeMove ToMove()
         {
-            if(!IsValid)
-            {
-                throw new InvalidOperationException("Can't convert Invalid Province Upgrade Builder to Province Upgrade Move");
-            }
             ProvinceUpgrade upgrade = new ProvinceUpgrade(SelectedUpgrade, TargetTile);
             return new UpgradeMove(_source.Faction, SourceProvince.Identifier, upgrade);
         }
     }
 
-    private class ProvinceMergeBuilder
+    private class MergerIntention : MergerMove, IIndicatableMove
     {
-        //Player clicks on a province they control.
-        //Provinces that can be merged are available.
-        //Player right clicks on mergeable tile to complete merge.
-
-        //With province selected, they can right click on province again to remove merge, or right click on neighboring title to replace merge
-
-        private readonly FactionInteraction _source;
-
-        public ProvinceDisplay GrowingProvince { get; }
-        public ProvinceDisplay AbsorbedProvince { get; private set; }
-
-        public bool IsValid
+        public Province From { get; }
+        public Province To { get; }
+        
+        public MergerIntention(Faction faction, Province from, Province to)
+            :base(faction, from, to)
         {
-            get
-            {
-                return AbsorbedProvince != null;
-            }
-        }
-
-        public ProvinceMergeBuilder(FactionInteraction source, ProvinceDisplay growingProvince)
-        {
-            _source = source;
-            GrowingProvince = growingProvince;
-        }
-
-        internal MergerMove ToMove()
-        {
-            if(!IsValid)
-            {
-                throw new InvalidOperationException("Can't convert invalid ProvinceMergeBuilder to MergeMove");
-            }
-            return new MergerMove(_source.Faction, GrowingProvince.Identifier, AbsorbedProvince.Identifier);
+            From = from;
+            To = to;
         }
     }
 }

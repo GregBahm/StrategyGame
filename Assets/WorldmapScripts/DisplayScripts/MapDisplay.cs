@@ -65,11 +65,11 @@ public class MapDisplay
     {
         GameObject obj = tileObject.gameObject;
         TileDisplay ret = new TileDisplay(tile, this, obj); 
-        obj.transform.position = GetProvincePosition(tile.Row, tile.AscendingColumn);
+        obj.transform.position = GetBaseTilePosition(tile.Row, tile.AscendingColumn);
         return ret;
     }
     
-    public Vector3 GetProvincePosition(int row, int ascendingColumn)
+    private Vector3 GetBaseTilePosition(int row, int ascendingColumn)
     {
         Vector2 ascendingOffset = AscendingTileOffset * ascendingColumn;
         Vector2 offset = ascendingOffset + new Vector2(row, 0);

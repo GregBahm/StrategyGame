@@ -24,9 +24,9 @@ public class WarsResolver
         Dictionary<Province, ProvinceState> oldNewDictionary = state.Provinces.ToDictionary(item => item.Identifier, item => item);
         foreach (War war in wars)
         {
-            ProvinceState oldState = oldNewDictionary[war.AffectedProvince];
+            ProvinceState oldState = oldNewDictionary[war.Location];
             ProvinceState newState = new ProvinceState(war.Winner, oldState.Upgrades, oldState.Identifier, oldState.Tiles);
-            oldNewDictionary[war.AffectedProvince] = newState;
+            oldNewDictionary[war.Location] = newState;
         }
         return new GameState(oldNewDictionary.Values);
     }
@@ -48,15 +48,15 @@ public class WarsResolver
             {
                 WarForces defender = forcesTable.GetForcesFor(item.Key);
                 IEnumerable<WarForces> invaders = GetAttackersForProvince(item.Key, item.Value, forcesTable).ToArray();
-                FinalWarsSetup retItem = new FinalWarsSetup(defender, invaders);
+                FinalWarsSetup retItem = new FinalWarsSetup(item.Key, defender, invaders);
                 yield return retItem;
             }
         }
 
         private IEnumerable<WarForces> GetAttackersForProvince(Province defender, IEnumerable<AttackMove> invaders, WarForcesTable forcesTable)
         {
-            IEnumerable<IEnumerable<AttackMove>> invadersByFaction = GetInvadersByFaction(invaders);
-            foreach (IEnumerable<AttackMove> invadingFaction in invaders)
+            IEnumerable<IEnumerable<AttackMove>> invadersByFaction = GetInvadersByFaction(invaders).ToArray();
+            foreach (IEnumerable<AttackMove> invadingFaction in invadersByFaction)
             {
                 WarForces retItem = forcesTable.GetForcesFor(invadingFaction);
                 yield return retItem;
@@ -104,9 +104,9 @@ public class WarsResolver
         public IEnumerable<War> Wars { get; }
         public Faction FinalWinner { get; } // Null if multiple invaders beat the defender
 
-        public FinalWarsSetup(WarForces defender, IEnumerable<WarForces> invaders)
+        public FinalWarsSetup(Province location, WarForces defender, IEnumerable<WarForces> invaders)
         {
-            Wars = GetWars(defender, invaders);
+            Wars = GetWars(location, defender, invaders);
             FinalWinner = GetFinalWindner(defender.Faction, Wars);
         }
 
@@ -124,12 +124,12 @@ public class WarsResolver
             return null;
         }
 
-        private static IEnumerable<War> GetWars(WarForces defender, IEnumerable<WarForces> invaders)
+        private static IEnumerable<War> GetWars(Province location, WarForces defender, IEnumerable<WarForces> invaders)
         {
             List<War> ret = new List<War>();
             foreach (WarForces invader in invaders)
             {
-                War war = new War(defender, invader);
+                War war = new War(location, defender, invader);
                 ret.Add(war);
             }
             return ret;

@@ -6,7 +6,7 @@
     public MergerMove(Faction faction,
         Province growingProvince,
         Province absorbedProvince) 
-        : base(faction, MoveCategory.Attack)
+        : base(faction, MoveCategory.Merger)
     {
         GrowingProvince = growingProvince;
         AbsorbedProvince = absorbedProvince;

@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 23400927753939020}
   - component: {fileID: 64899181692970164}
   - component: {fileID: 114594258844109710}
-  m_Layer: 8
+  m_Layer: 5
   m_Name: Tile_pfb
   m_TagString: Untagged
   m_Icon: {fileID: 0}

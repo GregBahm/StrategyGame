@@ -19,4 +19,9 @@ public class ProvinceState
         Identifier = identifier;
         _tiles = new HashSet<Tile>(tiles);
     }
+
+    public override string ToString()
+    {
+        return Owner.Name + " Province: " + _tiles.Count + " tiles";
+    }
 }

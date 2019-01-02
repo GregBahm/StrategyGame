@@ -13,29 +13,29 @@ public class FactionsDisplayManager
         Canvas hudCanvas, 
         GameObject factionsPrefab, 
         UnityObjectManager objectManager,
-        FactionsInteractionManager interactionManager)
+        FactionsInteractionManager interactionManager,
+        MapInteraction mapInteraction)
     {
         _mainGameManager = mainGameManager;
-        Factions = CreateFactionsDisplay(objectManager, interactionManager);
+        Factions = CreateFactionsDisplay(objectManager, interactionManager, mapInteraction);
     }
 
-    private IEnumerable<FactionDisplay> CreateFactionsDisplay(UnityObjectManager objectManager, FactionsInteractionManager interactionManager)
+    private IEnumerable<FactionDisplay> CreateFactionsDisplay(UnityObjectManager objectManager, FactionsInteractionManager interactionManager, MapInteraction mapInteraction)
     {
         List<FactionDisplay> ret = new List<FactionDisplay>();
         foreach (FactionInteraction faction in interactionManager.Factions)
         {
-            FactionUnityObject unityObject = objectManager.GetUnityObject(faction.Faction);
-            FactionDisplay factionDisplay = new FactionDisplay(unityObject, interactionManager);
+            FactionDisplay factionDisplay = new FactionDisplay(faction, objectManager, interactionManager, mapInteraction);
             ret.Add(factionDisplay);
         }
         return ret;
     }
 
-    internal void UpdateUi()
+    internal void UpdateUi(GameState state)
     {
         foreach (FactionDisplay display in Factions)
         {
-            display.UpdateUi();
+            display.UpdateUi(state);
         }
     }
 }

@@ -30,6 +30,7 @@ public class MainGameManager
         ObjectManager = new UnityObjectManager(map, 
             gameSetup.TilePrefab, 
             gameSetup.FactionPrefab, 
+            gameSetup.OrderIndicatorPrefab,
             gameSetup.ScreenCanvas, 
             initialState.AfterEverything,
             playerSetups);
@@ -50,6 +51,7 @@ public class MainGameManager
     internal void Update(UiAethetics aethetics)
     {
         InteractionManager.Update(CurrentState, _provinceNeighbors);
+        DisplayManager.DisplayGamestate();
         DisplayManager.UpdateUi(CurrentState, Time.deltaTime, aethetics, _provinceNeighbors);
     }
 
@@ -69,13 +71,12 @@ public class MainGameManager
 
     private IEnumerable<ProvinceState> GetInitialProvinces(IEnumerable<PlayerSetup> playerSetups, Map map)
     {
-        Faction unownedFaction = new Faction("Independent", Color.white);
         Dictionary<Tile, Faction> startingLocations = GetStartingLocations(playerSetups, map);
 
         List<ProvinceState> ret = new List<ProvinceState>();
         foreach (Tile tile in map)
         {
-            Faction faction = unownedFaction;
+            Faction faction = Faction.Independent;
             if(startingLocations.ContainsKey(tile))
             {
                 faction = startingLocations[tile];
@@ -119,6 +120,8 @@ public class MainGameManager
         DisplayManager.UpdateDisplayWrappers(CurrentState);
         _provinceNeighbors = new ProvinceNeighborsTable(CurrentState);
         InteractionManager.Factions.RenewBuilders(survivingFactions);
+
+        InteractionManager.Timeline.SetToMax(TurnsCount);
     }
 
     private void HandleGameConclusion(IEnumerable<Faction> survivingFactions)

@@ -11,7 +11,7 @@ public class MergerMovesResolver
     public MergerMovesResolver(GameState postArmyMovesState, IEnumerable<MergerMove> mergers)
     {
         // Need to make sure they're not merging a province they no longer own
-        IEnumerable<MergerMove> validMoves = mergers.Where(item => ValidateItem(item, postArmyMovesState));
+        IEnumerable<MergerMove> validMoves = mergers.Where(item => ValidateItem(item, postArmyMovesState)).ToArray();
 
         // Need to make sure chains of mergers happen in order
         IEnumerable<MergerChain> chains = GetMergerChains(validMoves);

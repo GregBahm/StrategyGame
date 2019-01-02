@@ -20,19 +20,19 @@ public class GameDisplayManager
     {
         _provinces = new Dictionary<Province, ProvinceDisplay>();
         _mainManager = mainManager;
-        _factions = new FactionsDisplayManager(mainManager, gameSetup.ScreenCanvas, gameSetup.FactionPrefab, objectManager, interactionManager);
+        _factions = new FactionsDisplayManager(mainManager, 
+            gameSetup.ScreenCanvas, 
+            gameSetup.FactionPrefab, 
+            objectManager, 
+            interactionManager, 
+            _mainManager.InteractionManager.Map);
         Map = new MapDisplay(gameSetup, map, objectManager);
         UpdateDisplayWrappers(initialState);
-        DisplayGamestate(0);
     }
 
-    public void OnTimeChanged(float newValue)
+    public void DisplayGamestate()
     {
-        DisplayGamestate(newValue);
-    }
-
-    public void DisplayGamestate(float gameTime)
-    {
+        float gameTime = _mainManager.InteractionManager.Timeline.DisplayTime;
         GameTurnTransition turn = _mainManager[Mathf.FloorToInt(gameTime)];
         float progression = gameTime % 1;
         DisplayTurn(turn, progression);
@@ -42,7 +42,7 @@ public class GameDisplayManager
     {
         UpdateUiAethetics(aethetics);
         Map.UpdateUiState(gameState, _mainManager.InteractionManager.Map, timeDelta, aethetics, neighbors);
-        _factions.UpdateUi();
+        _factions.UpdateUi(gameState);
     }
 
     private void UpdateUiAethetics(UiAethetics aethetics)
@@ -73,9 +73,6 @@ public class GameDisplayManager
 
         UpdateTiles(turn, timings);
         UpdateProvinces(turn, timings);
-
-        // Then display rally state changes
-        // Then move units towards rally points
     }
 
     private void UpdateTiles(GameTurnTransition turn, DisplayTimings timings)

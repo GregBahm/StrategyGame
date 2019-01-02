@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MapInteraction
 {
@@ -37,7 +38,7 @@ public class MapInteraction
         _objectManager = objectManager;
         _collisionDictionary = CreateCollisionDictionary(objectManager);
         _map = map;
-        _tileLayermask = 1 << LayerMask.NameToLayer("TileLayer");
+        _tileLayermask = 1 << LayerMask.NameToLayer("UI");
     }
 
     private ReadOnlyDictionary<Collider, Tile> CreateCollisionDictionary(UnityObjectManager objectManager)
@@ -125,10 +126,13 @@ public class MapInteraction
 
     private ProvinceState GetProvinceUnderMouse(GameState currentGamestate)
     {
-        Tile tile = GetTileUnderMouse();
-        if(tile != null)
+        if(!EventSystem.current.IsPointerOverGameObject())
         {
-            return currentGamestate.GetTilesProvince(tile);
+            Tile tile = GetTileUnderMouse();
+            if (tile != null)
+            {
+                return currentGamestate.GetTilesProvince(tile);
+            }
         }
         return null;
     }

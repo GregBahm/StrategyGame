@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class GameSetup : MonoBehaviour
 {
     public GameObject TilePrefab;
     public GameObject FactionPrefab;
+    public GameObject OrderIndicatorPrefab;
     public TextAsset MapDefinition;
     public Material SkyMat;
     public Canvas ScreenCanvas;
+    public Button NextTurnButton;
 
     private MainGameManager _mainManager;
 

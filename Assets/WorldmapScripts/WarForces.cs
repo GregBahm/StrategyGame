@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class WarForces
 {
@@ -13,6 +14,12 @@ public class WarForces
 
     internal static WarForces CombineForces(IEnumerable<WarForces> forces)
     {
+        WarForces[] forceArray = forces.ToArray();
+        if(forceArray.Length == 1)
+        {
+            return forceArray[0];
+        }
+
         throw new NotImplementedException();
     }
 }
