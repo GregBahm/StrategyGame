@@ -81,9 +81,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbe287c6c0aba1a42857d46edd7ce208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Color: {r: 0, g: 0, b: 0, a: 0}
   Target: {fileID: 4918536452676400}
-  ArcCurvature: 1
-  Resolution: 100
+  ArcCurvature: 0
+  Resolution: 48
 --- !u!120 &120208065173489914
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -130,7 +131,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.70430183
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -170,7 +171,7 @@ LineRenderer:
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
-    numCapVertices: 0
+    numCapVertices: 8
     alignment: 0
     textureMode: 0
     generateLightingData: 0

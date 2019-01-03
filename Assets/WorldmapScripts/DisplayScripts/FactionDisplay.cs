@@ -7,7 +7,7 @@ using System.Linq;
 
 public class FactionDisplay
 {
-    private readonly Vector3 IndicatorOffset = new Vector3(0, 1, 0);
+    private readonly Vector3 IndicatorOffset = new Vector3(0, 1.35f, 0);
     private readonly UnityObjectManager _objectManager;
     private readonly FactionUnityObject _unityObject;
     private readonly FactionsInteractionManager _interactionManager;

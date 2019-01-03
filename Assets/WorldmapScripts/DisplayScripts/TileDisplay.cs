@@ -100,11 +100,14 @@ public class TileDisplay
         _dragging = Mathf.Lerp(_dragging, isDragging ? 1 : 0, speed);
         _dragged = Mathf.Lerp(_dragged, isDragged ? 1 : 0, speed);
         _targetable = Mathf.Lerp(_targetable, isNeighborSelected ? 1 : 0, speed);
-        _tileMat.SetFloat("_Hover", _hover);
         _tileMat.SetFloat("_Selected", _selected);
         _tileMat.SetFloat("_Dragging", _dragging);
         _tileMat.SetFloat("_Dragged", _dragged);
         _tileMat.SetFloat("_Targetable", _targetable);
+
+        Vector3 oldPos = GameObject.transform.localPosition;
+        Vector3 newPos = new Vector3(oldPos.x, _hover, oldPos.z);
+        GameObject.transform.localPosition = newPos;
     }
 
     private bool GetIsNeighborSelected(GameState gameState, 

@@ -514,6 +514,8 @@ MonoBehaviour:
   TilePrefab: {fileID: 1178486124817436, guid: 58720ad2c191c924a90c171846e43b03, type: 2}
   FactionPrefab: {fileID: 1376200271034840, guid: 621199bf42229b24fb5ffc7ce8e59fb5,
     type: 2}
+  OrderIndicatorPrefab: {fileID: 1555913186683672, guid: 8d492b79cb5af3a4c9ed5ecb68fa7144,
+    type: 2}
   MapDefinition: {fileID: 4900000, guid: 58e609f9731b162459faa140e09ea256, type: 3}
   SkyMat: {fileID: 2100000, guid: 97b13440f3c4f8e4795a69ddc57d101d, type: 2}
   ScreenCanvas: {fileID: 1121700608}

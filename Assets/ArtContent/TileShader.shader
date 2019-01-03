@@ -101,7 +101,7 @@
 				v2f o;
 				o.objPos = v.vertex.xyz;
 				v.vertex.xz = GetOffsetVert(v.vertex.xz);
-				v.vertex.y += _Hover;
+				//v.vertex.y += _Hover;
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = worldPos.xz + .5;
 				o.vertex = UnityObjectToClipPos(v.vertex);
