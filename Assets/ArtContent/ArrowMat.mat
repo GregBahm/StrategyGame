@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: ArrowMat
   m_Shader: {fileID: 4800000, guid: 200ef46054e8f064e83526ff35710890, type: 3}
@@ -72,5 +72,5 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _Color: {r: 0.6102941, g: 0.6102941, b: 0.6102941, a: 0}
+    - _Color: {r: 0.7607844, g: 0.7607844, b: 0.7607844, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

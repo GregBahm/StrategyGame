@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,46 +7,101 @@ public class OrderIndicator : MonoBehaviour
 {
     public Color Color;
     public Transform Target;
-    public float ArcCurvature = 1;
+    public float CurvatureRate = 1;
     public int Resolution = 100;
+    public float Thickness = 1;
+    public float ThicknessB = 1;
+    private float ArcCurvature;
 
-    private Material _mat;
-    private LineRenderer _lineRender;
+    public Material ArrowMat;
+
+    private const int StrokeSegmentStride = sizeof(float) * 3 + sizeof(float) * 3; // Position Normal
+    private const int ArrowShapeStride = sizeof(float);
+    private ComputeBuffer _strokeSegmentsBuffer;
+    private ComputeBuffer _arrowShapeBuffer;
+
+    public struct StrokeSegmentPart
+    {
+        public Vector3 Position;
+        public Vector3 Normal;
+    }
 
     private void Start()
     {
-        _lineRender = GetComponent<LineRenderer>();
-        _mat = _lineRender.material;
+        ArrowMat = new Material(ArrowMat);
+        _strokeSegmentsBuffer = new ComputeBuffer(Resolution, StrokeSegmentStride);
+        _arrowShapeBuffer = GetArrowShapeBuffer();
+    }
+
+    private ComputeBuffer GetArrowShapeBuffer()
+    {
+        ComputeBuffer ret = new ComputeBuffer(Resolution, ArrowShapeStride);
+        float[] data = new float[Resolution];
+        for (int i = 0; i < Resolution - 1; i++)
+        {
+            float param = (float)i / (Resolution - 1);
+            if(param < .75f)
+            {
+                data[i] = .5f;
+            }
+            else
+            {
+                param = (param - .75f) * 4;
+                data[i] = 1 - param;
+            }
+        }
+        ret.SetData(data);
+        return ret;
     }
 
     private void Update()
     {
-        SetLineRenderer();
-        _mat.SetColor("_Color", Color);
+        Vector3 tangent = GetTangent();
+        SetBuffer(tangent);
+        ArrowMat.SetColor("_Color", Color);
+        ArrowMat.SetFloat("_Thickness", Thickness);
+        ArrowMat.SetFloat("_ThicknessB", ThicknessB);
+        ArrowMat.SetVector("_Tangent", tangent);
+        ArcCurvature = (transform.position - Target.position).magnitude * (1f / CurvatureRate);
     }
-    private void SetLineRenderer()
+
+    private Vector3 GetTangent()
     {
-        Vector3[] pointPositions = GetPointPositions();
-        _lineRender.positionCount = Resolution;
-        _lineRender.SetPositions(pointPositions);
+        Vector3 startToEnd = transform.position - Target.position;
+        return Vector3.Cross(startToEnd, Vector3.up).normalized;
     }
-    
-    private Vector3[] GetPointPositions()
+
+    private void SetBuffer(Vector3 tangent)
+    {
+        StrokeSegmentPart[] pointPositions = GetPointPositions(tangent);
+        _strokeSegmentsBuffer.SetData(pointPositions);
+    }
+
+    private StrokeSegmentPart[] GetPointPositions(Vector3 tangent)
     {
         Vector2 relativeTarget = GetRelativeTarget();
         Vector2 circleCenter = GetCircleCenter(relativeTarget);
         Vector3 diff = Target.position - transform.position;
         Vector3 flatToTarget = new Vector3(diff.x, 0, diff.z).normalized;
 
-        Vector3[] ret = new Vector3[Resolution];
-        for (int i = 0; i < Resolution; i++)
+        StrokeSegmentPart[] ret = new StrokeSegmentPart[Resolution];
+        Vector3 firstNormal = (transform.position - Target.position).normalized;
+        ret[0] = new StrokeSegmentPart() { Position = transform.position, Normal = firstNormal };
+        for (int i = 1; i < Resolution; i++)
         {
             float param = (float)i / Resolution;
+            if(param < .75)
+            {
+                param *= 1.01f;
+            }
             Vector2 relativePos = GetRelativePointPosition(param, relativeTarget, circleCenter);
-            Vector3 newPos = flatToTarget * relativePos.x;
-            newPos.y = relativePos.y;
-            newPos += transform.position;
-            ret[i] = newPos;
+            Vector3 pos = flatToTarget * relativePos.x;
+            pos.y = relativePos.y;
+            pos += transform.position;
+            Vector3 biNormal = (pos - ret[i - 1].Position).normalized;
+            Vector3 norm = Vector3.Cross(biNormal, tangent);
+            StrokeSegmentPart retItem = new StrokeSegmentPart() { Position = pos, Normal = norm };
+            ret[i] = retItem;
         }
         return ret;
     }
@@ -96,4 +152,13 @@ public class OrderIndicator : MonoBehaviour
         Vector2 circleCenter = midPoint + circleTanget * ArcCurvature;
         return circleCenter;
     }
+
+    private void OnRenderObject()
+    {
+        ArrowMat.SetBuffer("_StrokeSegmentsBuffer", _strokeSegmentsBuffer);
+        ArrowMat.SetBuffer("_ArrowShapeBuffer", _arrowShapeBuffer);
+        ArrowMat.SetPass(0);
+        Graphics.DrawProcedural(MeshTopology.Points, 1, Resolution -1);
+    }
+
 }

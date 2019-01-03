@@ -67,9 +67,10 @@
 				float3 startTangent,
 				float3 endTangent)
 			{
+				float3 quadNormal = normalize(cross(pointA - pointB, pointA - pointC));
 				g2f o;
 				o.vertex = UnityObjectToClipPos(pointA);
-				o.normal = startNormal;
+				o.normal = quadNormal;
 				o.viewDir = WorldSpaceViewDir(float4(pointA, 1));
 				o.uv = float2(1, 1);
 				triStream.Append(o);
@@ -80,7 +81,7 @@
 				triStream.Append(o);
 
 				o.vertex = UnityObjectToClipPos(pointC);
-				o.normal = endNormal;
+				o.normal = quadNormal;
 				o.viewDir = WorldSpaceViewDir(float4(pointC, 1));
 				o.uv = float2(0, 1);
 				triStream.Append(o);
@@ -99,15 +100,15 @@
 				float3 baseEndUp = p[0].end.Position + _Tangent * p[0].endShape;
 				float3 baseEndDown = p[0].end.Position + -_Tangent * p[0].endShape;
 
-				float3 frontStartUp = baseStartUp - p[0].start.Normal *  _ThicknessB;
-				float3 frontStartDown = baseStartDown - p[0].start.Normal * _ThicknessB;
-				float3 frontEndUp = baseEndUp - p[0].end.Normal *_ThicknessB;
-				float3 frontEndDown = baseEndDown - p[0].end.Normal * _ThicknessB;
+				float3 frontStartUp = baseStartUp - p[0].start.Normal *  _ThicknessB* p[0].startShape;
+				float3 frontStartDown = baseStartDown - p[0].start.Normal * _ThicknessB* p[0].startShape;
+				float3 frontEndUp = baseEndUp - p[0].end.Normal *_ThicknessB * p[0].endShape;
+				float3 frontEndDown = baseEndDown - p[0].end.Normal * _ThicknessB * p[0].endShape;
 
-				float3 backStartUp = baseStartUp + p[0].start.Normal * _ThicknessB;
-				float3 backStartDown = baseStartDown + p[0].start.Normal * _ThicknessB;
-				float3 backEndUp = baseEndUp + p[0].end.Normal * _ThicknessB;
-				float3 backEndDown = baseEndDown + p[0].end.Normal * _ThicknessB;
+				float3 backStartUp = baseStartUp + p[0].start.Normal * _ThicknessB* p[0].startShape;
+				float3 backStartDown = baseStartDown + p[0].start.Normal * _ThicknessB* p[0].startShape;
+				float3 backEndUp = baseEndUp + p[0].end.Normal * _ThicknessB * p[0].endShape;
+				float3 backEndDown = baseEndDown + p[0].end.Normal * _ThicknessB * p[0].endShape;
 
 
 				DrawQuad(triStream, frontStartUp, frontStartDown, frontEndUp, frontEndDown,
@@ -140,8 +141,10 @@
 				float3 reflectionUvs = reflect(i.viewDir, i.normal);
 				float3 finalUvs = lerp(reflectionUvs, i.normal, pow(abs(frenel), 10));
 
+				float3 col = i.normal / 2 + .5;
+				col *= _Color;
 
-				return float4(i.normal / 2 + .5, 1);
+				return float4(col, 1);
 			}
 			ENDCG
 		}
