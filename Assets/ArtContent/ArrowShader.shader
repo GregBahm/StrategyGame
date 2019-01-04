@@ -100,15 +100,15 @@
 				float3 baseEndUp = p[0].end.Position + _Tangent * p[0].endShape;
 				float3 baseEndDown = p[0].end.Position + -_Tangent * p[0].endShape;
 
-				float3 frontStartUp = baseStartUp - p[0].start.Normal *  _ThicknessB* p[0].startShape;
-				float3 frontStartDown = baseStartDown - p[0].start.Normal * _ThicknessB* p[0].startShape;
-				float3 frontEndUp = baseEndUp - p[0].end.Normal *_ThicknessB * p[0].endShape;
-				float3 frontEndDown = baseEndDown - p[0].end.Normal * _ThicknessB * p[0].endShape;
+				float3 frontStartUp = baseStartUp - p[0].start.Normal *  _ThicknessB;
+				float3 frontStartDown = baseStartDown - p[0].start.Normal * _ThicknessB;
+				float3 frontEndUp = baseEndUp - p[0].end.Normal *_ThicknessB;
+				float3 frontEndDown = baseEndDown - p[0].end.Normal * _ThicknessB;
 
-				float3 backStartUp = baseStartUp + p[0].start.Normal * _ThicknessB* p[0].startShape;
-				float3 backStartDown = baseStartDown + p[0].start.Normal * _ThicknessB* p[0].startShape;
-				float3 backEndUp = baseEndUp + p[0].end.Normal * _ThicknessB * p[0].endShape;
-				float3 backEndDown = baseEndDown + p[0].end.Normal * _ThicknessB * p[0].endShape;
+				float3 backStartUp = baseStartUp + p[0].start.Normal * _ThicknessB;
+				float3 backStartDown = baseStartDown + p[0].start.Normal * _ThicknessB;
+				float3 backEndUp = baseEndUp + p[0].end.Normal * _ThicknessB;
+				float3 backEndDown = baseEndDown + p[0].end.Normal * _ThicknessB;
 
 
 				DrawQuad(triStream, frontStartUp, frontStartDown, frontEndUp, frontEndDown,

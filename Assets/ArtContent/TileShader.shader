@@ -36,6 +36,7 @@
 				float4 vertex : SV_POSITION;
 				float hexDist : TEXCOORD3;
 				float3 color : COLOR;
+				float uiAlpha : TEXCOORD4;
 			};
 
 			sampler2D _HeightMap;
@@ -68,7 +69,7 @@
 			bool _PositiveDescendingConnected;
 			bool _NegativeDescendingConnected;
 			
-			float2 GetOffsetVert(float2 base)
+			float GetUiAlpha(float2 base)
 			{
 				float2 toCenter = normalize(base);
 				float2 toRow = float2(1, 0);
@@ -91,17 +92,24 @@
 
 				float negativeKey = max(max(negRowDot, negAscendingDot), negDescendingDot);
 
+				float ret = max(positiveKey, negativeKey);
+				return ret;
+			}
+
+			float2 GetOffsetVert(float uiAlpha, float2 base)
+			{
 				float2 shrunkPos = base * _TileMargin;
-				float finalKey = max(positiveKey, negativeKey);
-				return lerp(shrunkPos, base, finalKey);
+				return lerp(shrunkPos, base, uiAlpha);
 			}
 
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.objPos = v.vertex.xyz;
-				v.vertex.xz = GetOffsetVert(v.vertex.xz);
-				//v.vertex.y += _Hover;
+				float uiAlpha = GetUiAlpha(v.vertex.xz);
+				v.vertex.xz = GetOffsetVert(uiAlpha, v.vertex.xz);
+				uiAlpha = length(v.vertex.xz) * (1 - uiAlpha);
+
 				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 				float2 uv = worldPos.xz + .5;
 				o.vertex = UnityObjectToClipPos(v.vertex);
@@ -109,6 +117,7 @@
 				o.viewDir = WorldSpaceViewDir(v.vertex);
 				o.uv = uv;
 				o.color = v.color;
+				o.uiAlpha = uiAlpha;
 				return o;
 			}
 
