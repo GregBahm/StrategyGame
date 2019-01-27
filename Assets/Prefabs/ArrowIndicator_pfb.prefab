@@ -85,5 +85,5 @@ MonoBehaviour:
   CurvatureRate: 2
   Resolution: 50
   Thickness: 0.5
-  ThicknessB: 0.2
+  ThicknessB: 0.1
   ArrowMat: {fileID: 2100000, guid: 6b67ee82337ae104d849771061cb93e0, type: 2}
