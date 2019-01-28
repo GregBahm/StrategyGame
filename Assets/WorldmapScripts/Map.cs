@@ -89,7 +89,7 @@ public class Map : IEnumerable<Tile>
             Tile tile = new Tile(item.Row, item.Column, this);
             ret.Add(key, tile);
         }
-        return new ReadOnlyDictionary<int, Tile>(ret);
+        return new ReadOnlyDictionary<int, Tile>(ret); 
     }
 
     public Tile GetTile(int row, int ascendingColumn)
@@ -109,86 +109,5 @@ public class Map : IEnumerable<Tile>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return _tiles.GetEnumerator();
-    }
-}
-
-public class MapDefinition
-{
-    public IEnumerable<MapTileDefinition> Tiles { get; }
-    
-    public MapDefinition(TextAsset mapDefinition)
-    {
-        IEnumerable<MapTileDefinition> baseTiles = LoadMapmakerTiles(mapDefinition).ToArray();
-        Tiles = GetAllTiles(baseTiles);
-    }
-
-    private IEnumerable<MapTileDefinition> GetAllTiles(IEnumerable<MapTileDefinition> baseTiles)
-    {
-        List<MapTileDefinition> ret = new List<MapTileDefinition>();
-        foreach (MapTileDefinition item in baseTiles)
-        {
-            ret.AddRange(GetMirroredTiles(item));
-        }
-        return ret;
-    }
-
-    private IEnumerable<MapTileDefinition> GetMirroredTiles(MapTileDefinition item)
-    {
-        MapTileDefinition rotationA = GetFirstRotatedTile(item);
-        MapTileDefinition rotationB = GetSecondRotatedTile(item);
-        yield return item;
-        yield return rotationA;
-        yield return rotationB;
-        yield return GetFlippedTile(item);
-        yield return GetFlippedTile(rotationA);
-        yield return GetFlippedTile(rotationB);
-    }
-
-    private MapTileDefinition GetSecondRotatedTile(MapTileDefinition item)
-    {
-        int ring = item.Row + item.Column;
-        int offset = item.Row;
-        int row = ring - offset;
-        int column = -ring;
-        return new MapTileDefinition(row, column, item.IsImpassable, item.IsStartPosition);
-    }
-
-    private MapTileDefinition GetFirstRotatedTile(MapTileDefinition item)
-    {
-        int ring = item.Row + item.Column;
-        int offset = item.Row;
-        int row = ring;
-        int column = -offset;
-        return new MapTileDefinition(row, column, item.IsImpassable, item.IsStartPosition);
-    }
-
-    private MapTileDefinition GetFlippedTile(MapTileDefinition item)
-    {
-        return new MapTileDefinition(-item.Row, -item.Column, item.IsImpassable, item.IsStartPosition);
-    }
-
-    private IEnumerable<MapTileDefinition> LoadMapmakerTiles(TextAsset mapDefinition)
-    {
-        string[] lines = mapDefinition.text.Split('\n');
-        IEnumerable<MapTileDefinition> allItems = lines.Where(line => !String.IsNullOrWhiteSpace(line)).Select(line => LoadMapmakerTile(line));
-        return allItems.Where(item => !item.IsImpassable);
-    }
-
-    private MapTileDefinition LoadMapmakerTile(string line)
-    {
-        string[] firstSplit = line.Split(',');
-        string[] locationSplit = firstSplit[0].Split(' ');
-        string rowString = locationSplit[0];
-        string columnString = locationSplit[1];
-        int row = Convert.ToInt32(rowString);
-        int column = Convert.ToInt32(columnString);
-
-        string[] boolsSplit = firstSplit[1].Split(' ');
-        string isImpassableString = boolsSplit[0];
-        string isStartPositionString = boolsSplit[1];
-        bool isImpassable = Convert.ToBoolean(isImpassableString);
-        bool isStartPosition = Convert.ToBoolean(isStartPositionString);
-
-        return new MapTileDefinition(row, column, isImpassable, isStartPosition);
     }
 }

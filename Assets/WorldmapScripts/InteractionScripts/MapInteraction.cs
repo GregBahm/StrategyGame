@@ -8,9 +8,7 @@ using UnityEngine.EventSystems;
 public class MapInteraction
 {
     public InteractionManager InteractionMain { get; }
-    private readonly UnityObjectManager _objectManager;
     private readonly ReadOnlyDictionary<Collider, Tile> _collisionDictionary;
-    private readonly Map _map;
     private readonly int _tileLayermask;
 
     private ProvinceState _hoveredProvince;
@@ -32,12 +30,10 @@ public class MapInteraction
         }
     }
 
-    public MapInteraction(InteractionManager main, GameSetup gameSetup, Map map, UnityObjectManager objectManager)
+    public MapInteraction(InteractionManager main, GameSetup gameSetup, UnityObjectManager objectManager)
     {
         InteractionMain = main;
-        _objectManager = objectManager;
         _collisionDictionary = CreateCollisionDictionary(objectManager);
-        _map = map;
         _tileLayermask = 1 << LayerMask.NameToLayer("UI");
     }
 

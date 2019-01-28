@@ -137,11 +137,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 715917720}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67aa11ff913e0d44ab63f0377f70e3bf, type: 3}
+  m_Script: {fileID: 11500000, guid: add223efb79223b4c991c116f8933c23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Extents: 48
-  Mat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
+  OutputDisplayMat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
+  MapDefinition: {fileID: 4900000, guid: 58e609f9731b162459faa140e09ea256, type: 3}
+  Resolution: 1
 --- !u!4 &715917722
 Transform:
   m_ObjectHideFlags: 0

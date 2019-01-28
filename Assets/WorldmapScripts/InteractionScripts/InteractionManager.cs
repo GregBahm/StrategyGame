@@ -14,14 +14,13 @@ public class InteractionManager
     public TimelineInteraction Timeline { get; }
 
     public InteractionManager(MainGameManager mainManager, 
-        GameSetup gameSetup, 
-        Map map, 
+        GameSetup gameSetup,
         UnityObjectManager unityObjectManager,
         IEnumerable<PlayerSetup> playerSetups)
     {
         gameSetup.NextTurnButton.onClick.AddListener(() => AdvanceGame());
         _mainManager = mainManager;
-        Map = new MapInteraction(this, gameSetup, map, mainManager.ObjectManager);
+        Map = new MapInteraction(this, gameSetup, mainManager.ObjectManager);
         Timeline = new TimelineInteraction(this);
         Factions = new FactionsInteractionManager(unityObjectManager.Factions);
     }

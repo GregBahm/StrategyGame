@@ -6,21 +6,42 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HexMapGenerator : MonoBehaviour
+public class BaseMapGenerator : MonoBehaviour
 {
-    public int Extents;
-    public Material Mat;
+    public Material OutputDisplayMat;
+    private MapDefinition _mapDefinition;
     private int _maxIndex;
+    private int _extents;
     private Texture2D BaseMap;
+    
+    public TextAsset MapDefinition;
+    public MapResolution Resolution;
+    public enum MapResolution
+    {
+        OneK = 1,
+        TwoK = 2,
+        FourK = 4,
+        EightK = 8
+    }
 
     private void Start()
     {
-        BaseMap = new Texture2D(4096, 4096);
-        BaseMap.filterMode = FilterMode.Point;
+        _mapDefinition = new MapDefinition(MapDefinition);
+        _extents = _mapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
+        BaseMap = InitializeMap();
         HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
         _maxIndex = hexCenterPoints.Length;
         MakeMap(hexCenterPoints);
         //SaveTexture();
+    }
+
+    private Texture2D InitializeMap()
+    {
+        int power = (int)Resolution;
+        int resolution = 1024 * power;
+        Texture2D ret = new Texture2D(resolution, resolution);
+        ret.filterMode = FilterMode.Point;
+        return ret;
     }
 
     private void SaveTexture()
@@ -31,13 +52,13 @@ public class HexMapGenerator : MonoBehaviour
 
     private void Update()
     {
-        Mat.SetTexture("_MainTex", BaseMap);
-        Mat.SetFloat("_MaxIndex", _maxIndex);
+        OutputDisplayMat.SetTexture("_MainTex", BaseMap);
+        OutputDisplayMat.SetFloat("_MaxIndex", _maxIndex);
     }
 
     private void MakeMap(IEnumerable<HexCenter> hexCenters)
     {
-        HexTable table = new HexTable(hexCenters, Extents);
+        HexTable table = new HexTable(hexCenters, _extents);
         for (int xIndex = 0; xIndex < BaseMap.width; xIndex++)
         {
             for (int yIndex = 0; yIndex < BaseMap.height; yIndex++)
@@ -52,7 +73,7 @@ public class HexMapGenerator : MonoBehaviour
 
     private Color GetMapValue(HexCenter hexCenter)
     {
-        if(hexCenter == null)
+        if(hexCenter == null || hexCenter.Index == 0)
         {
             return Color.black;
         }
@@ -66,6 +87,57 @@ public class HexMapGenerator : MonoBehaviour
         float greenVal = (float)green / 255;
 
         return new Color(redVal, greenVal, 0);
+    }
+
+    private IEnumerable<HexCenter> GetHexCenterPoints()
+    {
+        RingSideBlueprint[] ringSideBlueprints = CreateRingSideBlueprints();
+        yield return new HexCenter(new Vector2(.5f, .5f), RegisterNextHex()); // The hex in the center of the map
+        for (int ring = 1; ring < _extents; ring++)
+        {
+            for (int i = 0; i < ring; i++)
+            {
+                foreach (RingSideBlueprint blueprint in ringSideBlueprints)
+                {
+                    yield return DoRingSide(blueprint, ring, i);
+                }
+            }
+        }
+    }
+
+    private HexCenter DoRingSide(RingSideBlueprint blueprint, int ring, int ringSideIndex)
+    {
+        int startRow = blueprint.BaseRowMultiplier * ring;
+        int startColumn = blueprint.BaseColumnMultiplier * ring;
+
+        int rowOffset = blueprint.RowOffsetIncrement * ringSideIndex;
+        int columnOffset = blueprint.ColumnOffsetIncrement * ringSideIndex;
+
+        int finalRow = startRow + rowOffset;
+        int finalColumn = startColumn + columnOffset;
+
+        Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
+        bool playable = _mapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
+        int index = playable ? RegisterNextHex() : 0;
+        return new HexCenter(hexPos, index);
+    }
+
+    private Vector2 GetHexPos(int row, int ascendingColumn, int ring)
+    {
+        ring = ring + 2;
+        Vector2 ascendingOffset = MapDisplay.AscendingTileOffset * ascendingColumn;
+        Vector2 ret = ascendingOffset + new Vector2(row, 0);
+        ret /= _extents * 2 - 1f;
+        ret += new Vector2(.5f, .5f);
+        return ret;
+    }
+
+    private int _hexIndex;
+
+    private int RegisterNextHex()
+    {
+        _hexIndex++;
+        return _hexIndex;
     }
 
     /// <summary>
@@ -146,55 +218,6 @@ public class HexMapGenerator : MonoBehaviour
         }
     }
 
-    private IEnumerable<HexCenter> GetHexCenterPoints()
-    {
-        RingSideBlueprint[] ringSideBlueprints = CreateRingSideBlueprints();
-        yield return new HexCenter(new Vector2(.5f, .5f), GetNewHexIndex());
-        for (int ring = 1; ring < Extents; ring++)
-        {
-            for (int i = 0; i < ring; i++)
-            {
-                foreach (RingSideBlueprint blueprint in ringSideBlueprints)
-                {
-                    yield return DoRingSide(blueprint, ring, i);
-                }
-            }
-        }
-    }
-
-    private HexCenter DoRingSide(RingSideBlueprint blueprint, int ring, int ringSideIndex)
-    {
-        int startRow = blueprint.BaseRowMultiplier * ring;
-        int startColumn = blueprint.BaseColumnMultiplier * ring;
-
-        int rowOffset = blueprint.RowOffsetIncrement * ringSideIndex;
-        int columnOffset = blueprint.ColumnOffsetIncrement * ringSideIndex;
-
-        int finalRow = startRow + rowOffset;
-        int finalColumn = startColumn + columnOffset;
-
-        Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
-        return new HexCenter(hexPos, GetNewHexIndex());
-    }
-
-    private Vector2 GetHexPos(int row, int ascendingColumn, int ring)
-    {
-        ring = ring + 2;
-        Vector2 ascendingOffset = MapDisplay.AscendingTileOffset * ascendingColumn;
-        Vector2 ret = ascendingOffset + new Vector2(row, 0);
-        ret /= Extents * 2 - 1f;
-        ret += new Vector2(.5f, .5f);
-        return ret;
-    }
-
-    private int _hexIndex;
-
-    private int GetNewHexIndex()
-    {
-        _hexIndex++;
-        return _hexIndex;
-    }
-
     private RingSideBlueprint[] CreateRingSideBlueprints()
     {
         RingSideBlueprint[] ret = new RingSideBlueprint[]
@@ -213,14 +236,12 @@ public class HexMapGenerator : MonoBehaviour
     {
         public Vector2 Position { get; }
         public int Index { get; }
-        public Color MapValue { get; }
         public HexCenter(Vector2 position, int index)
         {
             Position = position;
             Index = index;
         }
     }
-
     class RingSideBlueprint
     {
         public int BaseRowMultiplier { get; }

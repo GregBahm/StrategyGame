@@ -35,8 +35,7 @@ public class MainGameManager
             initialState.AfterEverything,
             playerSetups);
         InteractionManager = new InteractionManager(this, 
-            gameSetup, 
-            map, 
+            gameSetup,
             ObjectManager, 
             playerSetups);
         DisplayManager = new GameDisplayManager(this, 

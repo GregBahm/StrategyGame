@@ -57,7 +57,6 @@ public class UnityObjectManager
             FactionUnityObject obj = gameObject.GetComponent<FactionUnityObject>();
             obj.Faction = playerSetup.Faction;
             gameObject.name = playerSetup.Faction.Name + " hud";
-            Text textObject = gameObject.GetComponent<Text>();
             ((RectTransform)gameObject.transform).offsetMax = new Vector2(0, -indexer * 10);
 
             ret.Add(playerSetup.Faction, obj);

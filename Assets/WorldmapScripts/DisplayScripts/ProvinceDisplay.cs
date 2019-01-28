@@ -21,8 +21,8 @@ public class ProvinceDisplay
 
     private void DisplayProvinceUpgrades(GameTurnTransition transition, float provinceUpgrades)
     {
-        ProvinceState initialProvince = transition.BeforeEverything.GetProvinceState(Identifier);
-        ProvinceState finalProvince = transition.AfterWarsAndUpgrades.GetProvinceState(Identifier);
+        //ProvinceState initialProvince = transition.BeforeEverything.GetProvinceState(Identifier);
+        //ProvinceState finalProvince = transition.AfterWarsAndUpgrades.GetProvinceState(Identifier);
 
     }
 }
