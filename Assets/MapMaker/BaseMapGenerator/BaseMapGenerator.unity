@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 687885365}
   - component: {fileID: 687885364}
   m_Layer: 0
-  m_Name: InteractionPrototype
+  m_Name: SelectionPrototypeOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -230,7 +230,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   OutputDisplayMat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
   MapDefinitionFile: {fileID: 4900000, guid: 9fea6879d9258594da0fffbf39c201dc, type: 3}
-  Resolution: 1
+  Resolution: 4
 --- !u!4 &715917722
 Transform:
   m_ObjectHideFlags: 0
@@ -269,7 +269,7 @@ GameObject:
   - component: {fileID: 1088788376}
   - component: {fileID: 1088788375}
   m_Layer: 0
-  m_Name: BaseMapGenOutput
+  m_Name: BaseMapOutput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

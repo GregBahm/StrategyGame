@@ -54,10 +54,18 @@
 				uint y = (uint)(col.y * 255);
 				return x + y * 255;
 			}
+			
+			float2 GetSnappedUvs(float2 uvs)
+			{
+				uvs *= 2048;
+				uint2 asInt = (uint2)uvs;
+				return (float2)asInt / 2048;
+			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 col = tex2D(_MainTex, i.uv);
+				float2 snappedUvs = GetSnappedUvs(i.uv);
+				fixed4 col = tex2D(_MainTex, snappedUvs);
 				uint index = HexColorToIndex(col.xy);
 				HexState state = _HexStates[index];
 				return float4(state.Hover, state.Clicked, 0, 1);

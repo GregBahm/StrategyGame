@@ -33,7 +33,7 @@ public class BaseMapGenerator : MonoBehaviour
     {
         int power = (int)Resolution;
         int resolution = 1024 * power;
-        Texture2D ret = new Texture2D(resolution, resolution);
+        Texture2D ret = new Texture2D(resolution, resolution, TextureFormat.RG16, false);
         ret.filterMode = FilterMode.Point;
         return ret;
     }
