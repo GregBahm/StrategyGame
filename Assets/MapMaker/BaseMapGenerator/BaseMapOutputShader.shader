@@ -14,8 +14,6 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			// make fog work
-			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
 
@@ -42,15 +40,20 @@
 				o.uv = v.uv;
 				return o;
 			}
+
+			uint HexColorToIndex(float2 col)
+			{
+				uint x = (uint)(col.x * 255);
+				uint y = (uint)(col.y * 255);
+				return x + y * 255;
+			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
-				int xVal = col.x * 255;
-				int yVal = col.y * 255;
-				int index = xVal + yVal * 255;
+				uint index = HexColorToIndex(col.xy);
 				float ret = (float)index / _MaxIndex;
-				return ret;
+				return 1 - ret;
 			}
 			ENDCG
 		}

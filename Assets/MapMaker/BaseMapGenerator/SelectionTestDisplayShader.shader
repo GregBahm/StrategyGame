@@ -47,16 +47,19 @@
 				return o;
 			}
 
-			uint GetHexIndex(float2 uvs)
+
+			uint HexColorToIndex(float2 col)
 			{
-				fixed4 col = tex2D(_MainTex, uvs);
-				return (uint)(col.x * 255);
+				uint x = (uint)(col.x * 255);
+				uint y = (uint)(col.y * 255);
+				return x + y * 255;
 			}
-			
+
 			fixed4 frag (v2f i) : SV_Target
 			{
-				uint hexIndex = GetHexIndex(i.uv);
-				HexState state = _HexStates[hexIndex];
+				fixed4 col = tex2D(_MainTex, i.uv);
+				uint index = HexColorToIndex(col.xy);
+				HexState state = _HexStates[index];
 				return float4(state.Hover, state.Clicked, 0, 1);
 			}
 			ENDCG

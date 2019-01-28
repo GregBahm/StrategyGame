@@ -9,26 +9,20 @@ using UnityEngine.UI;
 public class BaseMapGenerator : MonoBehaviour
 {
     public Material OutputDisplayMat;
-    private MapDefinition _mapDefinition;
-    private int _maxIndex;
-    private int _extents;
-    private Texture2D BaseMap;
-    
-    public TextAsset MapDefinition;
+    public MapDefinition MapDefinition;
+    public TextAsset MapDefinitionFile;
     public MapResolution Resolution;
-    public enum MapResolution
-    {
-        OneK = 1,
-        TwoK = 2,
-        FourK = 4,
-        EightK = 8
-    }
 
-    private void Start()
+    public Texture2D OutputTexture { get; private set; }
+    private int _maxIndex = 1;
+    private int _extents;
+    private int _currentHexIndex;
+
+    private void Awake()
     {
-        _mapDefinition = new MapDefinition(MapDefinition);
-        _extents = _mapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
-        BaseMap = InitializeMap();
+        MapDefinition = new MapDefinition(MapDefinitionFile);
+        _extents = MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
+        OutputTexture = InitializeMap();
         HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
         _maxIndex = hexCenterPoints.Length;
         MakeMap(hexCenterPoints);
@@ -46,29 +40,29 @@ public class BaseMapGenerator : MonoBehaviour
 
     private void SaveTexture()
     {
-        byte[] pngData = BaseMap.EncodeToPNG();
+        byte[] pngData = OutputTexture.EncodeToPNG();
         File.WriteAllBytes(@"C:\Users\Lisa\Documents\ArrowMaker\Assets\HexTexture.png", pngData);
     }
 
     private void Update()
     {
-        OutputDisplayMat.SetTexture("_MainTex", BaseMap);
+        OutputDisplayMat.SetTexture("_MainTex", OutputTexture);
         OutputDisplayMat.SetFloat("_MaxIndex", _maxIndex);
     }
 
     private void MakeMap(IEnumerable<HexCenter> hexCenters)
     {
         HexTable table = new HexTable(hexCenters, _extents);
-        for (int xIndex = 0; xIndex < BaseMap.width; xIndex++)
+        for (int xIndex = 0; xIndex < OutputTexture.width; xIndex++)
         {
-            for (int yIndex = 0; yIndex < BaseMap.height; yIndex++)
+            for (int yIndex = 0; yIndex < OutputTexture.height; yIndex++)
             {
-                HexCenter hexCenter = table.GetHexCenter(xIndex, yIndex, BaseMap.width, BaseMap.height);
+                HexCenter hexCenter = table.GetHexCenter(xIndex, yIndex, OutputTexture.width, OutputTexture.height);
                 Color pixelColor = GetMapValue(hexCenter);
-                BaseMap.SetPixel(xIndex, yIndex, pixelColor);
+                OutputTexture.SetPixel(xIndex, yIndex, pixelColor);
             }
         }
-        BaseMap.Apply();
+        OutputTexture.Apply();
     }
 
     private Color GetMapValue(HexCenter hexCenter)
@@ -78,12 +72,10 @@ public class BaseMapGenerator : MonoBehaviour
             return Color.black;
         }
 
-        int flippedIndex = _maxIndex - hexCenter.Index;
-
-        int red = flippedIndex % 255;
+        int red = hexCenter.Index % 255;
         float redVal = (float)red / 255;
 
-        int green = flippedIndex / 255;
+        int green = hexCenter.Index / 255;
         float greenVal = (float)green / 255;
 
         return new Color(redVal, greenVal, 0);
@@ -117,7 +109,7 @@ public class BaseMapGenerator : MonoBehaviour
         int finalColumn = startColumn + columnOffset;
 
         Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
-        bool playable = _mapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
+        bool playable = MapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
         int index = playable ? RegisterNextHex() : 0;
         return new HexCenter(hexPos, index);
     }
@@ -132,12 +124,32 @@ public class BaseMapGenerator : MonoBehaviour
         return ret;
     }
 
-    private int _hexIndex;
-
     private int RegisterNextHex()
     {
-        _hexIndex++;
-        return _hexIndex;
+        _currentHexIndex++;
+        return _currentHexIndex;
+    }
+
+    private RingSideBlueprint[] CreateRingSideBlueprints()
+    {
+        RingSideBlueprint[] ret = new RingSideBlueprint[]
+        {
+            new RingSideBlueprint(1, 0, 0, -1),
+            new RingSideBlueprint(-1, 1, 1, 0),
+            new RingSideBlueprint(0, 1, 1, -1),
+            new RingSideBlueprint(-1, 0, 0, 1),
+            new RingSideBlueprint(1, -1, -1, 0),
+            new RingSideBlueprint(0, -1, -1, 1)
+        };
+        return ret;
+    }
+
+    public enum MapResolution
+    {
+        OneK = 1,
+        TwoK = 2,
+        FourK = 4,
+        EightK = 8
     }
 
     /// <summary>
@@ -218,20 +230,6 @@ public class BaseMapGenerator : MonoBehaviour
         }
     }
 
-    private RingSideBlueprint[] CreateRingSideBlueprints()
-    {
-        RingSideBlueprint[] ret = new RingSideBlueprint[]
-        {
-            new RingSideBlueprint(1, 0, 0, -1),
-            new RingSideBlueprint(-1, 1, 1, 0),
-            new RingSideBlueprint(0, 1, 1, -1),
-            new RingSideBlueprint(-1, 0, 0, 1),
-            new RingSideBlueprint(1, -1, -1, 0),
-            new RingSideBlueprint(0, -1, -1, 1)
-        };
-        return ret;
-    }
-
     class HexCenter
     {
         public Vector2 Position { get; }
@@ -242,6 +240,7 @@ public class BaseMapGenerator : MonoBehaviour
             Index = index;
         }
     }
+
     class RingSideBlueprint
     {
         public int BaseRowMultiplier { get; }
