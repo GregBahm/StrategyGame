@@ -10,67 +10,143 @@ public class HexMapGenerator : MonoBehaviour
 {
     public int Extents;
     public Material Mat;
-    private Texture2D TestTexture;
+    private int _maxIndex;
+    private Texture2D BaseMap;
 
     private void Start()
     {
-        TestTexture = new Texture2D(1024, 1024);
-        MapMap();
-        SaveTexture();
+        BaseMap = new Texture2D(4096, 4096);
+        BaseMap.filterMode = FilterMode.Point;
+        HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
+        _maxIndex = hexCenterPoints.Length;
+        MakeMap(hexCenterPoints);
+        //SaveTexture();
     }
 
     private void SaveTexture()
     {
-        byte[] pngData = TestTexture.EncodeToPNG();
+        byte[] pngData = BaseMap.EncodeToPNG();
         File.WriteAllBytes(@"C:\Users\Lisa\Documents\ArrowMaker\Assets\HexTexture.png", pngData);
     }
 
     private void Update()
     {
-        Mat.SetTexture("_MainTex", TestTexture);
+        Mat.SetTexture("_MainTex", BaseMap);
+        Mat.SetFloat("_MaxIndex", _maxIndex);
     }
 
-    private void MapMap()
+    private void MakeMap(IEnumerable<HexCenter> hexCenters)
     {
-        SetBaseColors();
-        TestTexture.Apply();
-    }
-
-    private void SetBaseColors()
-    {
-        IEnumerable<HexCenter> startingPoints = GetStartingPoints().ToArray();
-        for (int xIndex = 0; xIndex < TestTexture.width; xIndex++)
+        HexTable table = new HexTable(hexCenters, Extents);
+        for (int xIndex = 0; xIndex < BaseMap.width; xIndex++)
         {
-            for (int yIndex = 0; yIndex < TestTexture.height; yIndex++)
+            for (int yIndex = 0; yIndex < BaseMap.height; yIndex++)
             {
-                float xParam = (float)xIndex / TestTexture.width;
-                float yParam = (float)yIndex / TestTexture.height;
-                Color pixelColor = GetPixelColor(new Vector2(xParam, yParam), startingPoints);
-                TestTexture.SetPixel(xIndex, yIndex, pixelColor);
+                HexCenter hexCenter = table.GetHexCenter(xIndex, yIndex, BaseMap.width, BaseMap.height);
+                Color pixelColor = GetMapValue(hexCenter);
+                BaseMap.SetPixel(xIndex, yIndex, pixelColor);
             }
+        }
+        BaseMap.Apply();
+    }
+
+    private Color GetMapValue(HexCenter hexCenter)
+    {
+        if(hexCenter == null)
+        {
+            return Color.black;
+        }
+
+        int flippedIndex = _maxIndex - hexCenter.Index;
+
+        int red = flippedIndex % 255;
+        float redVal = (float)red / 255;
+
+        int green = flippedIndex / 255;
+        float greenVal = (float)green / 255;
+
+        return new Color(redVal, greenVal, 0);
+    }
+
+    /// <summary>
+    /// This hex table only exists so that base texture creation doesn't take forever at high texture-resolutions/extents.
+    /// </summary>
+    private class HexTable
+    {
+        private readonly int _extents;
+        private readonly HashSet<HexCenter>[,] _tableData;
+
+        public HexTable(IEnumerable<HexCenter> centers, int extents)
+        {
+            _extents = extents;
+            _tableData = CreateTable(centers, extents);
+        }
+
+        private HashSet<HexCenter>[,] CreateTable(IEnumerable<HexCenter> centers, int extents)
+        {
+            HashSet<HexCenter>[,] ret = new HashSet<HexCenter>[extents, extents];
+            for (int x = 0; x < extents; x++)
+            {
+                for (int y = 0; y < extents; y++)
+                {
+                    ret[x, y] = new HashSet<HexCenter>();
+                }
+            }
+            foreach (HexCenter item in centers)
+            {
+                int tableX = (int)(item.Position.x * (extents - 1));
+                int tableY = (int)(item.Position.y * (extents - 1));
+                int tableXneg = Mathf.Clamp(tableX - 1, 0, extents - 1);
+                int tableYneg = Mathf.Clamp(tableY - 1, 0, extents - 1);
+                int tableXpos = Mathf.Clamp(tableX + 1, 0, extents - 1);
+                int tableYpos = Mathf.Clamp(tableY + 1, 0, extents - 1);
+
+
+                ret[tableXpos, tableY].Add(item);
+                ret[tableXpos, tableYneg].Add(item);
+                ret[tableXpos, tableYpos].Add(item);
+
+                ret[tableX, tableY].Add(item);
+                ret[tableX, tableYneg].Add(item);
+                ret[tableX, tableYpos].Add(item);
+
+                ret[tableXneg, tableY].Add(item);
+                ret[tableXneg, tableYneg].Add(item);
+                ret[tableXneg, tableYpos].Add(item);
+            }
+            return ret;
+        }
+
+        public HexCenter GetHexCenter(int x, int y, int imageWidth, int imageHeight)
+        {
+            float xParam = (float)x / imageWidth;
+            float yParam = (float)y / imageHeight;
+            Vector2 pixelPos = new Vector2(xParam, yParam);
+
+            int tableX = (int)(pixelPos.x * (_extents - 1));
+            int tableY = (int)(pixelPos.y * (_extents - 1));
+            IEnumerable<HexCenter> cell = _tableData[tableX, tableY];
+            return GetCenterFromCell(cell, pixelPos);
+        }
+
+        private HexCenter GetCenterFromCell(IEnumerable<HexCenter> cell, Vector2 pixelPos)
+        {
+            HexCenter ret = null;
+            float minDist = float.PositiveInfinity;
+            foreach (HexCenter center in cell)
+            {
+                float dist = (pixelPos - center.Position).magnitude;
+                if (dist < minDist)
+                {
+                    ret = center;
+                    minDist = dist;
+                }
+            }
+            return ret;
         }
     }
 
-    private Color GetPixelColor(Vector2 pixelPos, IEnumerable<HexCenter> startingPoints)
-    {
-        int hexIndex = 0;
-        float minDist = float.PositiveInfinity;
-        foreach (HexCenter center in startingPoints)
-        {
-            float dist = (pixelPos - center.Position).magnitude;
-            if(dist < minDist)
-            {
-                hexIndex = center.Index;
-                minDist = dist;
-            }
-        }
-
-        float param = (float)hexIndex / 255;
-        Color ret = new Color(param, 0, 0);
-        return ret;
-    }
-
-    private IEnumerable<HexCenter> GetStartingPoints()
+    private IEnumerable<HexCenter> GetHexCenterPoints()
     {
         RingSideBlueprint[] ringSideBlueprints = CreateRingSideBlueprints();
         yield return new HexCenter(new Vector2(.5f, .5f), GetNewHexIndex());
@@ -104,12 +180,9 @@ public class HexMapGenerator : MonoBehaviour
     private Vector2 GetHexPos(int row, int ascendingColumn, int ring)
     {
         ring = ring + 2;
-        float y = -Mathf.RoundToInt(ring / 5);
         Vector2 ascendingOffset = MapDisplay.AscendingTileOffset * ascendingColumn;
-        Vector2 offset = ascendingOffset + new Vector2(row, 0);
-        offset *= 2;
-        Vector2 ret = new Vector2(offset.x, offset.y);
-        ret /= Extents * 2;
+        Vector2 ret = ascendingOffset + new Vector2(row, 0);
+        ret /= Extents * 2 - 1f;
         ret += new Vector2(.5f, .5f);
         return ret;
     }
@@ -140,6 +213,7 @@ public class HexMapGenerator : MonoBehaviour
     {
         public Vector2 Position { get; }
         public int Index { get; }
+        public Color MapValue { get; }
         public HexCenter(Vector2 position, int index)
         {
             Position = position;
