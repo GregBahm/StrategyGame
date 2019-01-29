@@ -14,7 +14,8 @@ public class BaseMapGenerator : MonoBehaviour
     public MapResolution Resolution;
 
     public Texture2D OutputTexture { get; private set; }
-    private int _maxIndex = 1;
+    public int MaxIndex { get; private set; } = 1;
+
     private int _extents;
     private int _currentHexIndex;
 
@@ -24,7 +25,7 @@ public class BaseMapGenerator : MonoBehaviour
         _extents = MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
         OutputTexture = InitializeMap();
         HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
-        _maxIndex = hexCenterPoints.Length;
+        MaxIndex = hexCenterPoints.Length;
         MakeMap(hexCenterPoints);
         //SaveTexture();
     }
@@ -47,7 +48,7 @@ public class BaseMapGenerator : MonoBehaviour
     private void Update()
     {
         OutputDisplayMat.SetTexture("_MainTex", OutputTexture);
-        OutputDisplayMat.SetFloat("_MaxIndex", _maxIndex);
+        OutputDisplayMat.SetFloat("_MaxIndex", MaxIndex);
     }
 
     private void MakeMap(IEnumerable<HexCenter> hexCenters)

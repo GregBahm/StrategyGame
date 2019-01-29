@@ -17,6 +17,10 @@
 			
 			#include "UnityCG.cginc"
 
+			float _SourceImageWidth;
+			float _SourceImageHeight;
+			Buffer<float2> _DistortionData;
+
 			struct HexState
 			{
 				float Hover;
@@ -47,6 +51,12 @@
 				return o;
 			}
 
+			int UvsToSourceImageIndex(float2 uv)
+			{
+				int x = uv.x * _SourceImageWidth;
+				int y = uv.y * _SourceImageHeight;
+				return x + y * _SourceImageWidth;
+			}
 
 			uint HexColorToIndex(float2 col)
 			{
@@ -55,17 +65,13 @@
 				return x + y * 255;
 			}
 			
-			float2 GetSnappedUvs(float2 uvs)
-			{
-				uvs *= 2048;
-				uint2 asInt = (uint2)uvs;
-				return (float2)asInt / 2048;
-			}
-
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float2 snappedUvs = GetSnappedUvs(i.uv);
-				fixed4 col = tex2D(_MainTex, snappedUvs);
+
+				int pixelIndex = UvsToSourceImageIndex(i.uv);
+				float2 outputCoords = _DistortionData[pixelIndex];
+
+				float4 col = tex2D(_MainTex, outputCoords);
 				uint index = HexColorToIndex(col.xy);
 				HexState state = _HexStates[index];
 				return float4(state.Hover, state.Clicked, 0, 1);

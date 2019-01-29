@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(BaseMapGenerator))]
+[RequireComponent(typeof(Distorter))]
 public class SelectionTester : MonoBehaviour
 {
     public Material DisplayMat;
@@ -16,6 +17,8 @@ public class SelectionTester : MonoBehaviour
     private ComputeBuffer _hexStatesBuffer;
     private Texture2D _texture;
 
+    private ComputeBuffer _distortionData;
+
     private HexState[] _hexStates;
 
     private void Start()
@@ -23,6 +26,8 @@ public class SelectionTester : MonoBehaviour
         BaseMapGenerator mapGen = GetComponent<BaseMapGenerator>();
         _hexCount = mapGen.MapDefinition.Tiles.Count();
         _texture = mapGen.OutputTexture;
+        Distorter distorter = GetComponent<Distorter>();
+        _distortionData = distorter.OutputData;
 
         _hexStatesBuffer = new ComputeBuffer(_hexCount, HexStatesStride);
         _hexStates = CreateHexStates();
@@ -34,6 +39,9 @@ public class SelectionTester : MonoBehaviour
         UpdateHexStates(hexState);
         SetBufferData();
 
+        DisplayMat.SetBuffer("_DistortionData", _distortionData);
+        DisplayMat.SetFloat("_SourceImageWidth", _texture.width);
+        DisplayMat.SetFloat("_SourceImageHeight", _texture.height);
         DisplayMat.SetTexture("_MainTex", _texture);
         DisplayMat.SetBuffer("_HexStates", _hexStatesBuffer);
     }
@@ -85,6 +93,26 @@ public class SelectionTester : MonoBehaviour
         return x + y * 255;
     }
 
+    private int GetDistortionIndex(int x, int y)
+    {
+        return x + y * _texture.width;
+    }
+
+    Color GetTextureSample(Vector2 coord)
+    {
+        int x = (int)(_texture.width * coord.x);
+        int y = (int)(_texture.height * coord.y);
+
+        int distortionIndex = GetDistortionIndex(x, y);
+        float[] datum = new float[2];
+        _distortionData.GetData(datum, 0, distortionIndex, 2);
+
+        int distortedX = (int)(_texture.width * datum[0]);
+        int distortedY = (int)(_texture.height * datum[1]);
+
+        return _texture.GetPixel(distortedX, distortedY);
+    }
+
     private HexState GetHoveredState()
     {
         Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -92,10 +120,7 @@ public class SelectionTester : MonoBehaviour
         bool hit = Physics.Raycast(mouseRay, out hitInfo, Mathf.Infinity);
         if (hit)
         {
-            Vector2 coord = hitInfo.textureCoord;
-            int x = (int)(_texture.width * coord.x);
-            int y = (int)(_texture.height * coord.y);
-            Color col = _texture.GetPixel(x, y);
+            Color col = GetTextureSample(hitInfo.textureCoord);
             int index = HexColorToIndex(col);
             if (index <= _hexCount - 1)
             {
