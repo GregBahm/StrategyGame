@@ -95,7 +95,7 @@ public class SelectionTester
 
         int distortionIndex = GetDistortionIndex(x, y);
         float[] datum = new float[2];
-        _main.DistortionOutput.GetData(datum, 0, distortionIndex, 2);
+        _main.DistortionOutput.GetData(datum, 0, distortionIndex * 2, 2); // need to multiply distortionIndex by 2 because the buffer acts like a list of floats, not Vector2 structs
 
         int distortedX = (int)(_main.BaseTexture.width * datum[0]);
         int distortedY = (int)(_main.BaseTexture.height * datum[1]);
