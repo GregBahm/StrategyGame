@@ -6,64 +6,42 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BaseMapGenerator : MonoBehaviour
+public class BaseMapGenerator
 {
-    public Material OutputDisplayMat;
-    public MapDefinition MapDefinition;
-    public TextAsset MapDefinitionFile;
-    public MapResolution Resolution;
-
-    public Texture2D OutputTexture { get; private set; }
+    private readonly MapTextureGen _main;
     public int MaxIndex { get; private set; } = 1;
 
-    private int _extents;
+    private readonly int _extents;
     private int _currentHexIndex;
 
-    private void Awake()
+    public BaseMapGenerator(MapTextureGen main)
     {
-        MapDefinition = new MapDefinition(MapDefinitionFile);
-        _extents = MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
-        OutputTexture = InitializeMap();
+        _main = main;
+        _extents = main.MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
         HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
         MaxIndex = hexCenterPoints.Length;
         MakeMap(hexCenterPoints);
-        //SaveTexture();
     }
 
-    private Texture2D InitializeMap()
+    public void Update()
     {
-        int power = (int)Resolution;
-        int resolution = 1024 * power;
-        Texture2D ret = new Texture2D(resolution, resolution, TextureFormat.RG16, false);
-        ret.filterMode = FilterMode.Point;
-        return ret;
-    }
-
-    private void SaveTexture()
-    {
-        byte[] pngData = OutputTexture.EncodeToPNG();
-        File.WriteAllBytes(@"C:\Users\Lisa\Documents\ArrowMaker\Assets\HexTexture.png", pngData);
-    }
-
-    private void Update()
-    {
-        OutputDisplayMat.SetTexture("_MainTex", OutputTexture);
-        OutputDisplayMat.SetFloat("_MaxIndex", MaxIndex);
+        _main.BaseMapMat.SetTexture("_MainTex", _main.BaseTexture);
+        _main.BaseMapMat.SetFloat("_MaxIndex", MaxIndex);
     }
 
     private void MakeMap(IEnumerable<HexCenter> hexCenters)
     {
         HexTable table = new HexTable(hexCenters, _extents);
-        for (int xIndex = 0; xIndex < OutputTexture.width; xIndex++)
+        for (int xIndex = 0; xIndex < _main.BaseTexture.width; xIndex++)
         {
-            for (int yIndex = 0; yIndex < OutputTexture.height; yIndex++)
+            for (int yIndex = 0; yIndex < _main.BaseTexture.height; yIndex++)
             {
-                HexCenter hexCenter = table.GetHexCenter(xIndex, yIndex, OutputTexture.width, OutputTexture.height);
+                HexCenter hexCenter = table.GetHexCenter(xIndex, yIndex, _main.BaseTexture.width, _main.BaseTexture.height);
                 Color pixelColor = GetMapValue(hexCenter);
-                OutputTexture.SetPixel(xIndex, yIndex, pixelColor);
+                _main.BaseTexture.SetPixel(xIndex, yIndex, pixelColor);
             }
         }
-        OutputTexture.Apply();
+        _main.BaseTexture.Apply();
     }
 
     private Color GetMapValue(HexCenter hexCenter)
@@ -110,7 +88,7 @@ public class BaseMapGenerator : MonoBehaviour
         int finalColumn = startColumn + columnOffset;
 
         Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
-        bool playable = MapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
+        bool playable = _main.MapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
         int index = playable ? RegisterNextHex() : 0;
         return new HexCenter(hexPos, index);
     }
@@ -144,15 +122,6 @@ public class BaseMapGenerator : MonoBehaviour
         };
         return ret;
     }
-
-    public enum MapResolution
-    {
-        OneK = 1,
-        TwoK = 2,
-        FourK = 4,
-        EightK = 8
-    }
-
     /// <summary>
     /// This hex table only exists so that base texture creation doesn't take forever at high texture-resolutions/extents.
     /// </summary>

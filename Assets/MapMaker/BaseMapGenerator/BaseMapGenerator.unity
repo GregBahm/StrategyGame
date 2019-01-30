@@ -208,9 +208,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 715917722}
-  - component: {fileID: 715917721}
-  - component: {fileID: 715917724}
-  - component: {fileID: 715917723}
+  - component: {fileID: 715917725}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -218,20 +216,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &715917721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 715917720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: add223efb79223b4c991c116f8933c23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OutputDisplayMat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
-  MapDefinitionFile: {fileID: 4900000, guid: 58e609f9731b162459faa140e09ea256, type: 3}
-  Resolution: 1
 --- !u!4 &715917722
 Transform:
   m_ObjectHideFlags: 0
@@ -245,7 +229,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &715917723
+--- !u!114 &715917725
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -253,29 +237,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 715917720}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e56549200245bc749ad00e8e210058c3, type: 3}
+  m_Script: {fileID: 11500000, guid: 3836409a6d9a7454384a678ca7122169, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DisplayMat: {fileID: 2100000, guid: 0b0a19e4e4dab6c4faec57dd6cce4c1c, type: 2}
-  HoverShiftSpeed: 0.9
---- !u!114 &715917724
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 715917720}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db7ecd4c5000be244a68687835f4fbf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DistortionStrength: 0.00934
-  DistortionDrag: 0.778
-  OriginPull: 0.041
-  InputOutput: 0
+  BaseMapMat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
+  MapDefinitionFile: {fileID: 4900000, guid: 58e609f9731b162459faa140e09ea256, type: 3}
+  Resolution: 1
+  DistortionStrength: 0.00786
+  DistortionDrag: 0.886
+  OriginPull: 0.024
+  ShowDistortionBasis: 0
   NormalTexture: {fileID: 2800000, guid: f3b32a40b3d578e40955cf1277ea7a1d, type: 3}
   DistortCompute: {fileID: 7200000, guid: 0cbbc569e42885d448fe6017164f1b34, type: 3}
-  OutputMat: {fileID: 2100000, guid: 13b18732b8563474dacb9ec6d3cfa64b, type: 2}
+  DistortionMat: {fileID: 2100000, guid: 13b18732b8563474dacb9ec6d3cfa64b, type: 2}
+  SelectionTestMat: {fileID: 2100000, guid: 0b0a19e4e4dab6c4faec57dd6cce4c1c, type: 2}
+  SelectionTestHoverSpeed: 0.9
 --- !u!1 &1088788374
 GameObject:
   m_ObjectHideFlags: 0

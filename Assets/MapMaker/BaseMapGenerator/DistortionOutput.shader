@@ -2,7 +2,6 @@
 {
 	Properties
 	{
-		_Brightness("Brightness", Float) = 1
 	}
 		SubShader
 	{

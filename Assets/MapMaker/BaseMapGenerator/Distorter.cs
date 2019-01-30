@@ -4,33 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-[RequireComponent(typeof(BaseMapGenerator))]
-public class Distorter : MonoBehaviour
+public class Distorter
 {
-    private int _computeKernel;
-    [Range(0, .01f)]
-    public float DistortionStrength;
-    [Range(0, 1)]
-    public float DistortionDrag;
-    [Range(0, 1)]
-    public float OriginPull;
-    [Range(0, 1)]
-    public float InputOutput;
-    public Texture2D NormalTexture;
-    public ComputeShader DistortCompute;
+    private readonly MapTextureGen _main;
+    private readonly int _computeKernel;
 
-    public Material OutputMat;
-
-    public ComputeBuffer OutputData;
+    public ComputeBuffer OutputData { get; }
     private const int _outputBufferStride = sizeof(float) * 2;
-    private ComputeBuffer _originalPositions;
+    private readonly ComputeBuffer _originalPositions;
 
-    private ComputeBuffer _pixelNeighborsBuffer;
+    private readonly ComputeBuffer _pixelNeighborsBuffer;
     private const int _pixelNeighborsStride = sizeof(int) * 4;
-
-    private Texture2D _displayTexture;
-    private int _pixelCount;
-    private int _maxIndex;
     
     struct PixelNeighbors
     {
@@ -40,15 +24,12 @@ public class Distorter : MonoBehaviour
         public int NeighborD;
     };
 
-    private void Start()
+    public Distorter(MapTextureGen main)
     {
-        BaseMapGenerator baseMapGen = GetComponent<BaseMapGenerator>();
-        _displayTexture = baseMapGen.OutputTexture;
-        _maxIndex = baseMapGen.MaxIndex;
-        _computeKernel = DistortCompute.FindKernel("CSMain");
-        _pixelCount = _displayTexture.width * _displayTexture.height;
-        OutputData = new ComputeBuffer(_pixelCount, _outputBufferStride);
-        _originalPositions = new ComputeBuffer(_pixelCount, _outputBufferStride);
+        _main = main;
+        _computeKernel = main.DistortCompute.FindKernel("CSMain");
+        OutputData = new ComputeBuffer(_main.PixelCount, _outputBufferStride);
+        _originalPositions = new ComputeBuffer(_main.PixelCount, _outputBufferStride);
         Vector2[] data = CreateOriginalPositions();
         OutputData.SetData(data);
         _originalPositions.SetData(data);
@@ -58,16 +39,16 @@ public class Distorter : MonoBehaviour
 
     int UvsToIndex(int u, int v)
     {
-        return u + v * _displayTexture.width;
+        return u + v * _main.BaseTexture.width;
     }
 
     private ComputeBuffer CreatePixelNeighborsBuffer()
     {
-        ComputeBuffer ret = new ComputeBuffer(_pixelCount, _pixelNeighborsStride);
-        PixelNeighbors[] data = new PixelNeighbors[_pixelCount];
-        for (int x = 1; x < _displayTexture.width - 1; x++)
+        ComputeBuffer ret = new ComputeBuffer(_main.PixelCount, _pixelNeighborsStride);
+        PixelNeighbors[] data = new PixelNeighbors[_main.PixelCount];
+        for (int x = 1; x < _main.BaseTexture.width - 1; x++)
         {
-            for (int y = 1; y < _displayTexture.height - 1; y++)
+            for (int y = 1; y < _main.BaseTexture.height - 1; y++)
             {
                 int neighborA = UvsToIndex(x - 1, y);
                 int neighborB = UvsToIndex(x + 1, y);
@@ -88,38 +69,38 @@ public class Distorter : MonoBehaviour
         return ret;
     }
 
-    private void Update()
+    public void Update()
     {
-        DistortCompute.SetBuffer(_computeKernel, "_OutputData", OutputData);
-        DistortCompute.SetBuffer(_computeKernel, "_OriginalPosition", _originalPositions);
-        DistortCompute.SetBuffer(_computeKernel, "_PixelNeighbors", _pixelNeighborsBuffer);
-        DistortCompute.SetFloat("_SourceImageWidth", _displayTexture.width);
-        DistortCompute.SetFloat("_SourceImageHeight", _displayTexture.height);
-        DistortCompute.SetFloat("_DistortionStrength", DistortionStrength);
-        DistortCompute.SetFloat("_DistortionDrag", DistortionDrag);
-        DistortCompute.SetFloat("_OriginPull", OriginPull);
-        DistortCompute.SetTexture(_computeKernel, "NormalTexture", NormalTexture);
+        _main.DistortCompute.SetBuffer(_computeKernel, "_OutputData", OutputData);
+        _main.DistortCompute.SetBuffer(_computeKernel, "_OriginalPosition", _originalPositions);
+        _main.DistortCompute.SetBuffer(_computeKernel, "_PixelNeighbors", _pixelNeighborsBuffer);
+        _main.DistortCompute.SetFloat("_SourceImageWidth", _main.BaseTexture.width);
+        _main.DistortCompute.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
+        _main.DistortCompute.SetFloat("_DistortionStrength", _main.DistortionStrength);
+        _main.DistortCompute.SetFloat("_DistortionDrag", _main.DistortionDrag);
+        _main.DistortCompute.SetFloat("_OriginPull", _main.OriginPull);
+        _main.DistortCompute.SetTexture(_computeKernel, "NormalTexture", _main.NormalTexture);
 
-        int groups = _pixelCount / 64;
-        DistortCompute.Dispatch(_computeKernel, groups, 1, 1);
+        int groups = _main.PixelCount / 64;
+        _main.DistortCompute.Dispatch(_computeKernel, groups, 1, 1);
 
-        OutputMat.SetBuffer("_DistortionData", OutputData);
-        OutputMat.SetFloat("_SourceImageWidth", _displayTexture.width);
-        OutputMat.SetFloat("_SourceImageHeight", _displayTexture.height);
-        OutputMat.SetTexture("_NormalTex", NormalTexture);
-        OutputMat.SetTexture("_MainTex", _displayTexture);
-        OutputMat.SetFloat("_InputOutput", InputOutput);
-        OutputMat.SetFloat("_MaxIndex", _maxIndex);
+        _main.DistortionMat.SetBuffer("_DistortionData", OutputData);
+        _main.DistortionMat.SetFloat("_SourceImageWidth", _main.BaseTexture.width);
+        _main.DistortionMat.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
+        _main.DistortionMat.SetTexture("_NormalTex", _main.NormalTexture);
+        _main.DistortionMat.SetTexture("_MainTex", _main.BaseTexture);
+        _main.DistortionMat.SetFloat("_InputOutput", _main.ShowDistortionBasis);
+        _main.DistortionMat.SetFloat("_MaxIndex", _main.MaxIndex);
     }
 
-    private void DoWriteDistoredMap()
+    public void WriteDistoredMap(string path)
     {
-        Vector2[] outputData = new Vector2[_pixelCount];
+        Vector2[] outputData = new Vector2[_main.PixelCount];
         OutputData.GetData(outputData);
-        Texture2D texture = new Texture2D(_displayTexture.width, _displayTexture.height);
-        for (int x = 0; x < _displayTexture.width; x++)
+        Texture2D texture = new Texture2D(_main.BaseTexture.width, _main.BaseTexture.height);
+        for (int x = 0; x < _main.BaseTexture.width; x++)
         {
-            for (int y = 0; y < _displayTexture.height; y++)
+            for (int y = 0; y < _main.BaseTexture.height; y++)
             {
                 Vector2 datum = outputData[UvsToIndex(x, y)];
                 datum = datum / 2 + new Vector2(.5f, .5f);
@@ -128,26 +109,26 @@ public class Distorter : MonoBehaviour
         }
         texture.Apply();
         byte[] saveData = texture.EncodeToPNG();
-        File.WriteAllBytes(@"C:\Users\Lisa\Documents\ArrowMaker\Assets\DistortionTest\DistortedMap.png", saveData);
+        File.WriteAllBytes(path, saveData);
     }
 
     private Vector2[] CreateOriginalPositions()
     {
-        Vector2[] data = new Vector2[_pixelCount];
-        for (int x = 0; x < _displayTexture.width; x++)
+        Vector2[] data = new Vector2[_main.PixelCount];
+        for (int x = 0; x < _main.BaseTexture.width; x++)
         {
-            for (int y = 0; y < _displayTexture.height; y++)
+            for (int y = 0; y < _main.BaseTexture.height; y++)
             {
                 int index = UvsToIndex(x, y);
-                float u = (float)x / _displayTexture.width;
-                float v = (float)y / _displayTexture.height;
+                float u = (float)x / _main.BaseTexture.width;
+                float v = (float)y / _main.BaseTexture.height;
                 data[index] = new Vector2(u, v);
             }
         }
         return data;
     }
 
-    private void OnDestroy()
+    public void OnDestroy()
     {
         _originalPositions.Dispose();
         OutputData.Dispose();

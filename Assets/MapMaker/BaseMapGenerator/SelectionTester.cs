@@ -4,49 +4,39 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-[RequireComponent(typeof(BaseMapGenerator))]
-[RequireComponent(typeof(Distorter))]
-public class SelectionTester : MonoBehaviour
+public class SelectionTester
 {
-    public Material DisplayMat;
-    [Range(0, 1)]
-    public float HoverShiftSpeed;
+    private readonly MapTextureGen _main;
 
     private int _hexCount;
     private const int HexStatesStride = sizeof(float) * 2;
     private ComputeBuffer _hexStatesBuffer;
-    private Texture2D _texture;
-
-    private ComputeBuffer _distortionData;
 
     private HexState[] _hexStates;
 
-    private void Start()
+    public SelectionTester(MapTextureGen main)
     {
-        BaseMapGenerator mapGen = GetComponent<BaseMapGenerator>();
-        _hexCount = mapGen.MapDefinition.Tiles.Count();
-        _texture = mapGen.OutputTexture;
-        Distorter distorter = GetComponent<Distorter>();
-        _distortionData = distorter.OutputData;
+        _main = main;
+        _hexCount = main.MapDefinition.Tiles.Count();
 
         _hexStatesBuffer = new ComputeBuffer(_hexCount, HexStatesStride);
         _hexStates = CreateHexStates();
     }
 
-    void Update()
+    public void Update()
     {
         HexState hexState = GetHoveredState();
         UpdateHexStates(hexState);
         SetBufferData();
 
-        DisplayMat.SetBuffer("_DistortionData", _distortionData);
-        DisplayMat.SetFloat("_SourceImageWidth", _texture.width);
-        DisplayMat.SetFloat("_SourceImageHeight", _texture.height);
-        DisplayMat.SetTexture("_MainTex", _texture);
-        DisplayMat.SetBuffer("_HexStates", _hexStatesBuffer);
+        _main.SelectionTestMat.SetBuffer("_DistortionData", _main.DistortionOutput);
+        _main.SelectionTestMat.SetFloat("_SourceImageWidth", _main.BaseTexture.width);
+        _main.SelectionTestMat.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
+        _main.SelectionTestMat.SetTexture("_MainTex", _main.BaseTexture);
+        _main.SelectionTestMat.SetBuffer("_HexStates", _hexStatesBuffer);
     }
 
-    private void OnDestroy()
+    public void OnDestroy()
     {
         _hexStatesBuffer.Dispose();
     }
@@ -78,7 +68,7 @@ public class SelectionTester : MonoBehaviour
         foreach (HexState state in _hexStates)
         {
             float target = state == hoveredState ? 1f : 0;
-            state.Hover = Mathf.Lerp(target, state.Hover, HoverShiftSpeed);
+            state.Hover = Mathf.Lerp(target, state.Hover, _main.SelectionTestHoverSpeed);
             if(clicked && state == hoveredState)
             {
                 state.Clicked = !state.Clicked;
@@ -95,22 +85,22 @@ public class SelectionTester : MonoBehaviour
 
     private int GetDistortionIndex(int x, int y)
     {
-        return x + y * _texture.width;
+        return x + y * _main.BaseTexture.width;
     }
 
     Color GetTextureSample(Vector2 coord)
     {
-        int x = (int)(_texture.width * coord.x);
-        int y = (int)(_texture.height * coord.y);
+        int x = (int)(_main.BaseTexture.width * coord.x);
+        int y = (int)(_main.BaseTexture.height * coord.y);
 
         int distortionIndex = GetDistortionIndex(x, y);
         float[] datum = new float[2];
-        _distortionData.GetData(datum, 0, distortionIndex, 2);
+        _main.DistortionOutput.GetData(datum, 0, distortionIndex, 2);
 
-        int distortedX = (int)(_texture.width * datum[0]);
-        int distortedY = (int)(_texture.height * datum[1]);
+        int distortedX = (int)(_main.BaseTexture.width * datum[0]);
+        int distortedY = (int)(_main.BaseTexture.height * datum[1]);
 
-        return _texture.GetPixel(distortedX, distortedY);
+        return _main.BaseTexture.GetPixel(distortedX, distortedY);
     }
 
     private HexState GetHoveredState()
