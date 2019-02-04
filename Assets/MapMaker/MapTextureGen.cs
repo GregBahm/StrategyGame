@@ -32,9 +32,13 @@ public class MapTextureGen : MonoBehaviour
     public int MaxIndex { get; private set; }
     public ComputeBuffer DistortionOutput { get { return _distorter.OutputData; } }
 
+    public Material BorderMat;
+    public float BorderThickness;
+
     private BaseMapGenerator _baseMapGenerator;
     private Distorter _distorter;
     private SelectionTester _selectionTester;
+    private NewBorderGenerator _borderGenerator;
 
     void Start ()
     {
@@ -45,6 +49,7 @@ public class MapTextureGen : MonoBehaviour
         MaxIndex = _baseMapGenerator.MaxIndex;
         _distorter = new Distorter(this);
         _selectionTester = new SelectionTester(this);
+        _borderGenerator = new NewBorderGenerator(this);
     }
 
     private void Update()
@@ -52,6 +57,7 @@ public class MapTextureGen : MonoBehaviour
         _baseMapGenerator.Update();
         _distorter.Update();
         _selectionTester.Update();
+        _borderGenerator.Update();
     }
 
     private void OnDestroy()
