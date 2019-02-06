@@ -17,6 +17,17 @@ public class MapDefinition
         _tiles = new ReadOnlyDictionary<string, MapTileDefinition>(table);
     }
 
+    public bool ContainsDefinitionFor(int row, int column)
+    {
+        string key = GetKey(row, column);
+        return _tiles.ContainsKey(key);
+    }
+    public MapTileDefinition GetDefinitionFor(int row, int column)
+    {
+        string key = GetKey(row, column);
+        return _tiles[key];
+    }
+
     private string GetKey(int row, int column)
     {
         return row.ToString() + " " + column.ToString();
@@ -90,16 +101,5 @@ public class MapDefinition
         bool isStartPosition = Convert.ToBoolean(isStartPositionString);
 
         return new MapTileDefinition(row, column, isImpassable, isStartPosition);
-    }
-
-    internal bool ContainsDefinitionFor(int row, int column)
-    {
-        string key = GetKey(row, column);
-        return _tiles.ContainsKey(key);
-    }
-    internal MapTileDefinition GetDefinitionFor(int row, int column)
-    {
-        string key = GetKey(row, column);
-        return _tiles[key];
     }
 }

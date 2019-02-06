@@ -91,6 +91,7 @@ public class Distorter
         _main.DistortionMat.SetTexture("_MainTex", _main.BaseTexture);
         _main.DistortionMat.SetFloat("_InputOutput", _main.ShowDistortionBasis);
         _main.DistortionMat.SetFloat("_MaxIndex", _main.MaxIndex);
+        _main.DistortionMat.SetBuffer("_CornersData", _main.CornerPointsBuffer);
     }
 
     public void WriteDistoredMap(string path)

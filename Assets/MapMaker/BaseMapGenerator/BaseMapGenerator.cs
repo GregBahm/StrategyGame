@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -14,19 +15,55 @@ public class BaseMapGenerator
     private readonly int _extents;
     private int _currentHexIndex;
 
+    public ComputeBuffer CornersData { get; }
+    private const int CornerPointsStride = sizeof(float) * 2 * 6;
+
+    public ReadOnlyCollection<HexCenter> BaseHexs { get; }
+
+    public struct Corners
+    {
+        public Vector2 CornerA;
+        public Vector2 CornerB;
+        public Vector2 CornerC;
+        public Vector2 CornerD;
+        public Vector2 CornerE;
+        public Vector2 CornerF;
+    }
+
     public BaseMapGenerator(MapTextureGen main)
     {
         _main = main;
         _extents = main.MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
-        HexCenter[] hexCenterPoints = GetHexCenterPoints().ToArray();
-        MaxIndex = hexCenterPoints.Length;
-        MakeMap(hexCenterPoints);
+        List<HexCenter> hexes = GetHexCenterPoints().ToList();
+        hexes.OrderBy(item => item.Index);
+        BaseHexs = hexes.AsReadOnly();
+        MaxIndex = BaseHexs.Count();
+        MakeMap(BaseHexs);
+        CornersData = GetCornerPoints(BaseHexs);
     }
-
+    
     public void Update()
     {
         _main.BaseMapMat.SetTexture("_MainTex", _main.BaseTexture);
         _main.BaseMapMat.SetFloat("_MaxIndex", MaxIndex);
+        _main.BaseMapMat.SetBuffer("_CornersData", CornersData);
+    }
+
+    public void OnDestroy()
+    {
+        CornersData.Dispose();
+    }
+
+    private ComputeBuffer GetCornerPoints(IEnumerable<HexCenter> hexCenterPoints)
+    {
+        ComputeBuffer ret = new ComputeBuffer(MaxIndex, CornerPointsStride);
+        Corners[] data = new Corners[MaxIndex];
+        foreach (HexCenter item in hexCenterPoints)
+        {
+            data[item.Index] = item.Corners;
+        }
+        ret.SetData(data);
+        return ret;
     }
 
     private void MakeMap(IEnumerable<HexCenter> hexCenters)
@@ -63,7 +100,7 @@ public class BaseMapGenerator
     private IEnumerable<HexCenter> GetHexCenterPoints()
     {
         RingSideBlueprint[] ringSideBlueprints = CreateRingSideBlueprints();
-        yield return new HexCenter(new Vector2(.5f, .5f), RegisterNextHex()); // The hex in the center of the map
+        yield return new HexCenter(new Vector2(.5f, .5f), RegisterNextHex(), _extents); // The hex in the center of the map
         for (int ring = 1; ring < _extents; ring++)
         {
             for (int i = 0; i < ring; i++)
@@ -90,7 +127,7 @@ public class BaseMapGenerator
         Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
         bool playable = _main.MapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
         int index = playable ? RegisterNextHex() : 0;
-        return new HexCenter(hexPos, index);
+        return new HexCenter(hexPos, index, _extents);
     }
 
     private Vector2 GetHexPos(int row, int ascendingColumn, int ring)
@@ -200,14 +237,41 @@ public class BaseMapGenerator
         }
     }
 
-    class HexCenter
+    public class HexCenter
     {
         public Vector2 Position { get; }
         public int Index { get; }
-        public HexCenter(Vector2 position, int index)
+
+        public Corners Corners { get; }
+
+        public HexCenter(Vector2 position, int index, int extents)
         {
             Position = position;
             Index = index;
+            Corners = GetHexNeighbors(position, extents);
+        }
+
+        private Corners GetHexNeighbors(Vector2 pos, int extents)
+        {
+            Vector2 rowOffset = new Vector2(0, 1);
+            Vector2 columnOffset = new Vector2(MapDisplay.AscendingTileOffset.y, MapDisplay.AscendingTileOffset.x);
+            int scale = extents * 2 - 1;
+            rowOffset /= scale;
+            columnOffset /= scale;
+            rowOffset /= 2;
+            columnOffset /= 2;
+            rowOffset *= 1.15f;
+            columnOffset *= 1.15f;
+
+            return new Corners()
+            {
+                CornerA = rowOffset + pos,
+                CornerB = columnOffset + pos,
+                CornerC = columnOffset - rowOffset + pos,
+                CornerD = -rowOffset + pos,
+                CornerE = -columnOffset + pos,
+                CornerF = -columnOffset + rowOffset + pos,
+            };
         }
     }
 

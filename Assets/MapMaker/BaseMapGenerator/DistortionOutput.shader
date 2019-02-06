@@ -38,6 +38,13 @@
 				float4 vertex : SV_POSITION;
 			};
 
+			struct Corners
+			{
+				float2 Corners[6];
+			};
+
+			StructuredBuffer<Corners> _CornersData;
+
 			v2f vert(appdata v) 
 			{
 				v2f o;
@@ -46,10 +53,10 @@
 				return o;
 			}
 
-			int UvsToSourceImageIndex(float2 uv)
+			uint UvsToSourceImageIndex(float2 uv)
 			{
-				int x = uv.x * _SourceImageWidth;
-				int y = uv.y * _SourceImageHeight;
+				uint x = uv.x * _SourceImageWidth;
+				uint y = uv.y * _SourceImageHeight;
 				return x + y * _SourceImageWidth;
 			}
 
@@ -60,21 +67,46 @@
 				return x + y * 255;
 			}
 
-			float GetHexVal(float2 outputCoords)
+			uint GetHexIndex(float2 outputCoords)
 			{
 				float4 col = tex2D(_MainTex, outputCoords);
-				uint index = HexColorToIndex(col.xy);
-				float ret = (float)index / _MaxIndex;
-				return 1 - ret;
+				return HexColorToIndex(col.xy);
+			}
+
+			float2 GetDistortedPosition(float2 pos)
+			{
+				uint pixelIndex = UvsToSourceImageIndex(pos);
+				return _DistortionData[pixelIndex];
+			}
+
+			uint GetCorner(uint index, float2 pos)
+			{
+				float minDist = 1000;
+				uint cornerIndex = 0;
+				for (uint i = 0; i < 6; i++)
+				{
+					float2 cornerBasePos = _CornersData[index].Corners[i];
+					float2 cornerPos = GetDistortedPosition(cornerBasePos);
+					float dist = length(pos - cornerPos);
+					if (dist < minDist)
+					{
+						minDist = dist;
+						cornerIndex = i;
+					}
+				}
+				return cornerIndex;
 			}
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				int pixelIndex = UvsToSourceImageIndex(i.uv);
-				float2 outputCoords = _DistortionData[pixelIndex];
-				float4 hexVal = GetHexVal(outputCoords).xxxx;
+				float2 distortedUvs = GetDistortedPosition(i.uv);
+				uint index = GetHexIndex(distortedUvs);
+				uint corner = GetCorner(index, i.uv);
+				return (float)corner / 6;
+				float indexVal = 1 - ((float)index / _MaxIndex);
+
 				fixed4 normalSample = tex2D(_NormalTex, float2(i.uv.y, i.uv.x));
-				return lerp(hexVal, normalSample, _InputOutput);
+				return lerp(indexVal, normalSample, _InputOutput);
 			}
 			ENDCG
 		}

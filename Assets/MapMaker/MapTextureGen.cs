@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using UnityEngine;
 
@@ -31,14 +32,19 @@ public class MapTextureGen : MonoBehaviour
     public int PixelCount { get; private set; }
     public int MaxIndex { get; private set; }
     public ComputeBuffer DistortionOutput { get { return _distorter.OutputData; } }
+    public ReadOnlyCollection<BaseMapGenerator.HexCenter> BaseHexs { get { return _baseMapGenerator.BaseHexs; } }
 
     public Material BorderMat;
+    [Range(0, 0.1f)]
     public float BorderThickness;
 
     private BaseMapGenerator _baseMapGenerator;
     private Distorter _distorter;
     private SelectionTester _selectionTester;
     private NewBorderGenerator _borderGenerator;
+
+
+    public ComputeBuffer CornerPointsBuffer { get { return _baseMapGenerator.CornersData; } }
 
     void Start ()
     {
@@ -62,6 +68,7 @@ public class MapTextureGen : MonoBehaviour
 
     private void OnDestroy()
     {
+        _baseMapGenerator.OnDestroy();
         _distorter.OnDestroy();
         _selectionTester.OnDestroy();
     }

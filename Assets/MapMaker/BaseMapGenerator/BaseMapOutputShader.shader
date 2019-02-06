@@ -29,6 +29,13 @@
 				float4 vertex : SV_POSITION;
 			};
 
+			struct Corners
+			{
+				float2 Corners[6];
+			};
+
+			StructuredBuffer<Corners> _CornersData;
+
 			sampler2D _MainTex;
 			float _MaxIndex;
 			float _Brightness;
@@ -47,13 +54,38 @@
 				uint y = (uint)(col.y * 255);
 				return x + y * 255;
 			}
+
+			uint GetHexIndex(float2 outputCoords)
+			{
+				float4 col = tex2D(_MainTex, outputCoords);
+				return HexColorToIndex(col.xy);
+			}
+
+			uint GetCorner(uint index, float2 pos)
+			{
+				float minDist = 1000;
+				uint cornerIndex = 0;
+				for (uint i = 0; i < 6; i++)
+				{
+					float2 cornerPos = _CornersData[index].Corners[i];
+					float dist = length(pos - cornerPos);
+					if (dist < minDist)
+					{
+						minDist = dist;
+						cornerIndex = i;
+					}
+				}
+				return cornerIndex;
+			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				fixed4 col = tex2D(_MainTex, i.uv);
-				uint index = HexColorToIndex(col.xy);
-				float ret = (float)index / _MaxIndex;
-				return 1 - ret;
+				uint index = GetHexIndex(i.uv);
+				uint corner = GetCorner(index, i.uv);
+				float cornerVal = (float)corner / 6;
+				return cornerVal;
+				float indexVal = 1 - ((float)index / _MaxIndex);
+				return float4(cornerVal, indexVal, indexVal, 1);
 			}
 			ENDCG
 		}

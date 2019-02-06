@@ -34,6 +34,31 @@ public class SelectionTester
         _main.SelectionTestMat.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
         _main.SelectionTestMat.SetTexture("_MainTex", _main.BaseTexture);
         _main.SelectionTestMat.SetBuffer("_HexStates", _hexStatesBuffer);
+
+        DrawCorners();
+    }
+
+    private void DrawCorners()
+    {
+        for (int i = 0; i < _hexCount; i++)
+        {
+            if(_hexStates[i + 1].Clicked)
+            {
+                var item = _main.BaseHexs[i];
+                Vector2 distortedA = GetDistortedCoord(item.Corners.CornerA);
+                Vector2 distortedB = GetDistortedCoord(item.Corners.CornerB);
+                Vector2 distortedC = GetDistortedCoord(item.Corners.CornerC);
+                Vector2 distortedD = GetDistortedCoord(item.Corners.CornerD);
+                Vector2 distortedE = GetDistortedCoord(item.Corners.CornerE);
+                Vector2 distortedF = GetDistortedCoord(item.Corners.CornerF);
+                Debug.DrawLine(distortedA, distortedB, new Color(1, 0, 0));
+                Debug.DrawLine(distortedB, distortedC, new Color(1, 1, 0));
+                Debug.DrawLine(distortedC, distortedD, new Color(0, 1, 0));
+                Debug.DrawLine(distortedD, distortedE, new Color(0, 1, 1));
+                Debug.DrawLine(distortedE, distortedF, new Color(0, 0, 1));
+                Debug.DrawLine(distortedF, distortedA, new Color(1, 0, 1));
+            }
+        }
     }
 
     public void OnDestroy()
@@ -87,18 +112,27 @@ public class SelectionTester
     {
         return x + y * _main.BaseTexture.width;
     }
-
-    Color GetTextureSample(Vector2 coord)
+    private int GetDistortionIndex(Vector2 coord)
     {
         int x = (int)(_main.BaseTexture.width * coord.x);
         int y = (int)(_main.BaseTexture.height * coord.y);
+        return x + y * _main.BaseTexture.width;
+    }
 
-        int distortionIndex = GetDistortionIndex(x, y);
+    private Vector2 GetDistortedCoord(Vector2 coord)
+    {
+        int distortionIndex = GetDistortionIndex(coord);
         float[] datum = new float[2];
         _main.DistortionOutput.GetData(datum, 0, distortionIndex * 2, 2); // need to multiply distortionIndex by 2 because the buffer acts like a list of floats, not Vector2 structs
+        Vector2 distortedCoord =  new Vector2(datum[0], datum[1]);
+        return coord - (distortedCoord - coord);
+    }
 
-        int distortedX = (int)(_main.BaseTexture.width * datum[0]);
-        int distortedY = (int)(_main.BaseTexture.height * datum[1]);
+    Color GetTextureSample(Vector2 coord)
+    {
+        Vector2 distortedCoord = GetDistortedCoord(coord);
+        int distortedX = (int)(_main.BaseTexture.width * distortedCoord.x);
+        int distortedY = (int)(_main.BaseTexture.height * distortedCoord.y);
 
         return _main.BaseTexture.GetPixel(distortedX, distortedY);
     }
