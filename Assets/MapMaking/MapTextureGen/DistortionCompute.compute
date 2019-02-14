@@ -41,10 +41,10 @@ uint UvsToIndex(float2 uvs)
 
 float2 GetNeighborsCenter(PixelNeighbors neighbors)
 {
-	float2 neighborA = _OutputData[neighbors.NeighborA];
-	float2 neighborB = _OutputData[neighbors.NeighborB];
-	float2 neighborC = _OutputData[neighbors.NeighborC];
-	float2 neighborD = _OutputData[neighbors.NeighborD];
+	float2 neighborA = _OutputData[neighbors.NeighborA] + _OriginalPosition[neighbors.NeighborA];
+	float2 neighborB = _OutputData[neighbors.NeighborB] + _OriginalPosition[neighbors.NeighborB];
+	float2 neighborC = _OutputData[neighbors.NeighborC] + _OriginalPosition[neighbors.NeighborC];
+	float2 neighborD = _OutputData[neighbors.NeighborD] + _OriginalPosition[neighbors.NeighborD];
 	float2 ret = (neighborA + neighborB + neighborC + neighborD) / 4;
 	return ret;
 }
@@ -56,7 +56,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 	if(neighbors.NeighborA != 0) // Lock borders
 	{
 		float2 originalPos = _OriginalPosition[id.x];
-		float2 currentPos = _OutputData[id.x];
+		float2 currentOffset = _OutputData[id.x];
+		float2 currentPos = originalPos + currentOffset;
 		float2 neighborsCenter = GetNeighborsCenter(neighbors);
 
 		float2 offset = NormalTexture.SampleLevel(samplerNormalTexture, currentPos, 0).xy;
@@ -67,6 +68,6 @@ void CSMain(uint3 id : SV_DispatchThreadID)
 		float2 newPos = currentPos + offset;
 		newPos = lerp(newPos, neighborsCenter, _DistortionDrag);
 		newPos = lerp(newPos, originalPos, _OriginPull);
-		_OutputData[id.x] = newPos;
+		_OutputData[id.x] = newPos - originalPos;
 	}
 }

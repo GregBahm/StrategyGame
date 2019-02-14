@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class SelectionTester
+public class SelectionMapManager
 {
-    private readonly MapTextureGen _main;
+    private readonly MainMapManager _main;
 
     private int _hexCount;
     private const int HexStatesStride = sizeof(float) * 2;
@@ -14,7 +14,7 @@ public class SelectionTester
 
     private HexState[] _hexStates;
 
-    public SelectionTester(MapTextureGen main)
+    public SelectionMapManager(MainMapManager main)
     {
         _main = main;
         _hexCount = main.MapDefinition.Tiles.Count();
@@ -34,23 +34,30 @@ public class SelectionTester
         _main.SelectionTestMat.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
         _main.SelectionTestMat.SetTexture("_MainTex", _main.BaseTexture);
         _main.SelectionTestMat.SetBuffer("_HexStates", _hexStatesBuffer);
+        _main.SelectionTestMat.SetFloat("_BorderThickness", _main.BorderThickness);
+        _main.SelectionTestMat.SetBuffer("_CornersData", _main.CornerPointsBuffer);
+        _main.SelectionTestMat.SetBuffer("_NeighborsBuffer", _main.NeighborsBuffer);
+        _main.SelectionTestMat.SetFloat("_MaxIndex", _main.MaxIndex);
 
-        DrawCorners();
+        if(_main.DrawCornerDebugLines)
+        {
+            DrawCorners();
+        }
     }
 
     private void DrawCorners()
     {
-        for (int i = 0; i < _hexCount; i++)
+        for (int i = 0; i < _hexCount - 1; i++)
         {
             if(_hexStates[i + 1].Clicked)
             {
                 var item = _main.BaseHexs[i];
-                Vector2 distortedA = GetDistortedCoord(item.Corners.CornerA);
-                Vector2 distortedB = GetDistortedCoord(item.Corners.CornerB);
-                Vector2 distortedC = GetDistortedCoord(item.Corners.CornerC);
-                Vector2 distortedD = GetDistortedCoord(item.Corners.CornerD);
-                Vector2 distortedE = GetDistortedCoord(item.Corners.CornerE);
-                Vector2 distortedF = GetDistortedCoord(item.Corners.CornerF);
+                Vector2 distortedA = item.Corners.CornerA - GetDistortion(item.Corners.CornerA);
+                Vector2 distortedB = item.Corners.CornerB - GetDistortion(item.Corners.CornerB);
+                Vector2 distortedC = item.Corners.CornerC - GetDistortion(item.Corners.CornerC);
+                Vector2 distortedD = item.Corners.CornerD - GetDistortion(item.Corners.CornerD);
+                Vector2 distortedE = item.Corners.CornerE - GetDistortion(item.Corners.CornerE);
+                Vector2 distortedF = item.Corners.CornerF - GetDistortion(item.Corners.CornerF);
                 Debug.DrawLine(distortedA, distortedB, new Color(1, 0, 0));
                 Debug.DrawLine(distortedB, distortedC, new Color(1, 1, 0));
                 Debug.DrawLine(distortedC, distortedD, new Color(0, 1, 0));
@@ -119,18 +126,18 @@ public class SelectionTester
         return x + y * _main.BaseTexture.width;
     }
 
-    private Vector2 GetDistortedCoord(Vector2 coord)
+    private Vector2 GetDistortion(Vector2 coord)
     {
         int distortionIndex = GetDistortionIndex(coord);
         float[] datum = new float[2];
         _main.DistortionOutput.GetData(datum, 0, distortionIndex * 2, 2); // need to multiply distortionIndex by 2 because the buffer acts like a list of floats, not Vector2 structs
-        Vector2 distortedCoord =  new Vector2(datum[0], datum[1]);
-        return coord - (distortedCoord - coord);
+        Vector2 distortion =  new Vector2(datum[0], datum[1]);
+        return distortion;
     }
 
     Color GetTextureSample(Vector2 coord)
     {
-        Vector2 distortedCoord = GetDistortedCoord(coord);
+        Vector2 distortedCoord = coord + GetDistortion(coord);
         int distortedX = (int)(_main.BaseTexture.width * distortedCoord.x);
         int distortedY = (int)(_main.BaseTexture.height * distortedCoord.y);
 

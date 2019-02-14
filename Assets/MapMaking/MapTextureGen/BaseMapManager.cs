@@ -7,9 +7,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BaseMapGenerator
+public class BaseMapManager
 {
-    private readonly MapTextureGen _main;
+    private readonly MainMapManager _main;
     public int MaxIndex { get; private set; } = 1;
 
     private readonly int _extents;
@@ -17,6 +17,9 @@ public class BaseMapGenerator
 
     public ComputeBuffer CornersData { get; }
     private const int CornerPointsStride = sizeof(float) * 2 * 6;
+
+    public ComputeBuffer NeighborsData { get; }
+    private const int NeighborsDataStride = sizeof(uint) * 6;
 
     public ReadOnlyCollection<HexCenter> BaseHexs { get; }
 
@@ -30,7 +33,17 @@ public class BaseMapGenerator
         public Vector2 CornerF;
     }
 
-    public BaseMapGenerator(MapTextureGen main)
+    public struct NeighborIndices
+    {
+        public uint NeighborA;
+        public uint NeighborB;
+        public uint NeighborC;
+        public uint NeighborD;
+        public uint NeighborE;
+        public uint NeighborF;
+    }
+
+    public BaseMapManager(MainMapManager main)
     {
         _main = main;
         _extents = main.MapDefinition.Tiles.Max(item => item.Row) + 2; // The "+ 2" is to add a dummy ring around the playable tiles
@@ -39,9 +52,10 @@ public class BaseMapGenerator
         BaseHexs = hexes.AsReadOnly();
         MaxIndex = BaseHexs.Count();
         MakeMap(BaseHexs);
-        CornersData = GetCornerPoints(BaseHexs);
+        CornersData = GetCornerPoints();
+        NeighborsData = GetNeihborsData();
     }
-    
+
     public void Update()
     {
         _main.BaseMapMat.SetTexture("_MainTex", _main.BaseTexture);
@@ -52,13 +66,63 @@ public class BaseMapGenerator
     public void OnDestroy()
     {
         CornersData.Dispose();
+        NeighborsData.Dispose();
     }
 
-    private ComputeBuffer GetCornerPoints(IEnumerable<HexCenter> hexCenterPoints)
+    private ComputeBuffer GetNeihborsData()
+    {
+        ComputeBuffer ret = new ComputeBuffer(MaxIndex, NeighborsDataStride);
+        NeighborIndices[] data = new NeighborIndices[MaxIndex];
+        Dictionary<string, HexCenter> indexTable = BaseHexs.ToDictionary(GetKey, item => item);
+        for (int i = 0; i < MaxIndex; i++)
+        {
+            HexCenter hex = BaseHexs[i];
+            NeighborIndices neighbors = GetNeihborsFor(hex, indexTable);
+            data[hex.Index] = neighbors;
+        }
+        ret.SetData(data);
+        return ret;
+    }
+
+    private uint GetOffsetHex(HexCenter hex, int rowOffset, int columnOffset, Dictionary<string, HexCenter> lookupTable)
+    {
+        int newRow = hex.Row + rowOffset;
+        int newColumn = hex.Column + columnOffset;
+        string key = GetKey(newRow, newColumn);
+        if(lookupTable.ContainsKey(key))
+        {
+            HexCenter neighbor = lookupTable[key];
+            return (uint)neighbor.Index;
+        }
+        return 0;
+    }
+    private string GetKey(HexCenter hex)
+    {
+        return GetKey(hex.Row, hex.Column);
+    }
+    private string GetKey(int row, int column)
+    {
+        return row + " " + column;
+    }
+
+    private NeighborIndices GetNeihborsFor(HexCenter hex, Dictionary<string, HexCenter> table)
+    {
+        return new NeighborIndices()
+        {
+            NeighborA = GetOffsetHex(hex, 0, -1, table),
+            NeighborB = GetOffsetHex(hex, -1, 0, table),
+            NeighborC = GetOffsetHex(hex, -1, 1, table),
+            NeighborD = GetOffsetHex(hex, 0, 1, table),
+            NeighborE = GetOffsetHex(hex, 1, 0, table),
+            NeighborF = GetOffsetHex(hex, 1, -1, table),
+        };
+    }
+
+    private ComputeBuffer GetCornerPoints()
     {
         ComputeBuffer ret = new ComputeBuffer(MaxIndex, CornerPointsStride);
         Corners[] data = new Corners[MaxIndex];
-        foreach (HexCenter item in hexCenterPoints)
+        foreach (HexCenter item in BaseHexs)
         {
             data[item.Index] = item.Corners;
         }
@@ -100,7 +164,7 @@ public class BaseMapGenerator
     private IEnumerable<HexCenter> GetHexCenterPoints()
     {
         RingSideBlueprint[] ringSideBlueprints = CreateRingSideBlueprints();
-        yield return new HexCenter(new Vector2(.5f, .5f), RegisterNextHex(), _extents); // The hex in the center of the map
+        yield return new HexCenter(new Vector2(.5f, .5f), RegisterNextHex(), 0, 0, _extents); // The hex in the center of the map
         for (int ring = 1; ring < _extents; ring++)
         {
             for (int i = 0; i < ring; i++)
@@ -127,7 +191,7 @@ public class BaseMapGenerator
         Vector2 hexPos = GetHexPos(finalRow, finalColumn, ring);
         bool playable = _main.MapDefinition.ContainsDefinitionFor(finalRow, finalColumn);
         int index = playable ? RegisterNextHex() : 0;
-        return new HexCenter(hexPos, index, _extents);
+        return new HexCenter(hexPos, index, finalRow, finalColumn, _extents);
     }
 
     private Vector2 GetHexPos(int row, int ascendingColumn, int ring)
@@ -241,13 +305,19 @@ public class BaseMapGenerator
     {
         public Vector2 Position { get; }
         public int Index { get; }
+        public int Row { get; }
+        public int Column { get; }
 
         public Corners Corners { get; }
+        public NeighborIndices Neighbors { get; }
+        
 
-        public HexCenter(Vector2 position, int index, int extents)
+        public HexCenter(Vector2 position, int index, int row, int column, int extents)
         {
             Position = position;
             Index = index;
+            Row = row;
+            Column = column;
             Corners = GetHexNeighbors(position, extents);
         }
 

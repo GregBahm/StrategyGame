@@ -73,7 +73,7 @@
 				return HexColorToIndex(col.xy);
 			}
 
-			float2 GetDistortedPosition(float2 pos)
+			float2 GetDistortion(float2 pos)
 			{
 				uint pixelIndex = UvsToSourceImageIndex(pos);
 				return _DistortionData[pixelIndex];
@@ -86,8 +86,9 @@
 				for (uint i = 0; i < 6; i++)
 				{
 					float2 cornerBasePos = _CornersData[index].Corners[i];
-					float2 cornerPos = GetDistortedPosition(cornerBasePos);
-					float dist = length(pos - cornerPos);
+					float2 distortion = GetDistortion(cornerBasePos);
+					float2 distortedPos = cornerBasePos - distortion;
+					float dist = length(pos - distortedPos);
 					if (dist < minDist)
 					{
 						minDist = dist;
@@ -99,13 +100,13 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				float2 distortedUvs = GetDistortedPosition(i.uv);
+				float2 distortedUvs = GetDistortion(i.uv) + i.uv;
 				uint index = GetHexIndex(distortedUvs);
 				uint corner = GetCorner(index, i.uv);
 				return (float)corner / 6;
-				float indexVal = 1 - ((float)index / _MaxIndex);
 
-				fixed4 normalSample = tex2D(_NormalTex, float2(i.uv.y, i.uv.x));
+				float indexVal = 1 - ((float)index / _MaxIndex);
+				fixed4 normalSample = tex2D(_NormalTex, i.uv);
 				return lerp(indexVal, normalSample, _InputOutput);
 			}
 			ENDCG

@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SelectionTestDisplayMat
-  m_Shader: {fileID: 4800000, guid: 35fdeba12eef807458770e6f9fd0daa4, type: 3}
+  m_Name: BorderOutput
+  m_Shader: {fileID: 4800000, guid: 491231fb31c77284587454a9289c8812, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using UnityEngine;
 
-public class MapTextureGen : MonoBehaviour
+public class MainMapManager : MonoBehaviour
 {
     public Material BaseMapMat;
     public TextAsset MapDefinitionFile;
@@ -31,31 +31,33 @@ public class MapTextureGen : MonoBehaviour
 
     public int PixelCount { get; private set; }
     public int MaxIndex { get; private set; }
-    public ComputeBuffer DistortionOutput { get { return _distorter.OutputData; } }
-    public ReadOnlyCollection<BaseMapGenerator.HexCenter> BaseHexs { get { return _baseMapGenerator.BaseHexs; } }
+    public ReadOnlyCollection<BaseMapManager.HexCenter> BaseHexs { get { return _baseMapGenerator.BaseHexs; } }
 
     public Material BorderMat;
     [Range(0, 0.1f)]
     public float BorderThickness;
+    public bool DrawCornerDebugLines;
 
-    private BaseMapGenerator _baseMapGenerator;
-    private Distorter _distorter;
-    private SelectionTester _selectionTester;
-    private NewBorderGenerator _borderGenerator;
+    private BaseMapManager _baseMapGenerator;
+    private DistortionMapManager _distorter;
+    private SelectionMapManager _selectionTester;
+    private BorderMapManager _borderGenerator;
 
 
+    public ComputeBuffer DistortionOutput { get { return _distorter.OutputData; } }
     public ComputeBuffer CornerPointsBuffer { get { return _baseMapGenerator.CornersData; } }
+    public ComputeBuffer NeighborsBuffer { get { return _baseMapGenerator.NeighborsData; } }
 
     void Start ()
     {
         MapDefinition = new MapDefinition(MapDefinitionFile);
         BaseTexture = InitializeMap();
         PixelCount = BaseTexture.width * BaseTexture.height;
-        _baseMapGenerator = new BaseMapGenerator(this);
+        _baseMapGenerator = new BaseMapManager(this);
         MaxIndex = _baseMapGenerator.MaxIndex;
-        _distorter = new Distorter(this);
-        _selectionTester = new SelectionTester(this);
-        _borderGenerator = new NewBorderGenerator(this);
+        _distorter = new DistortionMapManager(this);
+        _selectionTester = new SelectionMapManager(this);
+        _borderGenerator = new BorderMapManager(this);
     }
 
     private void Update()

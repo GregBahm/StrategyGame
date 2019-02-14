@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-public class Distorter
+public class DistortionMapManager
 {
-    private readonly MapTextureGen _main;
+    private readonly MainMapManager _main;
     private readonly int _computeKernel;
 
     public ComputeBuffer OutputData { get; }
@@ -24,14 +24,13 @@ public class Distorter
         public int NeighborD;
     };
 
-    public Distorter(MapTextureGen main)
+    public DistortionMapManager(MainMapManager main)
     {
         _main = main;
         _computeKernel = main.DistortCompute.FindKernel("CSMain");
         OutputData = new ComputeBuffer(_main.PixelCount, _outputBufferStride);
         _originalPositions = new ComputeBuffer(_main.PixelCount, _outputBufferStride);
         Vector2[] data = CreateOriginalPositions();
-        OutputData.SetData(data);
         _originalPositions.SetData(data);
 
         _pixelNeighborsBuffer = CreatePixelNeighborsBuffer();

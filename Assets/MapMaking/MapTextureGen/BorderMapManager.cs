@@ -1,8 +1,8 @@
-﻿internal class NewBorderGenerator
+﻿internal class BorderMapManager
 {
-    private readonly MapTextureGen _main;
+    private readonly MainMapManager _main;
 
-    public NewBorderGenerator(MapTextureGen main)
+    public BorderMapManager(MainMapManager main)
     {
         _main = main;
     }
@@ -14,5 +14,7 @@
         _main.BorderMat.SetFloat("_SourceImageWidth", _main.BaseTexture.width);
         _main.BorderMat.SetFloat("_SourceImageHeight", _main.BaseTexture.height);
         _main.BorderMat.SetFloat("_BorderThickness", _main.BorderThickness);
+        _main.BorderMat.SetBuffer("_CornersData", _main.CornerPointsBuffer);
+        _main.BorderMat.SetBuffer("_NeighborsBuffer", _main.NeighborsBuffer);
     }
 }

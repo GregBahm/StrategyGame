@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: NewBorderMat
-  m_Shader: {fileID: 4800000, guid: 491231fb31c77284587454a9289c8812, type: 3}
+  m_Name: DistortionMat
+  m_Shader: {fileID: 4800000, guid: f9c952ea732ef7541bd1d29ccf6b16b3, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -55,6 +55,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Brightness: 1.26
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -62,6 +63,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _InputOutput: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
