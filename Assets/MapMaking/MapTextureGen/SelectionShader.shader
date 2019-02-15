@@ -113,8 +113,21 @@
 				}
 				return cornerIndex;
 			}
+			
+			float GetFinalBorder(float3 baseBorder, float selfClicked, float neighborAClicked, float neighborBClicked)
+			{
+				float3 ret = baseBorder;
+				ret *= selfClicked;
+				ret.r *= 1 - max(neighborAClicked, neighborBClicked);
+				ret.gb *= 1 - ret.r;
+				ret.g *=  neighborBClicked;
+				ret.g *= 1 - neighborAClicked;
+				ret.b *= neighborAClicked;
+				ret.b *= 1 - neighborBClicked;
+				return max(ret.r, max(ret.g, ret.b));
+			}
 
-			float3 GetBorder(float2 uvs, uint hexIndex, uint neighborA, uint neighborB)
+			float3 GetBaseBorder(float2 uvs, uint hexIndex, uint neighborA, uint neighborB)
 			{
 				float rVal = 0;
 				float gVal = 0;
@@ -155,9 +168,12 @@
 				uint neighborB = neighbors.Neighbor[cornerB];
 
 				HexState state = _HexStates[hexIndex];
+				HexState neighborAState = _HexStates[neighborA];
+				HexState neighborBState = _HexStates[neighborB];
 
-				float3 border = GetBorder(i.uv, hexIndex, neighborA, neighborB);
-				return float4(border, 1);
+				float3 baseBorder = GetBaseBorder(i.uv, hexIndex, neighborA, neighborB);
+				float finalBorder = GetFinalBorder(baseBorder, state.Clicked, neighborAState.Clicked, neighborBState.Clicked);
+				return finalBorder;
 				//return float4(state.Hover, state.Clicked, border, 1);
 			}
 			ENDCG
