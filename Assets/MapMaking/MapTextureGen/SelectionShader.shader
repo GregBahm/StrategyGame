@@ -114,7 +114,7 @@
 				return cornerIndex;
 			}
 
-			float3 GetBorder(float2 uvs, uint hexIndex, uint neighborA, uint neighborB)
+			float3 GetBorders(float2 uvs, uint hexIndex, uint neighborA, uint neighborB)
 			{
 				float rVal = 0;
 				float gVal = 0;
@@ -144,6 +144,21 @@
 				}
 				return float3(rVal, gVal, bVal);
 			}
+
+			float GetFinalBorder(float3 borders, float selfState, float neighborAState, float neighborBState)
+			{
+				float selfBorder = borders.x * selfState;
+				selfBorder *= 1 - neighborAState;
+				selfBorder *= 1 - neighborBState;
+
+				float bBorder = borders.y * neighborBState * selfState;
+				bBorder *= 1 - neighborAState;
+
+				float aBorder = borders.z * neighborAState * selfState;
+				aBorder *= 1 - neighborBState;
+
+				return max(selfBorder, max(aBorder, bBorder));
+			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
@@ -155,10 +170,12 @@
 				uint neighborB = neighbors.Neighbor[cornerB];
 
 				HexState state = _HexStates[hexIndex];
+				HexState neighborAState = _HexStates[neighborA];
+				HexState neighborBState = _HexStates[neighborB];
 
-				float3 border = GetBorder(i.uv, hexIndex, neighborA, neighborB);
-				return float4(border, 1);
-				//return float4(state.Hover, state.Clicked, border, 1);
+				float3 borders = GetBorders(i.uv, hexIndex, neighborA, neighborB);
+				float border = GetFinalBorder(borders, state.Clicked, neighborAState.Clicked, neighborBState.Clicked);
+				return border;
 			}
 			ENDCG
 		}

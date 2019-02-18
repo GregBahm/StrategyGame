@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -38,6 +39,8 @@ public class MainMapManager : MonoBehaviour
     public float BorderThickness;
     public bool DrawCornerDebugLines;
 
+    public bool ExportMaps;
+
     private BaseMapManager _baseMapGenerator;
     private DistortionMapManager _distorter;
     private SelectionMapManager _selectionTester;
@@ -66,6 +69,12 @@ public class MainMapManager : MonoBehaviour
         _distorter.Update();
         _selectionTester.Update();
         _borderGenerator.Update();
+
+        if(ExportMaps)
+        {
+            ExportMaps = false;
+            DoExportMaps();
+        }
     }
 
     private void OnDestroy()
@@ -84,9 +93,20 @@ public class MainMapManager : MonoBehaviour
         return ret;
     }
 
-    public void SaveBaseMap(string path)
+    private void DoExportMaps()
     {
-        byte[] pngData = BaseTexture.EncodeToPNG();
+        string baseDirectory = Application.dataPath + "\\MapAssets\\MapAssetSet\\";
+        string baseMapPath = baseDirectory + "BaseMap.png";
+        SaveMap(baseMapPath, BaseTexture);
+
+        // Save the corner positions and neighbors table
+        // Save the distortion map
+        // Save the save the borders map
+    }
+
+    private static void SaveMap(string path, Texture2D texture)
+    {
+        byte[] pngData = texture.EncodeToPNG();
         File.WriteAllBytes(path, pngData);
     }
 
