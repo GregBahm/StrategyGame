@@ -16,11 +16,11 @@ public class PlayerSetup
         StartColumn = startColumn;
     }
 
-    internal static IEnumerable<PlayerSetup> CreateFromMapDefinition(MapDefinition mapDefinition)
+    internal static IEnumerable<PlayerSetup> CreateFromMapDefinition(MapTilesSetup mapSetup)
     {
         List<PlayerSetup> ret = new List<PlayerSetup>();
         int index = 0;
-        foreach (MapTileDefinition item in mapDefinition.Tiles.Where(item => item.IsStartPosition))
+        foreach (MapTileSetup item in mapSetup.Tiles.Where(item => item.IsStartPosition))
         {
             index++;
             string name = "Player " + index;

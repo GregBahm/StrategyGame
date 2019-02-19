@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 
 public class MainMapManager : MonoBehaviour
@@ -27,7 +29,7 @@ public class MainMapManager : MonoBehaviour
     [Range(0, 1)]
     public float SelectionTestHoverSpeed;
 
-    public MapDefinition MapDefinition { get; private set; }
+    public MapTilesBasis MapDefinition { get; private set; }
     public Texture2D BaseTexture { get; private set; }
 
     public int PixelCount { get; private set; }
@@ -53,7 +55,7 @@ public class MainMapManager : MonoBehaviour
 
     void Start ()
     {
-        MapDefinition = new MapDefinition(MapDefinitionFile);
+        MapDefinition = new MapTilesBasis(MapDefinitionFile);
         BaseTexture = InitializeMap();
         PixelCount = BaseTexture.width * BaseTexture.height;
         _baseMapGenerator = new BaseMapManager(this);
@@ -95,13 +97,81 @@ public class MainMapManager : MonoBehaviour
 
     private void DoExportMaps()
     {
-        string baseDirectory = Application.dataPath + "\\MapAssets\\MapAssetSet\\";
-        string baseMapPath = baseDirectory + "BaseMap.png";
-        SaveMap(baseMapPath, BaseTexture);
+        string baseDirectory = Application.dataPath + "\\MapAssets\\";
 
-        // Save the corner positions and neighbors table
-        // Save the distortion map
-        // Save the save the borders map
+        Texture2D distortedBaseMap = _distorter.GetTexture();
+        string baseMapPath = baseDirectory + "MapBase.png";
+        SaveMap(baseMapPath, distortedBaseMap);
+
+        Texture2D bordersMap = _borderGenerator.GetTexture();
+        string bordersMapPath = baseDirectory + "MapBorders.png";
+        SaveMap(bordersMapPath, bordersMap);
+        
+        string tileSetupPath = baseDirectory + "MapTileSetup.txt";
+        string tileSetupText = GetTileSetupText(distortedBaseMap);
+        File.WriteAllText(tileSetupPath, tileSetupText);
+    }
+
+    private string GetTileSetupText(Texture2D distortedBaseMap)
+    {
+        StringBuilder ret = new StringBuilder();
+        Vector2[] data = GetTileCenters(distortedBaseMap).ToArray();
+        foreach (BaseMapManager.HexCenter hex in BaseHexs)
+        {
+            Vector2 vect = data[hex.Index];
+
+            ret.AppendFormat("{0} {1} {2} {3} {4}\n",hex.Row, hex.Column, hex.Index, vect.x, vect.y);
+        }
+        return ret.ToString().Trim();
+    }
+
+    private IEnumerable<Vector2> GetTileCenters(Texture2D distortedBaseMap)
+    {
+        TileCenterCounter[] centerCounters = new TileCenterCounter[MaxIndex];
+        for (int i = 0; i < MaxIndex; i++)
+        {
+            centerCounters[i] = new TileCenterCounter();
+        }
+
+        for (int x = 0; x < BaseTexture.width; x++)
+        {
+            for (int y = 0; y < BaseTexture.height; y++)
+            {
+                Color pixel = BaseTexture.GetPixel(x, y);
+                int index = ToIndex(pixel);
+                float xParam = (float)x / BaseTexture.width;
+                float yParam = (float)y / BaseTexture.height;
+                centerCounters[index].RegisterPixel(xParam, yParam);
+            }
+        }
+        return centerCounters.Select(item => item.GetTileCenter());
+    }
+
+    private int ToIndex(Color pixel)
+    {
+        int x = (int)(pixel.r * byte.MaxValue);
+        int y = (int)(pixel.g * byte.MaxValue) * byte.MaxValue;
+        return x + y;
+    }
+
+    private class TileCenterCounter
+    {
+        private int _pixelCount;
+        private float _sumX;
+        private float _sumY;
+        public void RegisterPixel(float x, float y)
+        {
+            _pixelCount++;
+            _sumX += x;
+            _sumY += y;
+        }
+
+        public Vector2 GetTileCenter()
+        {
+            float retX = _sumX / _pixelCount;
+            float retY = _sumY / _pixelCount;
+            return new Vector2(retX, retY);
+        }
     }
 
     private static void SaveMap(string path, Texture2D texture)

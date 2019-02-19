@@ -1,4 +1,4 @@
-﻿Shader "Unlit/NewBorderShader"
+﻿Shader "Unlit/BorderShader"
 {
 	Properties
 	{
@@ -14,10 +14,20 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+
 			#include "UnityCG.cginc"
 
 			#define Samples 30
+
+			struct Corners
+			{
+				float2 Corners[6];
+			};
+
+			struct Neighbors
+			{
+				uint Neighbor[6];
+			};
 
 			struct appdata
 			{
@@ -31,26 +41,14 @@
 				float4 vertex : SV_POSITION;
 			};
 
-			struct Corners
-			{
-				float2 Corners[6];
-			};
-
-			struct Neighbors
-			{
-				uint Neighbor[6]; 
-			};
-
 			float _SourceImageWidth;
 			float _SourceImageHeight;
 			Buffer<float2> _DistortionData;
-			StructuredBuffer<Neighbors> _NeighborsBuffer;
-
-			sampler2D _MainTex;
-
-			float _BorderThickness;
-
 			StructuredBuffer<Corners> _CornersData;
+			StructuredBuffer<Neighbors> _NeighborsBuffer;
+			sampler2D _MainTex;
+			float _BorderThickness;
+			float _MaxIndex;
 
 			v2f vert(appdata v)
 			{
@@ -60,10 +58,10 @@
 				return o;
 			}
 
-			int UvsToSourceImageIndex(float2 uv)
+			uint UvsToSourceImageIndex(float2 uv)
 			{
-				int x = uv.x * _SourceImageWidth;
-				int y = uv.y * _SourceImageHeight;
+				uint x = uv.x * _SourceImageWidth;
+				uint y = uv.y * _SourceImageHeight;
 				return x + y * _SourceImageWidth;
 			}
 
@@ -108,9 +106,11 @@
 				return cornerIndex;
 			}
 
-			float GetBorder(float2 uvs, uint hexIndex, Neighbors neighbors, uint corner)
+			float3 GetBorders(float2 uvs, uint hexIndex, uint neighborA, uint neighborB)
 			{
-				float val = 0;
+				float rVal = 0;
+				float gVal = 0;
+				float bVal = 0;
 				for (int x = 0; x < Samples; x++)
 				{
 					for (int y = 0; y < Samples; y++)
@@ -122,20 +122,31 @@
 						if (newSample != hexIndex)
 						{
 							float newVal = 1 - length(param);
-							val = max(val, newVal);
+							rVal = max(rVal, newVal);
+							if (newSample == neighborA)
+							{
+								gVal = max(gVal, newVal);
+							}
+							if (newSample == neighborB)
+							{
+								bVal = max(bVal, newVal);
+							}
 						}
 					}
 				}
-				return val;
+				return float3(rVal, gVal, bVal);
 			}
-
+			
 			fixed4 frag (v2f i) : SV_Target
 			{
 				uint hexIndex = GetIndexAt(i.uv);
 				Neighbors neighbors = _NeighborsBuffer[hexIndex];
-				uint corner = GetCorner(hexIndex, i.uv);
-				float border = GetBorder(i.uv, hexIndex, neighbors, corner);
-				return border;
+				uint cornerA = GetCorner(hexIndex, i.uv);
+				uint neighborA = neighbors.Neighbor[cornerA];
+				uint cornerB = (cornerA - 1 + 6) % 6;
+				uint neighborB = neighbors.Neighbor[cornerB];
+				float3 borders = GetBorders(i.uv, hexIndex, neighborA, neighborB);
+				return float4(borders, 1);
 			}
 			ENDCG
 		}

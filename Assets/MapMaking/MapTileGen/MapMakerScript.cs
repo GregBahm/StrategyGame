@@ -16,7 +16,7 @@ public class MapMakerScript : MonoBehaviour
     public bool SaveMap;
     public bool LoadMap;
     public bool ForceUpdateShaders;
-    private const string MapSaveFile = @"C:\Users\Lisa\Documents\StrategyGame\MapDefinition.txt";
+    private readonly string MapSaveFile = Application.dataPath + "\\MapAssets\\MapDefinition.txt";
 
     public int StartingLocations;
 

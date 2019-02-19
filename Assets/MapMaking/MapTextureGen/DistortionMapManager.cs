@@ -93,6 +93,39 @@ public class DistortionMapManager
         _main.DistortionMat.SetBuffer("_CornersData", _main.CornerPointsBuffer);
     }
 
+    internal Texture2D GetTexture()
+    {
+        RenderTexture renderTex = new RenderTexture(_main.BaseTexture.width, _main.BaseTexture.height, 0);
+        Graphics.Blit(_main.BaseTexture, renderTex, _main.DistortionMat);
+        Texture2D ret = new Texture2D(_main.BaseTexture.width, _main.BaseTexture.height, TextureFormat.RGBA32, false);
+        RenderTexture.active = renderTex;
+        ret.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+        ret.Apply();
+        return ret;
+    }
+
+    private Color GetPixelColor(Vector2 pixelData)
+    {
+        EncodedOffset xEncoding = new EncodedOffset(pixelData.x);
+        EncodedOffset yEncoding = new EncodedOffset(pixelData.y);
+        return new Color(xEncoding.FirstComponent, xEncoding.SecondComponent, yEncoding.FirstComponent, yEncoding.SecondComponent);
+    }
+
+    private class EncodedOffset
+    {
+        public float FirstComponent { get; }
+        public float SecondComponent { get; }
+
+        public EncodedOffset(float rawVal)
+        {
+            float offsetVal = rawVal / 2 + .5f;
+            int componentA = (int)(offsetVal * byte.MaxValue * byte.MaxValue) % byte.MaxValue;
+            int componentB = Mathf.FloorToInt(offsetVal * byte.MaxValue);
+            FirstComponent = (float)componentA / byte.MaxValue;
+            SecondComponent = (float)componentB / byte.MaxValue;
+        }
+    }
+
     public void WriteDistoredMap(string path)
     {
         Vector2[] outputData = new Vector2[_main.PixelCount];

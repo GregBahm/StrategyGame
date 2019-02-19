@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,8 @@ public class BaseMapManager
     private const int NeighborsDataStride = sizeof(uint) * 6;
 
     public ReadOnlyCollection<HexCenter> BaseHexs { get; }
+
+    private readonly NeighborIndices[] _neighbors;
 
     public struct Corners
     {
@@ -53,7 +56,8 @@ public class BaseMapManager
         MaxIndex = BaseHexs.Count();
         MakeMap(BaseHexs);
         CornersData = GetCornerPoints();
-        NeighborsData = GetNeihborsDataBuffer();
+        _neighbors = GetNeighborsData();
+        NeighborsData = GetNeihborsDataBuffer(_neighbors);
     }
 
     public void Update()
@@ -82,10 +86,9 @@ public class BaseMapManager
         return ret;
     }
 
-    private ComputeBuffer GetNeihborsDataBuffer()
+    private ComputeBuffer GetNeihborsDataBuffer(NeighborIndices[] data)
     {
         ComputeBuffer ret = new ComputeBuffer(MaxIndex, NeighborsDataStride);
-        NeighborIndices[] data = GetNeighborsData();
         ret.SetData(data);
         return ret;
     }
@@ -102,6 +105,7 @@ public class BaseMapManager
         }
         return 0;
     }
+    
     private static string GetKey(HexCenter hex)
     {
         return GetKey(hex.Row, hex.Column);

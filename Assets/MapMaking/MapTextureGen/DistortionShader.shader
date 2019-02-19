@@ -16,16 +16,6 @@
 
 			#include "UnityCG.cginc"
 
-			float _SourceImageWidth;
-			float _SourceImageHeight;
-			Buffer<float2> _DistortionData;
-			
-			sampler2D _MainTex;
-			sampler2D _NormalTex;
-
-			float _InputOutput;
-			float _MaxIndex;
-
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -42,6 +32,16 @@
 			{
 				float2 Corners[6];
 			};
+
+			float _SourceImageWidth;
+			float _SourceImageHeight;
+			Buffer<float2> _DistortionData;
+			
+			sampler2D _MainTex;
+			sampler2D _NormalTex;
+
+			float _InputOutput;
+			float _MaxIndex;
 
 			StructuredBuffer<Corners> _CornersData;
 
@@ -101,9 +101,12 @@
 			fixed4 frag(v2f i) : SV_Target
 			{
 				float2 distortedUvs = GetDistortion(i.uv) + i.uv;
+				float2 ret = tex2D(_MainTex, distortedUvs).xy;
+
 				uint index = GetHexIndex(distortedUvs);
 				uint corner = GetCorner(index, i.uv);
-				return (float)corner / 6;
+				float cornerRet = (float)corner / 6;
+				return float4(ret.x, ret.y, cornerRet, 1);
 
 				float indexVal = 1 - ((float)index / _MaxIndex);
 				fixed4 normalSample = tex2D(_NormalTex, i.uv);
