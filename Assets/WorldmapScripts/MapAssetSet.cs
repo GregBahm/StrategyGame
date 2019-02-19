@@ -26,12 +26,12 @@ public class MapAssetSet
         NeighborIndices[] ret = new NeighborIndices[tiles.Max(item => item.BufferIndex) + 1];
         foreach (Tile tile in tiles)
         {
-            ret[tile.BufferIndex] = LoadNeighborIndiciesLine(tile);
+            ret[tile.BufferIndex] = LoadNeighborIndicie(tile);
         }
         return ret.ToList().AsReadOnly();
     }
 
-    private NeighborIndices LoadNeighborIndiciesLine(Tile tile)
+    private NeighborIndices LoadNeighborIndicie(Tile tile)
     {
 
         return new NeighborIndices()
