@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,8 @@ public class BaseMapManager
     private const int NeighborsDataStride = sizeof(uint) * 6;
 
     public ReadOnlyCollection<HexCenter> BaseHexs { get; }
+
+    private readonly NeighborIndices[] _neighbors;
 
     public struct Corners
     {
@@ -53,7 +56,8 @@ public class BaseMapManager
         MaxIndex = BaseHexs.Count();
         MakeMap(BaseHexs);
         CornersData = GetCornerPoints();
-        NeighborsData = GetNeihborsData();
+        _neighbors = GetNeighborsData();
+        NeighborsData = GetNeihborsDataBuffer(_neighbors);
     }
 
     public void Update()
@@ -69,22 +73,27 @@ public class BaseMapManager
         NeighborsData.Dispose();
     }
 
-    private ComputeBuffer GetNeihborsData()
+    private NeighborIndices[] GetNeighborsData()
     {
-        ComputeBuffer ret = new ComputeBuffer(MaxIndex, NeighborsDataStride);
-        NeighborIndices[] data = new NeighborIndices[MaxIndex];
+        NeighborIndices[] ret = new NeighborIndices[MaxIndex];
         Dictionary<string, HexCenter> indexTable = BaseHexs.ToDictionary(GetKey, item => item);
         for (int i = 0; i < MaxIndex; i++)
         {
             HexCenter hex = BaseHexs[i];
             NeighborIndices neighbors = GetNeihborsFor(hex, indexTable);
-            data[hex.Index] = neighbors;
+            ret[hex.Index] = neighbors;
         }
+        return ret;
+    }
+
+    private ComputeBuffer GetNeihborsDataBuffer(NeighborIndices[] data)
+    {
+        ComputeBuffer ret = new ComputeBuffer(MaxIndex, NeighborsDataStride);
         ret.SetData(data);
         return ret;
     }
 
-    private uint GetOffsetHex(HexCenter hex, int rowOffset, int columnOffset, Dictionary<string, HexCenter> lookupTable)
+    private static uint GetOffsetHex(HexCenter hex, int rowOffset, int columnOffset, Dictionary<string, HexCenter> lookupTable)
     {
         int newRow = hex.Row + rowOffset;
         int newColumn = hex.Column + columnOffset;
@@ -96,11 +105,12 @@ public class BaseMapManager
         }
         return 0;
     }
-    private string GetKey(HexCenter hex)
+    
+    private static string GetKey(HexCenter hex)
     {
         return GetKey(hex.Row, hex.Column);
     }
-    private string GetKey(int row, int column)
+    private static string GetKey(int row, int column)
     {
         return row + " " + column;
     }
@@ -309,7 +319,6 @@ public class BaseMapManager
         public int Column { get; }
 
         public Corners Corners { get; }
-        public NeighborIndices Neighbors { get; }
         
 
         public HexCenter(Vector2 position, int index, int row, int column, int extents)

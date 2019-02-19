@@ -6,7 +6,7 @@ public class GameSetup : MonoBehaviour
     public GameObject TilePrefab;
     public GameObject FactionPrefab;
     public GameObject OrderIndicatorPrefab;
-    public TextAsset MapDefinition;
+    public MapAssetSetup MapDefinition;
     public Material SkyMat;
     public Canvas ScreenCanvas;
     public Button NextTurnButton;

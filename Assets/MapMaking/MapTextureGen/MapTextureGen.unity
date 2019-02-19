@@ -255,6 +255,7 @@ MonoBehaviour:
   BorderMat: {fileID: 2100000, guid: 21c849e2019b3d44287231885476232a, type: 2}
   BorderThickness: 0.0123
   DrawCornerDebugLines: 0
+  ExportMaps: 0
 --- !u!1 &1088788374
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,7 +273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1088788375
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -359,7 +360,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1090669313
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -446,7 +447,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1191504737
 MeshRenderer:
   m_ObjectHideFlags: 0
