@@ -242,7 +242,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseMapMat: {fileID: 2100000, guid: 461f804bd5182e14899f83bbad44840e, type: 2}
   MapDefinitionFile: {fileID: 4900000, guid: 58e609f9731b162459faa140e09ea256, type: 3}
-  Resolution: 1
+  Resolution: 2
   DistortionStrength: 0.00786
   DistortionDrag: 0.886
   OriginPull: 0.898

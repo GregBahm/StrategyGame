@@ -10,7 +10,7 @@ public class Map : IEnumerable<Tile>
     private readonly int _maxRow;
 
     private readonly int _maxColumn;
-    private readonly ReadOnlyDictionary<int, Tile> _tiles;
+    private readonly ReadOnlyDictionary<string, Tile> _tiles;
     private readonly ReadOnlyDictionary<Tile, TileNeighbors> _neighbors;
     
     public int TilesCount { get { return _tiles.Count; } }
@@ -55,13 +55,9 @@ public class Map : IEnumerable<Tile>
         return null;
     }
 
-    private int GetKey(int row, int ascendingColumn)
+    private string GetKey(int row, int ascendingColumn)
     {
-        // Remap rows and column numbers to positive space
-        int offsetRow = row + _maxRow;
-        int offsetColumn = ascendingColumn + _maxColumn;
-
-        return offsetRow * (_maxColumn * 2) + offsetColumn;
+        return row + " " + ascendingColumn;
     }
 
     internal TileNeighbors GetNeighborsFor(Tile tile)
@@ -71,7 +67,7 @@ public class Map : IEnumerable<Tile>
 
     public bool GetIsWithinBounds(int row, int ascendingColumn)
     {
-        int index = GetKey(row, ascendingColumn);
+        string index = GetKey(row, ascendingColumn);
         return _tiles.ContainsKey(index);
     }
     public bool GetIsWithinBounds(Tile tile, int rowOffset, int columnOffset)
@@ -81,21 +77,21 @@ public class Map : IEnumerable<Tile>
         return GetIsWithinBounds(row, column);
     }
 
-    private ReadOnlyDictionary<int, Tile> MakeTiles(IEnumerable<MapTileSetup> tileDefinitions)
+    private ReadOnlyDictionary<string, Tile> MakeTiles(IEnumerable<MapTileSetup> tileDefinitions)
     {
-        Dictionary<int, Tile> ret = new Dictionary<int, Tile>();
+        Dictionary<string, Tile> ret = new Dictionary<string, Tile>();
         foreach (MapTileSetup item in tileDefinitions)
         {
-            int key = GetKey(item.Row, item.Column);
+            string key = GetKey(item.Row, item.Column);
             Tile tile = new Tile(item.Row, item.Column, item.CenterPoint, item.BufferIndex, this);
             ret.Add(key, tile);
         }
-        return new ReadOnlyDictionary<int, Tile>(ret); 
+        return new ReadOnlyDictionary<string, Tile>(ret); 
     }
 
     public Tile GetTile(int row, int ascendingColumn)
     {
-        int index = GetKey(row, ascendingColumn);
+        string index = GetKey(row, ascendingColumn);
         if (!_tiles.ContainsKey(index))
         {
             throw new Exception("No tile exists at " + row + " " + ascendingColumn);

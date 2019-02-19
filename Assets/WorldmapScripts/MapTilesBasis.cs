@@ -36,6 +36,7 @@ public class MapTilesBasis
     private IEnumerable<MapTileBasis> GetAllTiles(IEnumerable<MapTileBasis> baseTiles)
     {
         List<MapTileBasis> ret = new List<MapTileBasis>();
+        ret.Add(new MapTileBasis(0, 0, false, false)); // The tile at the center of the map
         foreach (MapTileBasis item in baseTiles)
         {
             ret.AddRange(GetMirroredTiles(item));

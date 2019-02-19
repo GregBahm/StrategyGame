@@ -14,7 +14,7 @@ public class BaseMapManager
     public int MaxIndex { get; private set; } = 1;
 
     private readonly int _extents;
-    private int _currentHexIndex;
+    private int _currentHexIndex = 0;
 
     public ComputeBuffer CornersData { get; }
     private const int CornerPointsStride = sizeof(float) * 2 * 6;

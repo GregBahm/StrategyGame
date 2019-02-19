@@ -102,10 +102,12 @@
 				float baseVal = max(state.Clicked, state.Hover);
 				float neighborAVal = max(neighborAState.Clicked, neighborAState.Hover);
 				float neighborBVal = max(neighborBState.Clicked, neighborBState.Hover);
-
+				
 				float3 borders = tex2D(_BorderTex, i.uv).xyz;
 				float border = GetFinalBorder(borders, baseVal, neighborAVal, neighborBVal);
 
+				float blank = 1 - (bool)hexIndex;
+				border = max(blank, border);
 				return border;
 			}
 			ENDCG

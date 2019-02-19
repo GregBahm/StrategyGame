@@ -16,12 +16,13 @@ public class MapMakerScript : MonoBehaviour
     public bool SaveMap;
     public bool LoadMap;
     public bool ForceUpdateShaders;
-    private readonly string MapSaveFile = Application.dataPath + "\\MapAssets\\MapDefinition.txt";
+    private string _mapSaveFile;
 
     public int StartingLocations;
 
     private void Start()
     {
+        _mapSaveFile = Application.dataPath + "\\MapAssets\\MapDefinition.txt";
         _ringSideBlueprints = CreateRingSideBlueprints();
         _rotationSets = GetRotationSets();
 
@@ -78,12 +79,12 @@ public class MapMakerScript : MonoBehaviour
             string line = set.MasterTile.GetSaveLine();
             builder.AppendLine(line);
         }
-        File.WriteAllText(MapSaveFile, builder.ToString());
+        File.WriteAllText(_mapSaveFile, builder.ToString());
     }
 
     private void DoLoadMap()
     {
-        string[] saveFile = File.ReadAllLines(MapSaveFile);
+        string[] saveFile = File.ReadAllLines(_mapSaveFile);
         Dictionary<string, string> lookupTable = new Dictionary<string, string>();
         foreach (string line in saveFile)
         {
