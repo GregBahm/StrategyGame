@@ -7,6 +7,7 @@ using UnityEngine;
 public class MapDisplay
 {
     private Material _skyMat;
+    private readonly MapUnityObject _mapUnityObject;
 
     public Map Map { get; }
     public Dictionary<Tile, TileDisplay> _dictionary;
@@ -16,10 +17,10 @@ public class MapDisplay
     
     public MapDisplay(GameSetup gameSetup, Map map, UnityObjectManager objectManager)
     {
+        _mapUnityObject = objectManager.MapObject;
         _skyMat = gameSetup.SkyMat;
         Map = map;
-        _dictionary = MakeTilesDictionary(map, objectManager);
-        InitializeTiles();
+        _dictionary = MakeTilesDictionary(map);
     }
 
     public void UpdateUiState(GameState gameState, 
@@ -28,28 +29,20 @@ public class MapDisplay
         UiAethetics aethetics, 
         ProvinceNeighborsTable neighbors)
     {
-        SetStandardShaderProperties(aethetics);
+
         foreach (TileDisplay tile in TileDisplays)
         {
             tile.UpdateHighlighting(gameState, mapInteraction, aethetics.TransitionSpeed, timeDelta,  neighbors);
         }
+        _mapUnityObject.UpdateTileStatesBuffer(TileDisplays);
     }
 
-    private void InitializeTiles()
-    {
-        foreach (TileDisplay tile in TileDisplays)
-        {
-            tile.SetNeighbors(this);
-        }
-    }
-
-    private Dictionary<Tile, TileDisplay> MakeTilesDictionary(Map tiles, UnityObjectManager objectManager)
+    private Dictionary<Tile, TileDisplay> MakeTilesDictionary(Map tiles)
     {
         Dictionary<Tile, TileDisplay> ret = new Dictionary<Tile, TileDisplay>();
         foreach (Tile tile in tiles)
         {
-            TileUnityObject tileObject = objectManager.GetUnityObject(tile);
-            TileDisplay display = CreateTileDisplay(tile, tileObject);
+            TileDisplay display = CreateTileDisplay(tile);
             ret.Add(tile, display);
         }
         return ret;
@@ -61,26 +54,8 @@ public class MapDisplay
         return _dictionary[tile];
     }
 
-    private TileDisplay CreateTileDisplay(Tile tile, TileUnityObject tileObject)
+    private TileDisplay CreateTileDisplay(Tile tile)
     {
-        GameObject obj = tileObject.gameObject;
-        TileDisplay ret = new TileDisplay(tile, this, obj); 
-        obj.transform.position = GetBaseTilePosition(tile.Row, tile.AscendingColumn);
-        return ret;
-    }
-    
-    private Vector3 GetBaseTilePosition(int row, int ascendingColumn)
-    {
-        Vector2 ascendingOffset = AscendingTileOffset * ascendingColumn;
-        Vector2 offset = ascendingOffset + new Vector2(row, 0);
-        offset *= 2;
-        return new Vector3(offset.x, 0, offset.y);
-    }
-
-    private void SetStandardShaderProperties(UiAethetics aethetics)
-    {
-        Shader.SetGlobalFloat("_TileMargin", aethetics.TileMargin);
-        Shader.SetGlobalColor("_SideColor", aethetics.BackgroundColor);
-        _skyMat.SetColor("_Tint", aethetics.BackgroundColor);
+        return new TileDisplay(tile, this); 
     }
 }

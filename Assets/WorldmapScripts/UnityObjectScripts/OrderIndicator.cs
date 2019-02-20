@@ -33,6 +33,23 @@ public class OrderIndicator : MonoBehaviour
         _arrowShapeBuffer = GetArrowShapeBuffer();
     }
 
+    private void Update()
+    {
+        Vector3 tangent = GetTangent();
+        SetBuffer(tangent);
+        ArrowMat.SetColor("_Color", Color);
+        ArrowMat.SetFloat("_Thickness", Thickness);
+        ArrowMat.SetFloat("_ThicknessB", ThicknessB);
+        ArrowMat.SetVector("_Tangent", tangent);
+        ArcCurvature = (transform.position - Target.position).magnitude * (1f / CurvatureRate);
+    }
+
+    private void OnDestroy()
+    {
+        _strokeSegmentsBuffer.Dispose();
+        _arrowShapeBuffer.Dispose();
+    }
+
     private ComputeBuffer GetArrowShapeBuffer()
     {
         ComputeBuffer ret = new ComputeBuffer(Resolution, ArrowShapeStride);
@@ -40,7 +57,7 @@ public class OrderIndicator : MonoBehaviour
         for (int i = 0; i < Resolution - 1; i++)
         {
             float param = (float)i / (Resolution - 1);
-            if(param < .75f)
+            if (param < .75f)
             {
                 data[i] = .5f;
             }
@@ -52,17 +69,6 @@ public class OrderIndicator : MonoBehaviour
         }
         ret.SetData(data);
         return ret;
-    }
-
-    private void Update()
-    {
-        Vector3 tangent = GetTangent();
-        SetBuffer(tangent);
-        ArrowMat.SetColor("_Color", Color);
-        ArrowMat.SetFloat("_Thickness", Thickness);
-        ArrowMat.SetFloat("_ThicknessB", ThicknessB);
-        ArrowMat.SetVector("_Tangent", tangent);
-        ArcCurvature = (transform.position - Target.position).magnitude * (1f / CurvatureRate);
     }
 
     private Vector3 GetTangent()

@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class GameSetup : MonoBehaviour
 {
-    public GameObject TilePrefab;
+    public GameObject MapPrefab;
     public GameObject FactionPrefab;
     public GameObject OrderIndicatorPrefab;
     public MapAssetSetup MapDefinition;

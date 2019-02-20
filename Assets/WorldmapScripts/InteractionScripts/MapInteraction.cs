@@ -7,9 +7,10 @@ using UnityEngine.EventSystems;
 
 public class MapInteraction
 {
+    private readonly MapUnityObject _mapObject;
     public InteractionManager InteractionMain { get; }
-    private readonly ReadOnlyDictionary<Collider, Tile> _collisionDictionary;
     private readonly int _tileLayermask;
+    private readonly ReadOnlyDictionary<int, Tile> _tileByIndex;
 
     private ProvinceState _hoveredProvince;
     public Province HoveredProvince { get { return _hoveredProvince?.Identifier; } }
@@ -30,17 +31,18 @@ public class MapInteraction
         }
     }
 
-    public MapInteraction(InteractionManager main, GameSetup gameSetup, UnityObjectManager objectManager)
+    public MapInteraction(InteractionManager main, Map map, UnityObjectManager objectManager)
     {
         InteractionMain = main;
-        _collisionDictionary = CreateCollisionDictionary(objectManager);
+        _tileByIndex = GetTileByIndex(map);
         _tileLayermask = 1 << LayerMask.NameToLayer("UI");
+        _mapObject = objectManager.MapObject;
     }
 
-    private ReadOnlyDictionary<Collider, Tile> CreateCollisionDictionary(UnityObjectManager objectManager)
+    private ReadOnlyDictionary<int, Tile> GetTileByIndex(IEnumerable<Tile> tiles)
     {
-        Dictionary<Collider, Tile> ret = objectManager.Tiles.ToDictionary(item => item.Collider, item => item.Tile);
-        return new ReadOnlyDictionary<Collider, Tile>(ret);
+        Dictionary<int, Tile> dictionary = tiles.ToDictionary(item => item.BufferIndex, item => item);
+        return new ReadOnlyDictionary<int, Tile>(dictionary);
     }
 
     public void Update(GameState currentGamestate, ProvinceNeighborsTable neighbors)
@@ -138,14 +140,33 @@ public class MapInteraction
         return GetTileAtScreenPoint(Input.mousePosition);
     }
 
+    private static int HexColorToIndex(Color col)
+    {
+        int x = (int)(col.r * 255);
+        int y = (int)(col.g * 255);
+        return x + y * 255;
+    }
+
+    private Color GetTextureSample(Vector2 textureCoord)
+    {
+        int xPixel = (int)(textureCoord.x * _mapObject.BaseMap.width);
+        int yPixel = (int)(textureCoord.y * _mapObject.BaseMap.height);
+        return _mapObject.BaseMap.GetPixel(xPixel, yPixel);
+    }
+
     private Tile GetTileAtScreenPoint(Vector3 pos)
     {
-        Ray mouseRay = Camera.main.ScreenPointToRay(pos);
+        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
-        bool hit = Physics.Raycast(mouseRay, out hitInfo, Mathf.Infinity, _tileLayermask, QueryTriggerInteraction.UseGlobal);
-        if(hit)
+        bool hit = Physics.Raycast(mouseRay, out hitInfo, Mathf.Infinity);
+        if (hit)
         {
-            return _collisionDictionary[hitInfo.collider];
+            Color col = GetTextureSample(hitInfo.textureCoord);
+            int index = HexColorToIndex(col);
+            if(_tileByIndex.ContainsKey(index))
+            {
+                return _tileByIndex[index];
+            }
         }
         return null;
     }

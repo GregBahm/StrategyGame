@@ -8,23 +8,31 @@ using System.Linq;
 
 public class UnityObjectManager
 {
+    public MapUnityObject MapObject { get; }
     public readonly ReadOnlyDictionary<Faction, FactionUnityObject> _factions;
     public IEnumerable<FactionUnityObject> Factions { get { return _factions.Values; } }
-    private readonly ReadOnlyDictionary<Tile, TileUnityObject> _tiles;
-    public IEnumerable<TileUnityObject> Tiles { get { return _tiles.Values; } }
     private readonly ReadOnlyDictionary<Faction, IEnumerable<OrderIndicator>> _orderIndicators;
 
-    public UnityObjectManager(Map map, 
-        GameObject tilePrefab, 
+    public UnityObjectManager(Map map,
+        MapAssetSet mapAssets,
+        GameObject mapPrefab, 
         GameObject factionPrefab,
         GameObject orderIndicatorPrefab,
         Canvas hudCanvas,
         GameState initialState,
         IEnumerable<PlayerSetup> playerSetups)
     {
-        _tiles = MakeTileObjects(map, tilePrefab);
+        MapObject = MakeMapGameObject(mapPrefab, mapAssets);
         _factions = MakeFactionObjects(hudCanvas, factionPrefab, playerSetups);
         _orderIndicators = MakeOrderIndicators(orderIndicatorPrefab, playerSetups);
+    }
+
+    private MapUnityObject MakeMapGameObject(GameObject mapPrefab, MapAssetSet mapAssets)
+    {
+        GameObject obj = GameObject.Instantiate(mapPrefab);
+        MapUnityObject ret = obj.GetComponent<MapUnityObject>();
+        ret.Initialize(mapAssets);
+        return ret;
     }
 
     private ReadOnlyDictionary<Faction, IEnumerable<OrderIndicator>> MakeOrderIndicators(GameObject orderIndicatorPrefab, IEnumerable<PlayerSetup> playerSetups)
@@ -64,11 +72,6 @@ public class UnityObjectManager
         }
         return new ReadOnlyDictionary<Faction, FactionUnityObject>(ret);
     }
-
-    public TileUnityObject GetUnityObject(Tile tile)
-    {
-        return _tiles[tile];
-    }
     public FactionUnityObject GetUnityObject(Faction faction)
     {
         return _factions[faction];
@@ -77,38 +80,14 @@ public class UnityObjectManager
     {
         return _orderIndicators[faction];
     }
-
-    private ReadOnlyDictionary<Tile, TileUnityObject> MakeTileObjects(Map map, GameObject tilePrefab)
-    {
-        Dictionary<Tile, TileUnityObject> ret = new Dictionary<Tile, TileUnityObject>();
-        foreach (Tile tile in map)
-        {
-            TileUnityObject display = CreateTileObject(tile, tilePrefab);
-            ret.Add(tile, display);
-        }
-        return new ReadOnlyDictionary<Tile, TileUnityObject>(ret);
-    }
-
-    private TileUnityObject CreateTileObject(Tile tile, GameObject tilePrefab)
-    {
-        int descendingColumn = tile.Row + tile.AscendingColumn;
-        string providenceName = string.Format("Providence {0} {1} {2}", tile.Row, tile.AscendingColumn, descendingColumn);
-        GameObject obj = GameObject.Instantiate(tilePrefab);
-        obj.name = providenceName;
-
-        TileUnityObject ret = obj.GetComponent<TileUnityObject>();
-        ret.Tile = tile;
-        return ret;
-    }
     
-    public Vector3 GetProvinceCenter(ProvinceState state)
+    public Vector2 GetProvinceCenter(ProvinceState state)
     {
-        Vector3 ret = Vector3.zero;
+        Vector2 ret = Vector2.zero;
         int count = 0;
         foreach (Tile tile in state.Tiles)
         {
-            TileUnityObject tileObj = _tiles[tile];
-            ret += tileObj.transform.position;
+            ret += tile.Center;
             count++;
         }
         if (count > 0)

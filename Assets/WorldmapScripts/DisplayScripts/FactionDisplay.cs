@@ -64,7 +64,8 @@ public class FactionDisplay
     private Vector3 GetIndicatorPositionFor(Province province, GameState state)
     {
         ProvinceState provinceState = state.GetProvinceState(province);
-        return _objectManager.GetProvinceCenter(provinceState) + IndicatorOffset;
+        Vector2 center = _objectManager.GetProvinceCenter(provinceState);
+        return new Vector3(center.x, center.y, 0) + IndicatorOffset;
     }
 
     private void PlaceIndicator(OrderIndicator indicator, IIndicatableMove indicatable, GameState state)

@@ -28,13 +28,15 @@ public class MainGameManager
         _provinceNeighbors = new ProvinceNeighborsTable(CurrentState);
 
         ObjectManager = new UnityObjectManager(map, 
-            gameSetup.TilePrefab, 
+            assetSet,
+            gameSetup.MapPrefab, 
             gameSetup.FactionPrefab, 
             gameSetup.OrderIndicatorPrefab,
             gameSetup.ScreenCanvas, 
             initialState.AfterEverything,
             playerSetups);
         InteractionManager = new InteractionManager(this, 
+            map,
             gameSetup,
             ObjectManager, 
             playerSetups);

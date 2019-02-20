@@ -1,4 +1,4 @@
-﻿Shader "Unlit/MapTesterShader"
+﻿Shader "Unlit/MapShader"
 {
 	Properties
 	{
@@ -22,10 +22,14 @@
 			};
 
 
-			struct HexState
+			struct TileState
 			{
 				float Hover;
-				float Clicked;
+				float Selected;
+				float Dragging;
+				float Dragged;
+				float Targetable;
+				float3 FactionColor;
 			};
 
 			struct appdata
@@ -41,7 +45,7 @@
 			};
 
 			StructuredBuffer<Neighbors> _NeighborsBuffer;
-			Buffer<HexState> _HexStates;
+			StructuredBuffer<TileState> _TileStates;
 			sampler2D _MainTex;
 			sampler2D _BorderTex;
 			float _BorderThickness;
@@ -94,18 +98,18 @@
 				uint cornerB = (cornerA - 1 + 6) % 6;
 				uint neighborB = neighbors.Neighbor[cornerB];
 
-				HexState state = _HexStates[hexIndex];
-				HexState neighborAState = _HexStates[neighborA];
-				HexState neighborBState = _HexStates[neighborB];
-				float baseVal = max(state.Clicked, state.Hover);
-				float neighborAVal = max(neighborAState.Clicked, neighborAState.Hover);
-				float neighborBVal = max(neighborBState.Clicked, neighborBState.Hover);
+				TileState state = _TileStates[hexIndex];
+				TileState neighborAState = _TileStates[neighborA];
+				TileState neighborBState = _TileStates[neighborB];
+				float baseVal = max(state.Selected, state.Hover);
+				float neighborAVal = max(neighborAState.Selected, neighborAState.Hover);
+				float neighborBVal = max(neighborBState.Selected, neighborBState.Hover);
 				
 				float3 borders = tex2D(_BorderTex, i.uv).xyz;
 				float border = GetFinalBorder(borders, baseVal, neighborAVal, neighborBVal);
-				float blank = 1 - (bool)hexIndex;
-				border = max(blank, border);
-				return border;
+				float3 ret = state.FactionColor;
+				ret += border;
+				return float4(ret, 1);
 			}
 			ENDCG
 		}

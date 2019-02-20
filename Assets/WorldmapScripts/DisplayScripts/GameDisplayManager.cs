@@ -95,17 +95,4 @@ public class GameDisplayManager
             province.DisplayProvince(transiation, timings);
         }
     }
-
-    public Vector3 GetAverageTilePosition(IEnumerable<Tile> tiles)
-    {
-        Vector3 ret = Vector3.zero;
-        int count = 0;
-        foreach (Tile tile in tiles)
-        {
-            TileDisplay tileDisplay = GetTile(tile);
-            ret += tileDisplay.GameObject.transform.position;
-            count++;
-        }
-        return ret / count;
-    }
 }
