@@ -6,6 +6,11 @@ public class WarForces
 {
     public Faction Faction { get; }
 
+    public Scouts Scouts {get;}
+    public Spies Spies { get; }
+    public Supplies Supplies { get; }
+    public Army Army { get; }
+
     public WarForces(Faction faction)
     {
         Faction = faction;
