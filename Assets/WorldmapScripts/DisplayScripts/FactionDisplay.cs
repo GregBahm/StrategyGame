@@ -7,7 +7,7 @@ using System.Linq;
 
 public class FactionDisplay
 {
-    private readonly Vector3 IndicatorOffset = new Vector3(0, 1.35f, 0);
+    private readonly Vector3 IndicatorOffset = new Vector3(0, 0, 0);
     private readonly UnityObjectManager _objectManager;
     private readonly FactionUnityObject _unityObject;
     private readonly FactionsInteractionManager _interactionManager;
@@ -65,7 +65,7 @@ public class FactionDisplay
     {
         ProvinceState provinceState = state.GetProvinceState(province);
         Vector2 center = _objectManager.GetProvinceCenter(provinceState);
-        return new Vector3(center.x, center.y, 0) + IndicatorOffset;
+        return new Vector3(center.x, 0, center.y) + IndicatorOffset;
     }
 
     private void PlaceIndicator(OrderIndicator indicator, IIndicatableMove indicatable, GameState state)
