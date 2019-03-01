@@ -16,7 +16,7 @@ public class War
     {
         Location = location.Identifier;
         IEnumerable<BattleSite> sites = GetSites(location);
-        BattleLoopState initialState = new BattleLoopState(attackers, defenders);
+        WarStageSetup initialState = new WarStageSetup(attackers, defenders);
         Progression = GetProgression(initialState, sites);
         Winner = GetWinner(attackers.Faction, defenders.Faction);
     }
@@ -33,7 +33,7 @@ public class War
         }
     }
 
-    private ReadOnlyCollection<BattleLoop> GetProgression(BattleLoopState currentState, IEnumerable<BattleSite> sites)
+    private ReadOnlyCollection<BattleLoop> GetProgression(WarStageSetup currentState, IEnumerable<BattleSite> sites)
     {
         List<BattleLoop> ret = new List<BattleLoop>();
         foreach (BattleSite site in sites)
@@ -44,7 +44,7 @@ public class War
             {
                 break;
             }
-            currentState = loop.AfterBattle;
+            currentState = loop.NextLoopState;
         }
         return ret.AsReadOnly();
     }

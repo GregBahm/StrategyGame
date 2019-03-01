@@ -5,16 +5,13 @@ using System.Linq;
 public class WarForces
 {
     public Faction Faction { get; }
+    public IEnumerable<Army> Armies { get; }
 
-    public Scouts Scouts {get;}
-    public Spies Spies { get; }
-    public Supplies Supplies { get; }
-    public Army Army { get; }
-
-    public WarForces(Faction faction)
+    public WarForces(Faction faction, 
+        IEnumerable<Army> armies)
     {
         Faction = faction;
-        // TODO: Define out the rest of war forces
+        Armies = armies;
     }
 
     internal static WarForces CombineForces(IEnumerable<WarForces> forces)

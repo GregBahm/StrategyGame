@@ -152,13 +152,13 @@ public class WarsResolver
         private WarForces CalculateDefendingForces(ProvinceState target, int attacksByDefender, GameState state)
         {
             // TODO: Calculate defending forces using these factors
-            return new WarForces(target.Owner);
+            return new WarForces(target.Owner, new Army[0]);
         }
 
         private WarForces CalculateAttackingForces(AttackMove move, int attacksByFaction, GameState state)
         {
             // TODO: Calculate war forces using these factors
-            return new WarForces(move.Faction);
+            return new WarForces(move.Faction, new Army[0]);
         }
 
         private ReadOnlyDictionary<Province, WarForces> GetDefenderForces(GameState state, IEnumerable<AttackMove> attacks)
