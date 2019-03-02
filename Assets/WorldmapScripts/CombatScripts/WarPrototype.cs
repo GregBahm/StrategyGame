@@ -54,12 +54,43 @@ public class Squad
     public int BaseTacticsGain { get; }
     public int Attack { get; }
     public int Defense { get; }
-    public int Rank { get; }
+    public int RankOrder { get; }
     public IEnumerable<ThreatRange> ThreatRange { get; }
     public int TroopCount { get; }
-
-
 }
+
+public class SquadBattleState
+{
+    public int EffectiveAttack { get; }
+    public int EffectiveDefense { get; }
+    public int RemainingMoral { get; }
+    public int EffectiveTactics { get; }
+    public int EffectiveRank { get; }
+    public IEnumerable<ThreatRangeState> EffectiveThreatRange { get; }
+    public int RemainingTroopCount { get; }
+    public int CurrentHitpoints { get; }
+}
+
+public class SquadBattleSomething
+{
+    public Squad SquadBasis { get; }
+    public Leader SquadLeader { get; }
+    public SquadBattleState State { get; }
+}
+
+
+public class ThreatRangeState
+{
+    public int Offset { get; }
+    public int Span { get; }
+
+    public ThreatRangeState(int offset, int span)
+    {
+        Offset = offset;
+        Span = span;
+    }
+}
+
 
 public class ThreatRange
 {
