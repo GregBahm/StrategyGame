@@ -10,7 +10,7 @@ public class War
     public Faction Winner { get; }
     public Province Location { get; }
 
-    public ReadOnlyCollection<BattleLoop> Progression { get; }
+    public ReadOnlyCollection<WarLoop> Progression { get; }
 
     public War(ProvinceState location, WarForces attackers, WarForces defenders)
     {
@@ -23,7 +23,7 @@ public class War
 
     private Faction GetWinner(Faction attackers, Faction defenders)
     {
-        if(Progression.Last().Outcome == BattleOutcome.AttackersWon)
+        if(Progression.Last().Outcome == WarOutcome.AttackersWon)
         {
             return attackers;
         }
@@ -33,22 +33,22 @@ public class War
         }
     }
 
-    private ReadOnlyCollection<BattleLoop> GetProgression(WarStageSetup currentState, IEnumerable<BattleSite> sites)
+    private ReadOnlyCollection<WarLoop> GetProgression(WarStageSetup currentState, IEnumerable<BattleSite> sites)
     {
-        List<BattleLoop> ret = new List<BattleLoop>();
+        List<WarLoop> ret = new List<WarLoop>();
         foreach (BattleSite site in sites)
         {
-            BattleLoop loop = new BattleLoop(currentState, site);
+            WarLoop loop = new WarLoop(currentState, site);
             ret.Add(loop);
-            if (loop.Outcome != BattleOutcome.AttackersWon)
+            if (loop.Outcome != WarOutcome.AttackersWon)
             {
                 break;
             }
-            currentState = loop.NextLoopState;
+            currentState = loop.Battle.States.Last().GetNextWarStageSetup(currentState.Attackers.Faction, currentState.Defenders.Faction);
         }
         return ret.AsReadOnly();
     }
-
+    
     private IEnumerable<BattleSite> GetSites(ProvinceState defendedProvince)
     {
         throw new NotImplementedException();

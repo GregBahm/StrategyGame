@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using UnityEngine;
 
 public class WarPrototype : MonoBehaviour
@@ -15,33 +16,50 @@ public class BattleSite
     public float DefenseMultiply { get; }
 }
 
-public class BattleLoop
+public class WarLoop
 {
     public BattleSite Site { get; }
 
     public WarStageSetup InitialState { get; }
 
-    public WarStageSetup NextLoopState { get; }
+    public Battle Battle { get; }
+    
+    public WarOutcome Outcome { get; }
 
-    public BattleOutcome Outcome { get; }
-
-    public BattleLoop(WarStageSetup initialState, BattleSite site)
+    public WarLoop(WarStageSetup initialState, BattleSite site)
     {
         InitialState = initialState;
-        Site = site;
-        
+        Battle = GetBattle(initialState);
+        Outcome = Battle.Outcome;
+    }
+
+    private Battle GetBattle(WarStageSetup setup)
+    {
+        Prewar attackerPrewar = new Prewar(setup.Attackers, setup.Defenders);
+        IEnumerable<SquadBattleBinding> attackers = setup.Attackers.Select(item => new SquadBattleBinding())
+        IEnumerable<SquadBattleBinding> defenders;
+        BattleState initialState = new BattleState(attackers, defenders);
+        return new Battle(initialState);
+    }
+}
+
+public class Prewar
+{
+    public Prewar()
+    {
+
     }
 }
 
 public class WarStageSetup
 {
     public WarForces Attackers { get; }
-    public WarForces Defeners { get; }
+    public WarForces Defenders { get; }
 
     public WarStageSetup(WarForces attackers, WarForces defenders)
     {
         Attackers = attackers;
-        Defeners = defenders;
+        Defenders = defenders;
     }
 }
 
@@ -71,11 +89,95 @@ public class SquadBattleState
     public int CurrentHitpoints { get; }
 }
 
-public class SquadBattleSomething
+public class BattleState
+{
+    public IEnumerable<SquadBattleBinding> Attackers { get; }
+    public IEnumerable<SquadBattleBinding> Defenders { get; }
+    public WarOutcome Outcome { get; }
+
+    public BattleState(IEnumerable<SquadBattleBinding> attackers, IEnumerable<SquadBattleBinding> defenders)
+    {
+        Attackers = attackers;
+        Defenders = defenders;
+        Outcome = GetOutcome();
+    }
+
+    private WarOutcome GetOutcome()
+    {
+        bool attackersAlive = Attackers.Any(item => item.State.RemainingTroopCount > 0);
+        bool defendersAlive = Defenders.Any(item => item.State.RemainingTroopCount > 0);
+        if(attackersAlive && defendersAlive)
+        {
+            return WarOutcome.Ongoing;
+        }
+        if(attackersAlive && !defendersAlive)
+        {
+            return WarOutcome.AttackersWon;
+        }
+        if(defendersAlive && !attackersAlive)
+        {
+            return WarOutcome.DefendersWon;
+        }
+        return WarOutcome.Draw;
+    }
+
+    internal BattleState GetNextState()
+    {
+        IEnumerable<SquadBattleBinding> nextAttackers = Attackers.Select(item => item.GetNextState(Defenders)).ToArray();
+        IEnumerable<SquadBattleBinding> nextDefenders = Defenders.Select(item => item.GetNextState(Attackers)).ToArray();
+        return new BattleState(nextAttackers, nextDefenders);
+    }
+
+    internal WarStageSetup GetNextWarStageSetup(Faction attackingFaction, Faction defendingFaction)
+    {
+        WarForces attackers = ToWarForces(attackingFaction, Attackers);
+        WarForces defenders = ToWarForces(defendingFaction, Defenders);
+        return new WarStageSetup(attackers, defenders);
+    }
+
+    private WarForces ToWarForces(Faction faction, IEnumerable<SquadBattleBinding> attackers)
+    {
+        IEnumerable<Army> newArmies = attackers.Select(item => item.ToArmy()).ToArray();
+        return new WarForces(faction, newArmies);
+    }
+}
+
+public class Battle
+{
+    public const int BattleTurnLimit = 10000;
+    public ReadOnlyCollection<BattleState> States { get; }
+    public WarOutcome Outcome { get; }
+
+    public Battle(BattleState startingState)
+    {
+        List<BattleState> states = new List<BattleState>();
+        BattleState currentState = startingState;
+        while(currentState.Outcome == WarOutcome.Ongoing && states.Count < BattleTurnLimit)
+        {
+            states.Add(currentState);
+            currentState = currentState.GetNextState();
+        }
+        States = states.AsReadOnly();
+        Outcome = states.Count < BattleTurnLimit ? currentState.Outcome : WarOutcome.Draw;
+    }
+}
+
+
+public class SquadBattleBinding
 {
     public Squad SquadBasis { get; }
     public Leader SquadLeader { get; }
     public SquadBattleState State { get; }
+
+    internal SquadBattleBinding GetNextState(IEnumerable<SquadBattleBinding> defenders)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal Army ToArmy()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
