@@ -14,14 +14,9 @@ public class WarForces
         Armies = armies;
     }
 
-    internal static WarForces CombineForces(IEnumerable<WarForces> forces)
+    internal static WarForces CombineForces(IEnumerable<WarForces> forces, Faction faction)
     {
-        WarForces[] forceArray = forces.ToArray();
-        if(forceArray.Length == 1)
-        {
-            return forceArray[0];
-        }
-
-        throw new NotImplementedException();
+        IEnumerable<Army> armies = forces.SelectMany(item => item.Armies).ToArray();
+        return new WarForces(faction, armies);
     }
 }

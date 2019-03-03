@@ -194,7 +194,7 @@ public class WarsResolver
         public WarForces GetForcesFor(IEnumerable<AttackMove> convergingAttacks)
         {
             IEnumerable<WarForces> forces = convergingAttacks.Select(item => _attackerForces[item]);
-            return WarForces.CombineForces(forces);
+            return WarForces.CombineForces(forces, convergingAttacks.First().Faction);
         }
 
         public WarForces GetForcesFor(Province defender)
