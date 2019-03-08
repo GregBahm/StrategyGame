@@ -35,29 +35,52 @@ public class WarLoop
 
     private Battle GetBattle(WarStageSetup setup)
     {
-        NoncombatWarPhase attackerPreBattle = new NoncombatWarPhase(setup.Attackers, setup.Defenders);
-        NoncombatWarPhase defenderPreBattle = new NoncombatWarPhase(setup.Defenders, setup.Attackers);
-        IEnumerable<ArmyInBattle> attackers = GetBattleArmies(setup.Attackers, attackerPreBattle).ToArray();
-        IEnumerable<ArmyInBattle> defenders = GetBattleArmies(setup.Defenders, defenderPreBattle).ToArray();
+        NoncombatWarPhase preBattle = new NoncombatWarPhase(setup.Attackers, setup.Defenders);
+        IEnumerable<ArmyInBattle> attackers = GetBattleArmies(setup.Attackers, preBattle.AttackerEffects).ToArray();
+        IEnumerable<ArmyInBattle> defenders = GetBattleArmies(setup.Defenders, preBattle.DefenderEffects).ToArray();
         BattleState initialState = new BattleState(attackers, defenders);
         return new Battle(initialState);
     }
 
-    private IEnumerable<ArmyInBattle> GetBattleArmies(WarForces forces, NoncombatWarPhase preBattle)
+    private IEnumerable<ArmyInBattle> GetBattleArmies(WarForces forces, NoncombatWarEffects preBattle)
     {
         foreach (Army army in forces.Armies)
         {
             foreach (Squad squad in army.Squadrons)
             {
-
+                yield return GetArmyInBattle(squad, army, preBattle);
             }
         }
     }
+
+    private ArmyInBattle GetArmyInBattle(Squad squad, Army army, NoncombatWarEffects preBattle)
+    {
+        throw new NotImplementedException();
+    }
 }
+
+public class NoncombatWarEffects
+{
+    public int ScoutBonus;
+    public int SpyLeadershipModifier;
+    public int LogisticsLostToSabatage;
+    public int NetRaidingEffect;
+    public int FoodRequired;
+    public int FoodAvailable;
+    public int GearRequired;
+    public int GearAvailable;
+    public int MedicalRequired;
+    public int MedicalAvailable;
+    public int NetEffectiveness;
+}
+
 
 public class NoncombatWarPhase
 {
-    public NoncombatWarPhase(WarForces self, WarForces enemy)
+    public NoncombatWarEffects AttackerEffects { get; }
+    public NoncombatWarEffects DefenderEffects { get; }
+
+    public NoncombatWarPhase(WarForces attacker, WarForces defender)
     {
         // Scouts
         //  - Input: + Sum of scouts in war forces - Each unit * Unit Stealthiness
@@ -77,10 +100,10 @@ public class NoncombatWarPhase
 
         // Raiding
         //  - Input: Sum raiding factor in troops - site defenses
-        //  - Output: 
+        //  - Output: Drains Logistics and gear
 
         // Logistic Effectiveness (Food) 
-        //  - Input: Sum food logistics + foraging - sum troops troops
+        //  - Input: Sum food logistics + foraging - sum troops troops 
         //  - Output: Combat effectiveness
 
         // Logistic Effectiveness (Medical)
@@ -128,7 +151,7 @@ public class Squad
         int defense, 
         int rankOrder, 
         IEnumerable<ThreatRange> threatRange, 
-        int troopCount
+        int troopCount,
         int injuredTroops)
     {
         SquadDisplayHooks = squadDisplayHooks;
