@@ -11,9 +11,17 @@ public class WarPrototype : MonoBehaviour
 
 public class BattleSite
 {
-    public float InitialDefense { get; }
-    public float DefenseAdd { get; }
-    public float DefenseMultiply { get; }
+    public static BattleSite NoBenefit { get; } = new BattleSite(0,0,0);
+    public int InitialDefense { get; }
+    public int DefenseAdd { get; }
+    public int DefenseMultiply { get; }
+
+    public BattleSite(int initialDefense, int defenseAdd, int defenseMultiply)
+    {
+        InitialDefense = initialDefense;
+        DefenseAdd = defenseAdd;
+        DefenseMultiply = defenseMultiply;
+    }
 }
 
 public class WarLoop
@@ -22,6 +30,8 @@ public class WarLoop
 
     public WarStageSetup InitialState { get; }
 
+    public NoncombatWarPhase PreBattle { get; }
+
     public Battle Battle { get; }
     
     public WarOutcome Outcome { get; }
@@ -29,31 +39,32 @@ public class WarLoop
     public WarLoop(WarStageSetup initialState, BattleSite site)
     {
         InitialState = initialState;
+        Site = site;
+        PreBattle = new NoncombatWarPhase(initialState.Attackers, initialState.Defenders, site);
         Battle = GetBattle(initialState);
         Outcome = Battle.Outcome;
     }
 
     private Battle GetBattle(WarStageSetup setup)
     {
-        NoncombatWarPhase preBattle = new NoncombatWarPhase(setup.Attackers, setup.Defenders);
-        IEnumerable<ArmyInBattle> attackers = GetBattleArmies(setup.Attackers, preBattle.AttackerEffects).ToArray();
-        IEnumerable<ArmyInBattle> defenders = GetBattleArmies(setup.Defenders, preBattle.DefenderEffects).ToArray();
+        IEnumerable<ArmyInBattle> attackers = GetBattleArmies(setup.Attackers, PreBattle.AttackerEffects, BattleSite.NoBenefit).ToArray();
+        IEnumerable<ArmyInBattle> defenders = GetBattleArmies(setup.Defenders, PreBattle.DefenderEffects, Site).ToArray();
         BattleState initialState = new BattleState(attackers, defenders);
         return new Battle(initialState);
     }
 
-    private IEnumerable<ArmyInBattle> GetBattleArmies(WarForces forces, NoncombatWarEffects preBattle)
+    private IEnumerable<ArmyInBattle> GetBattleArmies(WarForces forces, NoncombatWarEffects preBattle, BattleSite site)
     {
         foreach (Army army in forces.Armies)
         {
             foreach (Squad squad in army.Squadrons)
             {
-                yield return GetArmyInBattle(squad, army, preBattle);
+                yield return GetArmyInBattle(squad, army, preBattle, site);
             }
         }
     }
 
-    private ArmyInBattle GetArmyInBattle(Squad squad, Army army, NoncombatWarEffects preBattle)
+    private ArmyInBattle GetArmyInBattle(Squad squad, Army army, NoncombatWarEffects preBattle, BattleSite site)
     {
         throw new NotImplementedException();
     }
@@ -80,31 +91,35 @@ public class NoncombatWarPhase
     public NoncombatWarEffects AttackerEffects { get; }
     public NoncombatWarEffects DefenderEffects { get; }
 
-    public NoncombatWarPhase(WarForces attacker, WarForces defender)
+    public NoncombatWarPhase(WarForces attacker, WarForces defender, BattleSite site)
     {
         // Scouts
         //  - Input: + Sum of scouts in war forces - Each unit * Unit Stealthiness
         //  - Output: flat tactical bonus at start of battle, similar to defense
-
-        // Static Defenses
-        //  - Input: Site
-        //  - Output: flat tactical bonus at start of battle for defenders
+        int attackerScoutSum = GetScoutSum(attacker, defender);
+        int defenderScoutSum = GetScoutSum(defender, attacker);
 
         // Spying
         //  - Input: + Friendly spies vs enemy spies
         //  - Output: Drains leadership attributes from one leader to another
+        int attackerSpySum = attacker.Armies.Sum(item => item.Spies.LeaderDrain);
+        int defenderSpySum = defender.Armies.Sum(item => item.Spies.LeaderDrain);
+
 
         // Sabotage
         //  - Input: Spy ratio and sum sabotage factor 
         //  - Output: Reduces enemy logistics by sabotage * spy ratio
 
+
         // Raiding
         //  - Input: Sum raiding factor in troops - site defenses
         //  - Output: Drains Logistics and gear
+        int attackerRaiding = GetRaiding(attacker, site);
 
         // Logistic Effectiveness (Food) 
         //  - Input: Sum food logistics + foraging - sum troops troops 
         //  - Output: Combat effectiveness
+        int attackerFoodSituation = GetFoodEffectiveness(attacker);
 
         // Logistic Effectiveness (Medical)
         //  - Input: Sum medical logistics
@@ -114,7 +129,34 @@ public class NoncombatWarPhase
         //  - Input: Sum equipment logistics
         //  - Output: Combat effectiveness
     }
+
+    private int GetFoodEffectiveness(WarForces forces)
+    {
+        int foodNeeds = forces.Armies.SelectMany(item => item.Squadrons).Sum(item => item.FoodCost);
+        int foodLogistics = forces.Armies.Sum(item => item.Logistics.Food);
+    }
+
+    private int GetRaiding(WarForces attacker, BattleSite site)
+    {
+        int raidingSum = attacker.Armies.SelectMany(item => item.Squadrons).Sum(item => item.Raiding);
+        int ret = raidingSum - site.InitialDefense;
+        ret = Math.Max(0, ret);
+        return ret;
+    }
+
+    private int GetScoutSum(WarForces self, WarForces other)
+    {
+        int scoutsSum = self.Armies.Sum(item => item.Scouts.ScoutingEffectiveness);
+        int scouted = other.Armies.SelectMany(item => item.Squadrons).Sum(item => GetScoutingVisibility(item));
+        return scoutsSum * scouted;
+    }
+
+    private int GetScoutingVisibility(Squad item)
+    {
+        return item.TroopCount * item.Stealth;
+    }
 }
+
 
 public class WarStageSetup
 {
@@ -141,6 +183,9 @@ public class Squad
     public IEnumerable<ThreatRange> ThreatRange { get; }
     public int TroopCount { get; }
     public int InjuredTroops { get; }
+    public int Stealth { get; }
+    public int Raiding { get; }
+    public int FoodCost { get; }
 
     public Squad(SquadDisplayHooks squadDisplayHooks, 
         int moral, 
@@ -152,7 +197,9 @@ public class Squad
         int rankOrder, 
         IEnumerable<ThreatRange> threatRange, 
         int troopCount,
-        int injuredTroops)
+        int injuredTroops,
+        int stealth,
+        int foraging)
     {
         SquadDisplayHooks = squadDisplayHooks;
         Moral = moral;
@@ -165,6 +212,8 @@ public class Squad
         ThreatRange = threatRange;
         TroopCount = troopCount;
         InjuredTroops = injuredTroops;
+        Stealth = stealth;
+        FoodCost = foraging;
     }
 }
 
