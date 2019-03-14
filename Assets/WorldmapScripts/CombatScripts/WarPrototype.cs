@@ -57,32 +57,99 @@ public class WarLoop
     {
         foreach (Army army in forces.Armies)
         {
-            foreach (Squad squad in army.Squadrons)
-            {
-                yield return GetArmyInBattle(squad, army, preBattle, site);
-            }
+            yield return GetArmyInBattle(army, preBattle, site);
         }
     }
 
-    private ArmyInBattle GetArmyInBattle(Squad squad, Army army, NoncombatWarEffects preBattle, BattleSite site)
+    private ArmyInBattle GetArmyInBattle(Army army, NoncombatWarEffects preBattle, BattleSite site)
     {
-        throw new NotImplementedException();
+        IEnumerable<SquadInBattle> squads = army.Squadrons.Select(item => GetSquadInBattle(item, army, preBattle, site));
+
+    }
+
+    private SquadInBattle GetSquadInBattle(Squad squad, Army army, NoncombatWarEffects preBattle, BattleSite site)
+    {
+
     }
 }
 
 public class NoncombatWarEffects
 {
-    public int ScoutBonus;
-    public int SpyLeadershipModifier;
-    public int LogisticsLostToSabatage;
-    public int NetRaidingEffect;
-    public int FoodRequired;
-    public int FoodAvailable;
-    public int GearRequired;
-    public int GearAvailable;
-    public int MedicalRequired;
-    public int MedicalAvailable;
-    public int NetEffectiveness;
+    public ScoutingEffects Scouting { get; }
+    public RaidingEffects Raiding { get; }
+    public LogisticalEffects Logistic { get; }
+    public SpyingEffects Spying { get; }
+
+    public NoncombatWarEffects(ScoutingEffects scouting, RaidingEffects raiding, LogisticalEffects logistic, SpyingEffects spying)
+    {
+        Scouting = scouting;
+        Raiding = raiding;
+        Logistic = logistic;
+        Spying = spying;
+    }
+}
+
+public class ScoutingEffects
+{
+    public int ScoutBonus { get; }
+    public int ScoutsSum { get; }
+    public int Scouted { get; }
+    
+    public ScoutingEffects(WarForces self, WarForces other)
+    {
+        ScoutsSum = self.Armies.Sum(item => item.Scouts.ScoutingEffectiveness);
+        Scouted = other.Armies.SelectMany(item => item.Squadrons).Sum(item => GetScoutingVisibility(item));
+        ScoutBonus = ScoutsSum * Scouted;
+    }
+
+    private int GetScoutingVisibility(Squad item)
+    {
+        return item.TroopCount * item.Stealth;
+    }
+}
+
+public class RaidingEffects
+{
+    public static RaidingEffects Defender { get; } = new RaidingEffects();
+
+    public int RaidingSum { get; }
+    public int LogisticsDrain { get; }
+    
+    private RaidingEffects()
+    { }
+    public RaidingEffects(WarForces attacker, BattleSite site)
+    {
+        RaidingSum = attacker.Armies.SelectMany(item => item.Squadrons).Sum(item => item.Raiding);
+        LogisticsDrain = Math.Max(0, RaidingSum - site.InitialDefense);
+    }
+}
+
+public class LogisticalEffects
+{
+    public int FoodNeeds { get; }
+    public int SumFood { get; }
+    public int SumMedical { get; }
+    public int SumEquipment { get; }
+
+    public LogisticalEffects(WarForces forces)
+    {
+        FoodNeeds = forces.Armies.SelectMany(item => item.Squadrons).Sum(item => item.FoodCost);
+        SumFood = forces.Armies.Sum(item => item.Logistics.Food);
+        SumMedical = forces.Armies.Sum(item => item.Logistics.Medical);
+        SumEquipment = forces.Armies.Sum(item => item.Logistics.Equipment);
+    }
+}
+
+public class SpyingEffects
+{
+    public int SpySum { get; }
+    public int Sabotage { get; }
+
+    public SpyingEffects(WarForces forces)
+    {
+        SpySum = forces.Armies.Sum(item => item.Spies.LeaderDrain);
+        Sabotage = forces.Armies.Sum(item => item.Spies.SupplySabotage);
+    }
 }
 
 
@@ -93,67 +160,16 @@ public class NoncombatWarPhase
 
     public NoncombatWarPhase(WarForces attacker, WarForces defender, BattleSite site)
     {
-        // Scouts
-        //  - Input: + Sum of scouts in war forces - Each unit * Unit Stealthiness
-        //  - Output: flat tactical bonus at start of battle, similar to defense
-        int attackerScoutSum = GetScoutSum(attacker, defender);
-        int defenderScoutSum = GetScoutSum(defender, attacker);
+        ScoutingEffects attackerScout = new ScoutingEffects(attacker, defender);
+        ScoutingEffects defenderScout = new ScoutingEffects(defender, attacker);
+        SpyingEffects attackerSpies = new SpyingEffects(attacker);
+        SpyingEffects defenderSpies = new SpyingEffects(defender);
+        RaidingEffects raiding = new RaidingEffects(attacker, site);
+        LogisticalEffects attackerLogistics = new LogisticalEffects(attacker);
+        LogisticalEffects defenderLogistics = new LogisticalEffects(defender);
 
-        // Spying
-        //  - Input: + Friendly spies vs enemy spies
-        //  - Output: Drains leadership attributes from one leader to another
-        int attackerSpySum = attacker.Armies.Sum(item => item.Spies.LeaderDrain);
-        int defenderSpySum = defender.Armies.Sum(item => item.Spies.LeaderDrain);
-
-
-        // Sabotage
-        //  - Input: Spy ratio and sum sabotage factor 
-        //  - Output: Reduces enemy logistics by sabotage * spy ratio
-
-
-        // Raiding
-        //  - Input: Sum raiding factor in troops - site defenses
-        //  - Output: Drains Logistics and gear
-        int attackerRaiding = GetRaiding(attacker, site);
-
-        // Logistic Effectiveness (Food) 
-        //  - Input: Sum food logistics + foraging - sum troops troops 
-        //  - Output: Combat effectiveness
-        int attackerFoodSituation = GetFoodEffectiveness(attacker);
-
-        // Logistic Effectiveness (Medical)
-        //  - Input: Sum medical logistics
-        //  - Output: Injured troops converted back to troops
-
-        // Logistic Effectiveness (Equipment)
-        //  - Input: Sum equipment logistics
-        //  - Output: Combat effectiveness
-    }
-
-    private int GetFoodEffectiveness(WarForces forces)
-    {
-        int foodNeeds = forces.Armies.SelectMany(item => item.Squadrons).Sum(item => item.FoodCost);
-        int foodLogistics = forces.Armies.Sum(item => item.Logistics.Food);
-    }
-
-    private int GetRaiding(WarForces attacker, BattleSite site)
-    {
-        int raidingSum = attacker.Armies.SelectMany(item => item.Squadrons).Sum(item => item.Raiding);
-        int ret = raidingSum - site.InitialDefense;
-        ret = Math.Max(0, ret);
-        return ret;
-    }
-
-    private int GetScoutSum(WarForces self, WarForces other)
-    {
-        int scoutsSum = self.Armies.Sum(item => item.Scouts.ScoutingEffectiveness);
-        int scouted = other.Armies.SelectMany(item => item.Squadrons).Sum(item => GetScoutingVisibility(item));
-        return scoutsSum * scouted;
-    }
-
-    private int GetScoutingVisibility(Squad item)
-    {
-        return item.TroopCount * item.Stealth;
+        AttackerEffects = new NoncombatWarEffects(attackerScout, raiding, attackerLogistics, attackerSpies);
+        DefenderEffects = new NoncombatWarEffects(defenderScout, RaidingEffects.Defender, defenderLogistics, defenderSpies);
     }
 }
 
