@@ -47,29 +47,30 @@ public class WarLoop
 
     private Battle GetBattle(WarStageSetup setup)
     {
-        IEnumerable<ArmyInBattle> attackers = GetBattleArmies(setup.Attackers, PreBattle.AttackerEffects, BattleSite.NoBenefit).ToArray();
-        IEnumerable<ArmyInBattle> defenders = GetBattleArmies(setup.Defenders, PreBattle.DefenderEffects, Site).ToArray();
+        IEnumerable<ArmyInBattle> attackers = GetInitialBattleArmies(setup.Attackers, PreBattle.AttackerEffects, BattleSite.NoBenefit).ToArray();
+        IEnumerable<ArmyInBattle> defenders = GetInitialBattleArmies(setup.Defenders, PreBattle.DefenderEffects, Site).ToArray();
         BattleState initialState = new BattleState(attackers, defenders);
         return new Battle(initialState);
     }
 
-    private IEnumerable<ArmyInBattle> GetBattleArmies(WarForces forces, NoncombatWarEffects preBattle, BattleSite site)
+    private IEnumerable<ArmyInBattle> GetInitialBattleArmies(WarForces forces, NoncombatWarEffects preBattle, BattleSite site)
     {
         foreach (Army army in forces.Armies)
         {
-            yield return GetArmyInBattle(army, preBattle, site);
+            yield return GetInitialArmyInBattle(army, preBattle, site);
         }
     }
 
-    private ArmyInBattle GetArmyInBattle(Army army, NoncombatWarEffects preBattle, BattleSite site)
+    private ArmyInBattle GetInitialArmyInBattle(Army army, NoncombatWarEffects preBattle, BattleSite site)
     {
-        IEnumerable<SquadInBattle> squads = army.Squadrons.Select(item => GetSquadInBattle(item, army, preBattle, site));
+        IEnumerable<SquadBattleState> squads = army.Squadrons.Select(item => GetInitialSquadInBattle(item, army, preBattle, site)).ToArray();
+        return new ArmyInBattle(army, squads);
 
     }
 
-    private SquadInBattle GetSquadInBattle(Squad squad, Army army, NoncombatWarEffects preBattle, BattleSite site)
+    private SquadBattleState GetInitialSquadInBattle(Squad item, Army army, NoncombatWarEffects preBattle, BattleSite site)
     {
-
+        throw new NotImplementedException();
     }
 }
 
@@ -188,7 +189,7 @@ public class WarStageSetup
 
 public class Squad
 {
-    public SquadDisplayHooks SquadDisplayHooks { get; }
+    public SquadDisplayHooks DisplayHooks { get; }
     public int Moral { get; }
     public int Effectiveness { get; }
     public int Discipline { get; }
@@ -203,7 +204,7 @@ public class Squad
     public int Raiding { get; }
     public int FoodCost { get; }
 
-    public Squad(SquadDisplayHooks squadDisplayHooks, 
+    public Squad(SquadDisplayHooks displayHooks, 
         int moral, 
         int effectiveness, 
         int discipline, 
@@ -215,9 +216,9 @@ public class Squad
         int troopCount,
         int injuredTroops,
         int stealth,
-        int foraging)
+        int foodCost)
     {
-        SquadDisplayHooks = squadDisplayHooks;
+        DisplayHooks = displayHooks;
         Moral = moral;
         Effectiveness = effectiveness;
         Discipline = discipline;
@@ -229,38 +230,100 @@ public class Squad
         TroopCount = troopCount;
         InjuredTroops = injuredTroops;
         Stealth = stealth;
-        FoodCost = foraging;
+        FoodCost = foodCost;
     }
 }
 
 public class SquadBattleState
 {
-    public int EffectiveAttack { get; }
-    public int EffectiveDefense { get; }
+    public Squad Source { get; }
     public int RemainingMoral { get; }
     public int EffectiveTactics { get; }
+    public int TacticsGainRate { get; }
     public int EffectiveRank { get; }
     public IEnumerable<ThreatRangeState> EffectiveThreatRange { get; }
     public int RemainingTroopCount { get; }
     public int CurrentHitpoints { get; }
 
-    public SquadBattleState(int effectiveAttack, 
-        int effectiveDefense, 
+    public SquadBattleState(Squad source,
         int remainingMoral, 
         int effectiveTactics, 
         int effectiveRank, 
+        int tacticsGainRate,
         IEnumerable<ThreatRangeState> effectiveThreatRange, 
         int remainingTroopCount, 
         int currentHitpoints)
     {
-        EffectiveAttack = effectiveAttack;
-        EffectiveDefense = effectiveDefense;
+        Source = source;
         RemainingMoral = remainingMoral;
         EffectiveTactics = effectiveTactics;
         EffectiveRank = effectiveRank;
+        TacticsGainRate = tacticsGainRate;
         EffectiveThreatRange = effectiveThreatRange;
         RemainingTroopCount = remainingTroopCount;
         CurrentHitpoints = currentHitpoints;
+    }
+
+    internal Squad ToSquad()
+    {
+        int injury = Source.TroopCount - RemainingTroopCount;
+        return new Squad(Source.DisplayHooks,
+            Source.Moral,
+            Source.Effectiveness,
+            Source.Discipline,
+            Source.BaseTacticsGain,
+            Source.Attack,
+            Source.Defense,
+            Source.RankOrder,
+            Source.ThreatRange,
+            Source.TroopCount,
+            injury,
+            Source.Stealth,
+            Source.FoodCost);
+    }
+
+    internal SquadBattleState GetNextBattleState(IEnumerable<ArmyInBattle> allies, IEnumerable<ArmyInBattle> opponents)
+    {
+        int nextTactics = EffectiveTactics + TacticsGainRate;
+        int nextRank = GetNextRank(allies);
+
+        IEnumerable<ThreatRangeState> nextThreatRange = GetNextThreatRange();
+
+        int totalDamage = GetTotalDamage(opponents);
+        int losses = totalDamage / EffectiveDefense;
+        int nextTroopCount = Math.Max(0, RemainingTroopCount - losses);
+        int nextHitpoints = totalDamage % EffectiveDefense;
+        int nextMoral = GetNextMoral();
+
+        return new SquadBattleState(Source,
+            nextMoral,
+            nextTactics,
+            nextRank,
+            TacticsGainRate,
+            nextThreatRange,
+            nextTroopCount,
+            nextHitpoints
+            );
+    }
+
+    private int GetNextMoral()
+    {
+        throw new NotImplementedException();
+    }
+
+    private int GetTotalDamage(IEnumerable<ArmyInBattle> opponents)
+    {
+        throw new NotImplementedException();
+    }
+
+    private IEnumerable<ThreatRangeState> GetNextThreatRange()
+    {
+        throw new NotImplementedException();
+    }
+
+    private int GetNextRank(IEnumerable<ArmyInBattle> allies)
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -298,7 +361,7 @@ public class BattleState
 
     private static bool GetIsAnyoneRemaining(IEnumerable<ArmyInBattle> forces)
     {
-        return forces.SelectMany(item => item.Squadrons).Any(item => item.State.RemainingTroopCount > 0);
+        return forces.SelectMany(item => item.SquadStates).Any(item => item.RemainingTroopCount > 0);
     }
 
     internal BattleState GetNextState()
@@ -342,68 +405,40 @@ public class Battle
     }
 }
 
-public class SquadInBattle
-{
-    public Squad Squad { get; }
-    public SquadBattleState State { get; }
-
-    public SquadInBattle(Squad squad, SquadBattleState state)
-    {
-        Squad = squad;
-        State = state;
-    }
-}
 public class ArmyInBattle
 {
-    public Army ArmyAtWarStart { get; }
-    public Army ArmyAtBattleStart { get; }
-    public IEnumerable<SquadInBattle> Squadrons { get; }
+    public Army SourceArmy { get; }
+    public IEnumerable<SquadBattleState> SquadStates { get; }
 
-    public ArmyInBattle(Army armyAtWarStart, Army armyAtBattleStart)
+    public ArmyInBattle(Army sourceArmy, IEnumerable<SquadBattleState> squadStates)
     {
-        ArmyAtWarStart = armyAtWarStart;
-        ArmyAtBattleStart = armyAtBattleStart;
-        Squadrons = CreateInitialSquadrons().ToArray();
-    }
-
-    public ArmyInBattle(Army armyAtWarStart, Army armyAtBattleStart, IEnumerable<SquadInBattle> squadrons)
-    {
-        ArmyAtWarStart = armyAtWarStart;
-        ArmyAtBattleStart = armyAtBattleStart;
-        Squadrons = squadrons;
-    }
-
-    private IEnumerable<SquadInBattle> CreateInitialSquadrons()
-    {
-        foreach (Squad squad in ArmyAtBattleStart.Squadrons)
-        {
-            SquadBattleState state = GetSquadBattleState(squad, ArmyAtBattleStart);
-            yield return new SquadInBattle(squad, state);
-        }
-    }
-
-    private SquadBattleState GetSquadBattleState(Squad squad, Army armyAtBattleStart)
-    {
-        throw new NotImplementedException();
+        SourceArmy = sourceArmy;
+        SquadStates = squadStates;
     }
 
     internal ArmyInBattle GetNextState(IEnumerable<ArmyInBattle> defenders)
     {
-        IEnumerable<SquadInBattle> newArmy = GetNextArmyState(defenders);
-        return new ArmyInBattle(ArmyAtWarStart, ArmyAtBattleStart, newArmy);
+        IEnumerable<SquadBattleState> newArmy = GetNextArmyState(defenders);
+        return new ArmyInBattle(SourceArmy, newArmy);
     }
 
-    private IEnumerable<SquadInBattle> GetNextArmyState(IEnumerable<ArmyInBattle> defenders)
+    private IEnumerable<SquadBattleState> GetNextArmyState(IEnumerable<ArmyInBattle> allies, IEnumerable<ArmyInBattle> opponents)
     {
-        throw new NotImplementedException();
+        List<SquadBattleState> ret = new List<SquadBattleState>();
+        foreach (SquadBattleState ally in SquadStates)
+        {
+            SquadBattleState nextAlly = ally.GetNextBattleState(allies, opponents);
+            ret.Add(nextAlly);
+        }
+        return ret;
     }
 
     internal Army ToArmy()
     {
-        throw new NotImplementedException();
+        IEnumerable<Squad> squads = SquadStates.Select(item => item.ToSquad()).ToArray();
+        return new Army(SourceArmy.Leader, SourceArmy.Scouts, SourceArmy.Spies, SourceArmy.Logistics, squads);
     }
 }
-
 
 public class ThreatRangeState
 {
@@ -416,7 +451,6 @@ public class ThreatRangeState
         Span = span;
     }
 }
-
 
 public class ThreatRange
 {
@@ -467,6 +501,15 @@ public class Army
     public Spies Spies { get; }
     public Logistics Logistics { get; }
     public IEnumerable<Squad> Squadrons { get; }
+
+    public Army(Leader leader, Scouts scouts, Spies spies, Logistics logistics, IEnumerable<Squad> squadrons)
+    {
+        Leader = leader;
+        Scouts = scouts;
+        Spies = spies;
+        Logistics = logistics;
+        Squadrons = squadrons;
+    }
 }
 
 public class Spies
