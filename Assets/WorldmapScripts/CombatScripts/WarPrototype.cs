@@ -203,6 +203,7 @@ public class Squad
     public int Stealth { get; }
     public int Raiding { get; }
     public int FoodCost { get; }
+    public bool IsChaff { get; }
 
     public Squad(SquadDisplayHooks displayHooks, 
         int moral, 
@@ -216,7 +217,8 @@ public class Squad
         int troopCount,
         int injuredTroops,
         int stealth,
-        int foodCost)
+        int foodCost,
+        bool isChaff)
     {
         DisplayHooks = displayHooks;
         Moral = moral;
@@ -231,6 +233,7 @@ public class Squad
         InjuredTroops = injuredTroops;
         Stealth = stealth;
         FoodCost = foodCost;
+        IsChaff = isChaff;
     }
 }
 
@@ -279,7 +282,8 @@ public class SquadBattleState
             Source.TroopCount,
             injury,
             Source.Stealth,
-            Source.FoodCost);
+            Source.FoodCost,
+            Source.IsChaff);
     }
 
     internal SquadBattleState GetNextBattleState(IEnumerable<ArmyInBattle> allies, IEnumerable<ArmyInBattle> opponents)
@@ -290,9 +294,9 @@ public class SquadBattleState
         IEnumerable<ThreatRangeState> nextThreatRange = GetNextThreatRange();
 
         int totalDamage = GetTotalDamage(opponents);
-        int losses = totalDamage / EffectiveDefense;
+        int losses = totalDamage / Source.Defense;
         int nextTroopCount = Math.Max(0, RemainingTroopCount - losses);
-        int nextHitpoints = totalDamage % EffectiveDefense;
+        int nextHitpoints = totalDamage % Source.Defense;
         int nextMoral = GetNextMoral();
 
         return new SquadBattleState(Source,
@@ -366,8 +370,8 @@ public class BattleState
 
     internal BattleState GetNextState()
     {
-        IEnumerable<ArmyInBattle> nextAttackers = Attackers.Select(item => item.GetNextState(Defenders)).ToArray();
-        IEnumerable<ArmyInBattle> nextDefenders = Defenders.Select(item => item.GetNextState(Attackers)).ToArray();
+        IEnumerable<ArmyInBattle> nextAttackers = Attackers.Select(item => item.GetNextState(Defenders, Attackers)).ToArray();
+        IEnumerable<ArmyInBattle> nextDefenders = Defenders.Select(item => item.GetNextState(Attackers, Defenders)).ToArray();
         return new BattleState(nextAttackers, nextDefenders);
     }
 
@@ -416,13 +420,7 @@ public class ArmyInBattle
         SquadStates = squadStates;
     }
 
-    internal ArmyInBattle GetNextState(IEnumerable<ArmyInBattle> defenders)
-    {
-        IEnumerable<SquadBattleState> newArmy = GetNextArmyState(defenders);
-        return new ArmyInBattle(SourceArmy, newArmy);
-    }
-
-    private IEnumerable<SquadBattleState> GetNextArmyState(IEnumerable<ArmyInBattle> allies, IEnumerable<ArmyInBattle> opponents)
+    internal ArmyInBattle GetNextState(IEnumerable<ArmyInBattle> allies, IEnumerable<ArmyInBattle> opponents)
     {
         List<SquadBattleState> ret = new List<SquadBattleState>();
         foreach (SquadBattleState ally in SquadStates)
@@ -430,7 +428,7 @@ public class ArmyInBattle
             SquadBattleState nextAlly = ally.GetNextBattleState(allies, opponents);
             ret.Add(nextAlly);
         }
-        return ret;
+        return new ArmyInBattle(SourceArmy, ret);
     }
 
     internal Army ToArmy()
