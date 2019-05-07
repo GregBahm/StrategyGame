@@ -240,7 +240,6 @@ public class Squad
 public class SquadBattleState
 {
     public Squad Source { get; }
-    public int RemainingMoral { get; }
     public int EffectiveTactics { get; }
     public int TacticsGainRate { get; }
     public int EffectiveRank { get; }
@@ -249,7 +248,6 @@ public class SquadBattleState
     public int CurrentHitpoints { get; }
 
     public SquadBattleState(Squad source,
-        int remainingMoral, 
         int effectiveTactics, 
         int effectiveRank, 
         int tacticsGainRate,
@@ -258,7 +256,6 @@ public class SquadBattleState
         int currentHitpoints)
     {
         Source = source;
-        RemainingMoral = remainingMoral;
         EffectiveTactics = effectiveTactics;
         EffectiveRank = effectiveRank;
         TacticsGainRate = tacticsGainRate;
@@ -297,10 +294,9 @@ public class SquadBattleState
         int losses = totalDamage / Source.Defense;
         int nextTroopCount = Math.Max(0, RemainingTroopCount - losses);
         int nextHitpoints = totalDamage % Source.Defense;
-        int nextMoral = GetNextMoral();
+        bool routed = GetIsRouted(allies, nextTroopCount);
 
         return new SquadBattleState(Source,
-            nextMoral,
             nextTactics,
             nextRank,
             TacticsGainRate,
@@ -310,14 +306,38 @@ public class SquadBattleState
             );
     }
 
-    private int GetNextMoral()
+    private bool GetIsRouted(IEnumerable<ArmyInBattle> allies, int nextTroopCount)
     {
-        throw new NotImplementedException();
+        int armyStartingUnits = allies.Sum(item => item.SourceArmy.Squadrons.Where(squad => !squad.IsChaff).Sum(squad => squad.TroopCount));
+        int currentUnits = allies.Sum(item => item.SquadStates.Where(squad => !squad.Source.IsChaff).Sum(squad => squad.RemainingTroopCount));
+        int squadStartingUnits = Source.TroopCount;
+
+        int armyDamage = 100 - ((currentUnits * 100) / armyStartingUnits);
+        int squadDamage = 100 - ((nextTroopCount * 100) / squadStartingUnits);
+        int totalMoralDamage = armyDamage + squadDamage;
+        return totalMoralDamage > Source.Moral;
     }
 
     private int GetTotalDamage(IEnumerable<ArmyInBattle> opponents)
     {
-        throw new NotImplementedException();
+        int ret = 0;
+        foreach (ArmyInBattle opponent in opponents)
+        {
+            foreach (SquadBattleState squad in opponent.SquadStates)
+            {
+                int damage = squad.GetDamageTo(EffectiveRank);
+                ret += damage;
+            }
+        }
+        return ret;
+    }
+
+    private int GetDamageTo(int effectiveRank)
+    {
+        foreach (ThreatRangeState threatState in EffectiveThreatRange)
+        {
+
+        }
     }
 
     private IEnumerable<ThreatRangeState> GetNextThreatRange()
