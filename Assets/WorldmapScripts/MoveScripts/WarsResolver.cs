@@ -46,20 +46,20 @@ public class WarsResolver
         {
             foreach (KeyValuePair<Province, List<AttackMove>> item in byTargetTable)
             {
-                WarForces defender = forcesTable.GetForcesFor(item.Key);
-                IEnumerable<WarForces> invaders = GetAttackersForProvince(item.Key, item.Value, forcesTable).ToArray();
+                FactionArmies defender = forcesTable.GetForcesFor(item.Key);
+                IEnumerable<FactionArmies> invaders = GetAttackersForProvince(item.Key, item.Value, forcesTable).ToArray();
                 ProvinceState locationState = state.GetProvinceState(item.Key);
                 FinalWarsSetup retItem = new FinalWarsSetup(locationState, defender, invaders);
                 yield return retItem;
             }
         }
 
-        private IEnumerable<WarForces> GetAttackersForProvince(Province defender, IEnumerable<AttackMove> invaders, WarForcesTable forcesTable)
+        private IEnumerable<FactionArmies> GetAttackersForProvince(Province defender, IEnumerable<AttackMove> invaders, WarForcesTable forcesTable)
         {
             IEnumerable<IEnumerable<AttackMove>> invadersByFaction = GetInvadersByFaction(invaders).ToArray();
             foreach (IEnumerable<AttackMove> invadingFaction in invadersByFaction)
             {
-                WarForces retItem = forcesTable.GetForcesFor(invadingFaction);
+                FactionArmies retItem = forcesTable.GetForcesFor(invadingFaction);
                 yield return retItem;
             }
         }
@@ -105,7 +105,7 @@ public class WarsResolver
         public IEnumerable<War> Wars { get; }
         public Faction FinalWinner { get; } // Null if multiple invaders beat the defender
 
-        public FinalWarsSetup(ProvinceState location, WarForces defender, IEnumerable<WarForces> invaders)
+        public FinalWarsSetup(ProvinceState location, FactionArmies defender, IEnumerable<FactionArmies> invaders)
         {
             Wars = GetWars(location, defender, invaders);
             FinalWinner = GetFinalWindner(defender.Faction, Wars);
@@ -125,10 +125,10 @@ public class WarsResolver
             return null;
         }
 
-        private static IEnumerable<War> GetWars(ProvinceState location, WarForces defender, IEnumerable<WarForces> invaders)
+        private static IEnumerable<War> GetWars(ProvinceState location, FactionArmies defender, IEnumerable<FactionArmies> invaders)
         {
             List<War> ret = new List<War>();
-            foreach (WarForces invader in invaders)
+            foreach (FactionArmies invader in invaders)
             {
                 War war = new War(location, invader, defender);
                 ret.Add(war);
@@ -139,9 +139,9 @@ public class WarsResolver
 
     private class WarForcesTable
     {
-        private ReadOnlyDictionary<AttackMove, WarForces> _attackerForces;
+        private ReadOnlyDictionary<AttackMove, FactionArmies> _attackerForces;
 
-        private ReadOnlyDictionary<Province, WarForces> _defenderForces;
+        private ReadOnlyDictionary<Province, FactionArmies> _defenderForces;
 
         public WarForcesTable(GameState state, IEnumerable<AttackMove> attackMoves)
         {
@@ -149,55 +149,55 @@ public class WarsResolver
             _defenderForces = GetDefenderForces(state, attackMoves);
         }
 
-        private WarForces CalculateDefendingForces(ProvinceState target, int attacksByDefender, GameState state)
+        private FactionArmies CalculateDefendingForces(ProvinceState target, int attacksByDefender, GameState state)
         {
             // TODO: Calculate defending forces using these factors
-            return new WarForces(target.Owner, new Army[0]);
+            return new FactionArmies(target.Owner, new Army[0]);
         }
 
-        private WarForces CalculateAttackingForces(AttackMove move, int attacksByFaction, GameState state)
+        private FactionArmies CalculateAttackingForces(AttackMove move, int attacksByFaction, GameState state)
         {
             // TODO: Calculate war forces using these factors
-            return new WarForces(move.Faction, new Army[0]);
+            return new FactionArmies(move.Faction, new Army[0]);
         }
 
-        private ReadOnlyDictionary<Province, WarForces> GetDefenderForces(GameState state, IEnumerable<AttackMove> attacks)
+        private ReadOnlyDictionary<Province, FactionArmies> GetDefenderForces(GameState state, IEnumerable<AttackMove> attacks)
         {
-            Dictionary<Province, WarForces> ret = new Dictionary<Province, WarForces>();
+            Dictionary<Province, FactionArmies> ret = new Dictionary<Province, FactionArmies>();
             HashSet<Province> targets = new HashSet<Province>(attacks.Select(item => item.TargetProvince));
             foreach (Province target in targets)
             {
                 ProvinceState provinceOwner = state.GetProvinceState(target);
                 int attacksByDefender = attacks.Count(item => item.Faction == provinceOwner.Owner);
-                WarForces forces = CalculateDefendingForces(provinceOwner, attacksByDefender, state);
+                FactionArmies forces = CalculateDefendingForces(provinceOwner, attacksByDefender, state);
                 ret.Add(target, forces);
             }
-            return new ReadOnlyDictionary<Province, WarForces>(ret);
+            return new ReadOnlyDictionary<Province, FactionArmies>(ret);
         }
 
-        private ReadOnlyDictionary<AttackMove, WarForces> GetAttackerForces(GameState state, IEnumerable<AttackMove> attackMoves)
+        private ReadOnlyDictionary<AttackMove, FactionArmies> GetAttackerForces(GameState state, IEnumerable<AttackMove> attackMoves)
         {
-            Dictionary<AttackMove, WarForces> ret = new Dictionary<AttackMove, WarForces>();
+            Dictionary<AttackMove, FactionArmies> ret = new Dictionary<AttackMove, FactionArmies>();
             foreach (AttackMove move in attackMoves)
             {
                 int attacksByFaction = attackMoves.Count(item => item.Faction == move.Faction);
-                WarForces forces = CalculateAttackingForces(move, attacksByFaction, state);
+                FactionArmies forces = CalculateAttackingForces(move, attacksByFaction, state);
                 ret.Add(move, forces);
             }
-            return new ReadOnlyDictionary<AttackMove, WarForces>(ret);
+            return new ReadOnlyDictionary<AttackMove, FactionArmies>(ret);
         }
 
-        public WarForces GetForcesFor(AttackMove attackMove)
+        public FactionArmies GetForcesFor(AttackMove attackMove)
         {
             return _attackerForces[attackMove];
         }
-        public WarForces GetForcesFor(IEnumerable<AttackMove> convergingAttacks)
+        public FactionArmies GetForcesFor(IEnumerable<AttackMove> convergingAttacks)
         {
-            IEnumerable<WarForces> forces = convergingAttacks.Select(item => _attackerForces[item]);
-            return WarForces.CombineForces(forces, convergingAttacks.First().Faction);
+            IEnumerable<FactionArmies> forces = convergingAttacks.Select(item => _attackerForces[item]);
+            return FactionArmies.CombineForces(forces, convergingAttacks.First().Faction);
         }
 
-        public WarForces GetForcesFor(Province defender)
+        public FactionArmies GetForcesFor(Province defender)
         {
             return _defenderForces[defender];
         }
