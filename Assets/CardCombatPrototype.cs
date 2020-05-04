@@ -270,7 +270,7 @@ namespace CardCombat
                     CombatantCard combatant = ret[i] as CombatantCard;
                     if (combatant != null)
                     {
-                        MutableCombatant mutable = combatant.AsMutable();
+                        CombatantCardBuilder mutable = combatant.AsMutable();
                         mutable.Attack += Skill;
                         ret[i] = mutable.AsReadonly();
                     }
@@ -292,6 +292,89 @@ namespace CardCombat
         public override ReadOnlyCollection<Card> GetApplied(ReadOnlyCollection<Card> queue)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class BattleQueueBuilder
+    {
+        private List<QueueCard> queue;
+
+        public BattleQueueBuilder(ReadOnlyCollection<Card> queue)
+        {
+            this.queue = queue.Select(item => new QueueCard(item)).ToList();
+        }
+        
+        public IReadOnlyCollection<Card> GetModifiedDeck()
+        {
+            List<Card> ret = new List<Card>();
+            foreach (QueueCard item in queue)
+            {
+                ret.Add(item.GetModifiedCard());
+            }
+            return ret.AsReadOnly();
+        }
+
+        public CombatantCardBuilder GetTargetCombatant()
+        {
+
+        }
+
+        private class QueueCard
+        {
+            private readonly Card originalCard;
+            private readonly Lazy<CombatantCardBuilder> mutableCombatant;
+
+            public QueueCard(Card originalCard)
+            {
+                this.originalCard = originalCard;
+                this.mutableCombatant = 
+            }
+
+            public Card GetModifiedCard()
+            {
+                if(mutableCombatant.IsValueCreated)
+                {
+                    return mutableCombatant.Value.AsReadonly();
+                }
+                return originalCard;
+            }
+        }
+    }
+
+    public class CombatantCardBuilder
+    {
+        public CardFaction Faction { get; set; }
+
+        public CardIdentity Identity { get; set; }
+
+        public int Initiative { get; set; }
+
+        public int MaxHitpoints { get; set; }
+
+        public int CurrentHitpoints { get; set; }
+
+        public int Attack { get; set; }
+
+        public int Defense { get; set; }
+
+        public int MaxMoral { get; set; }
+
+        public int RemainingMoral { get; set; }
+
+        public Rank Rank { get; set; }
+
+        public CombatantCard AsReadonly()
+        {
+            return new CombatantCard(Faction,
+                Identity,
+                Initiative,
+                MaxHitpoints,
+                CurrentHitpoints,
+                Attack,
+                Defense,
+                MaxMoral,
+                RemainingMoral,
+                Rank);
         }
     }
 
@@ -345,6 +428,7 @@ namespace CardCombat
             if(CanStillFight)
             {
                 int targetIndex = GetCombatTargetIndex(queue);
+
                 CombatantCard damagedTarget = GetDamagedTarget(ret[targetIndex]);
                 ret.RemoveAt(targetIndex);
                 ret.Insert(targetIndex, damagedTarget);
@@ -357,11 +441,12 @@ namespace CardCombat
             return ret.AsReadOnly();
         }
 
-        private CombatantCard GetDamagedTarget(Card rawTarget)
+        private CombatantCard GetDamagedTarget(CombatantCard rawTarget)
         {
-            CombatantCard castTarget = rawTarget as CombatantCard;
-            MutableCombatant target = castTarget.AsMutable();
-            throw new NotFiniteNumberException();
+            CombatantCardBuilder target = castTarget.AsMutable();
+
+            target = 
+
             return target.AsReadonly();
         }
 
@@ -370,9 +455,9 @@ namespace CardCombat
             throw new NotImplementedException();
         }
 
-        public MutableCombatant AsMutable()
+        public CombatantCardBuilder GetBuilder(BattleQueueBuilder queueBuilder)
         {
-            return new MutableCombatant()
+            return new CombatantCardBuilder()
             {
                 Faction = Faction,
                 Identity = Identity,
@@ -385,43 +470,6 @@ namespace CardCombat
                 RemainingMoral = RemainingMoral,
                 Rank = Rank
             };
-        }
-    }
-
-    public class MutableCombatant
-    {
-        public CardFaction Faction { get; set; }
-
-        public CardIdentity Identity { get; set; }
-
-        public int Initiative { get; set; }
-
-        public int MaxHitpoints { get; set; }
-
-        public int CurrentHitpoints { get; set; }
-
-        public int Attack { get; set; }
-
-        public int Defense { get; set; }
-
-        public int MaxMoral { get; set; }
-
-        public int RemainingMoral { get; set; }
-
-        public Rank Rank { get; set; }
-
-        public CombatantCard AsReadonly()
-        {
-            return new CombatantCard(Faction,
-                Identity,
-                Initiative,
-                MaxHitpoints,
-                CurrentHitpoints,
-                Attack,
-                Defense,
-                MaxMoral,
-                RemainingMoral,
-                Rank);
         }
     }
 }
