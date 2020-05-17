@@ -25,10 +25,9 @@ public class Battle
         List<BattleRound> ret = new List<BattleRound>();
         while (currentState.Status == BattleStatus.Ongoing)
         {
-            BattleState selfModified = currentState.GetSelfUpdated();
-            IEnumerable<UnitStateModifier> attacks = selfModified.GetAttackModifiers().ToArray();
-            BattleState finalState = selfModified.GetWithAttacksApplied(attacks);
-            BattleRound round = new BattleRound(currentState, selfModified, attacks, finalState);
+            IEnumerable<UnitBattleEffects> effects = currentState.GetUnitEffects().ToArray();
+            BattleState finalState = currentState.GetWithEffectsApplied(effects);
+            BattleRound round = new BattleRound(currentState, effects, finalState);
             ret.Add(round);
 
             currentState = finalState;
@@ -39,19 +38,15 @@ public class Battle
 
 public class BattleRound
 {
-
     public BattleState InitialState { get; }
-    public BattleState SelfModified { get; }
-    public IEnumerable<UnitStateModifier> Modifiers { get; }
+    public IEnumerable<UnitBattleEffects> Effects { get; }
     public BattleState FinalState { get; }
     public BattleRound(BattleState initialState, 
-        BattleState selfModified, 
-        IEnumerable<UnitStateModifier> modifiers, 
+        IEnumerable<UnitBattleEffects> effects, 
         BattleState finalState)
     {
         InitialState = initialState;
-        SelfModified = selfModified;
-        Modifiers = modifiers;
+        Effects = effects;
         FinalState = finalState;
     }
 }
@@ -85,49 +80,79 @@ public class BattleState
         if (!LeftSide.StillFighting && RightSide.StillFighting) return BattleStatus.RightWins;
         return BattleStatus.Draw;
     }
-
-    public BattleState GetSelfUpdated()
+    
+    public IEnumerable<UnitBattleEffects> GetUnitEffects()
     {
-        BattleStageSide leftSelfUpdate = GetSelfUpdates(LeftSide, RightSide);
-        BattleStageSide rightSelfUpdates = GetSelfUpdates(RightSide, LeftSide);
-        return new BattleState(leftSelfUpdate, rightSelfUpdates);
-    }
-
-    public IEnumerable<UnitStateModifier> GetAttackModifiers()
-    {
-
-    }
-
-    public BattleState GetWithAttacksApplied(IEnumerable<UnitStateModifier> modifiers)
-    {
-        Dictionary<BattleUnit, BattleUnitState> leftDictionary = LeftSide.Units.ToDictionary(item => item.Id, item => item);
-        Dictionary<BattleUnit, BattleUnitState> rightDictionary = RightSide.Units.ToDictionary(item => item.Id, item => item);
-
-        foreach (UnitStateModifier modifier in modifiers)
+        foreach (var item in LeftSide.Units)
         {
-            if(leftDictionary.ContainsKey(modifier.Target))
-            {
-                ApplyAttack(modifier, leftDictionary);
-            }
-            else if(rightDictionary.ContainsKey(modifier.Target))
-            {
-                ApplyAttack(modifier, rightDictionary);
-            }
-            else
-            {
-                throw new Exception("Can't find the target of an attack modifier");
-            }
+            yield return item.GetUnitEffects(this);
+        }
+        foreach (var item in RightSide.Units)
+        {
+            yield return item.GetUnitEffects(this);
         }
     }
 
-    private void ApplyAttack(UnitStateModifier modifier, Dictionary<BattleUnit, BattleUnitState> unitsDictionary)
+    public BattleState GetWithEffectsApplied(IEnumerable<UnitBattleEffects> effects)
     {
-        throw new NotImplementedException();
+        Dictionary<BattleUnit, EffectsBuilder> dictionary = GetEffectsDictionary();
+        foreach (UnitStateModifier item in effects.SelectMany(item => item.UnitModifications))
+        {
+            dictionary[item.Target].Add(item);
+        }
+        List<BattleUnitState> newUnits = dictionary.Values.Select(item => item.GetNewState()).ToList();
+        newUnits.AddRange(effects.SelectMany(item => item.UnitSpawns));
+        return GetNewBattleState(newUnits);
     }
 
-    private BattleStageSide GetSelfUpdates(BattleStageSide self, BattleStageSide opponent)
+    private BattleState GetNewBattleState(List<BattleUnitState> newUnits)
     {
-        throw new NotImplementedException();
+        List<BattleUnitState> newLeftUnits = new List<BattleUnitState>();
+        List<BattleUnitState> newRightUnits = new List<BattleUnitState>();
+        foreach (BattleUnitState unit in newUnits)
+        {
+            if (unit.Side == Side.Left)
+                newLeftUnits.Add(unit);
+            else
+                newRightUnits.Add(unit);
+        }
+        BattleStageSide newLeft = new BattleStageSide(newLeftUnits);
+        BattleStageSide newRight = new BattleStageSide(newRightUnits);
+        return new BattleState(newLeft, newRight);
+    }
+
+    private class EffectsBuilder
+    {
+        private readonly BattleUnitState initialState;
+        private readonly List<UnitStateModifier> modifiers = new List<UnitStateModifier>();
+
+        public EffectsBuilder(BattleUnitState initialState)
+        {
+            this.initialState = initialState;
+        }
+
+        public void Add(UnitStateModifier modifier)
+        {
+            modifiers.Add(modifier);
+        }
+
+        public BattleUnitState GetNewState()
+        {
+            return initialState.GetWithModifiersApplied(modifiers);
+        }
+    }
+
+    private Dictionary<BattleUnit, EffectsBuilder> GetEffectsDictionary()
+    {
+        Dictionary<BattleUnit, EffectsBuilder> ret = new Dictionary<BattleUnit, EffectsBuilder>();
+
+        List<BattleUnitState> units = LeftSide.Units.ToList();
+        units.AddRange(RightSide.Units);
+        foreach (BattleUnitState unit in units)
+        {
+            ret.Add(unit.Id, new EffectsBuilder(unit));
+        }
+        return ret;
     }
 }
 
@@ -157,22 +182,51 @@ public class BattleUnit
 public class BattleUnitState
 {
     public BattleUnit Id { get; }
+
+    public Side Side { get; }
+
     public float RemainingHitpoints { get; }
 
-    public bool IsAlive { get { return RemainingHitpoints > 0 && !Positiong.LeftBattlefield; } }
+    public bool IsAlive { get { return RemainingHitpoints > 0 && !Positiong.EscapedBattlefield; } }
     
-    public IEnumerable<AttackState> Attacks { get; }
+    public IEnumerable<BattleUnitAttack> EffectSources { get; }
 
     public PositioningState Positiong { get; }
-
-    public BattleUnitState GetNextSelf()
+    
+    public BattleUnitState GetWithModifiersApplied(IEnumerable<UnitStateModifier> modifiers)
     {
-        throw new NotImplementedException();
+
     }
 
-    public BattleUnitState GetWithModifierApplied(UnitStateModifier modifier)
+    public UnitBattleEffects GetUnitEffects(BattleState state)
     {
+        List<UnitStateModifier> modifiers = new List<UnitStateModifier>();
+        List<BattleUnitState> spawns = new List<BattleUnitState>();
+        
+        foreach (BattleUnitAttack attack in EffectSources)
+        {
+            var effects = attack.GetEffect(state);
+            modifiers.AddRange(effects.UnitModifications);
+            spawns.AddRange(effects.UnitSpawns);
 
+        }
+        return new UnitBattleEffects(modifiers, spawns);
+    }
+}
+
+public enum Side
+{
+    Left,
+    Right
+}
+
+public class BattleUnitAttack
+{
+    private BattleUnitState unit;
+
+    public UnitBattleEffects GetEffect(BattleState battleState)
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -180,21 +234,20 @@ public class PositioningState
 {
     public float Position { get; }
 
-    public bool LeftBattlefield { get; }
+    public bool EscapedBattlefield { get; }
 }
 
-public class AttackState
+public class UnitBattleEffects
 {
-    public 
-}
+    public IEnumerable<UnitStateModifier> UnitModifications { get; }
+    public IEnumerable<BattleUnitState> UnitSpawns { get; }
 
-public class AttackEffects
-{
-    public IEnumerable<UnitStateModifier> AllyStateModifications { get; }
-    public IEnumerable<BattleUnitState> AllySpawns { get; }
-
-    public IEnumerable<UnitStateModifier> EnemyModifications { get; }
-    public IEnumerable<BattleUnitState> EnemySpawns { get; }
+    public UnitBattleEffects(IEnumerable<UnitStateModifier> unitModifications, 
+        IEnumerable<BattleUnitState> unitSpawns)
+    {
+        UnitModifications = unitModifications;
+        UnitSpawns = unitSpawns;
+    }
 }
 
 public interface IEffectSource { }
