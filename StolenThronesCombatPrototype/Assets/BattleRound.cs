@@ -4,13 +4,16 @@ public class BattleRound
 {
     public BattleState InitialState { get; }
     public IEnumerable<BattalionBattleEffects> Effects { get; }
-    public BattleState FinalState { get; }
+    public BattleState WithEffectsApplied { get; }
+    public BattleState WithDefeatedRemoved { get; }
     public BattleRound(BattleState initialState, 
         IEnumerable<BattalionBattleEffects> effects, 
-        BattleState finalState)
+        BattleState withEffectsApplied,
+        BattleState withDefeatedRemoved)
     {
         InitialState = initialState;
         Effects = effects;
-        FinalState = finalState;
+        WithEffectsApplied = withEffectsApplied;
+        WithDefeatedRemoved = withDefeatedRemoved;
     }
 }

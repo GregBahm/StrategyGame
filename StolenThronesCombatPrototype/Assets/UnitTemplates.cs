@@ -1,20 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
-public static class UnitTemplates
+public static partial class UnitTemplates
 {
     public static BattalionState GetSwordsmen()
     {
-        BattalionIdentifier identifier = new BattalionIdentifier("Swordsmen");
-        List<BattalionEffector> effectors = new List<BattalionEffector>()
-        { };
-        return new BattalionState(identifier,
-            10,
-            10,
-            effectors);
+        BattalionBuilder builder = new BattalionBuilder("Swordsmen",
+            100,
+            100);
+        builder.Set(BattalionAttribute.Armor, 10);
+        builder.Set(BattalionAttribute.Strength, 10);
+        builder.AddEffector(new MeleeAttackTemplate(10));
+        return builder.ToState();
     }
 
     public static BattalionState GetPeasants()
     {
+        BattalionBuilder builder = new BattalionBuilder("Peasants",
+            100,
+            50);
+        builder.Set(BattalionAttribute.Strength, 10);
+        builder.AddEffector(new MeleeAttackTemplate(5));
+        builder.AddEffector(new RangedAttackTemplate(10));
+        return builder.ToState();
     }
 
     public static BattalionState GetPikemen()

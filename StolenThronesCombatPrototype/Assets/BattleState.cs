@@ -37,6 +37,13 @@ public class BattleState
         }
     }
 
+    internal BattleState GetWithDefeatedRemoved()
+    {
+        BattleStageSide newLeftSide = LeftSide.GetWithDefeatedRemoved();
+        BattleStageSide newRightSide = RightSide.GetWithDefeatedRemoved();
+        return new BattleState(newLeftSide, newRightSide);
+    }
+
     public BattleState GetWithEffectsApplied(IEnumerable<BattalionBattleEffects> effects)
     {
         Dictionary<BattalionIdentifier, EffectsBuilder> dictionary = GetEffectsDictionary();

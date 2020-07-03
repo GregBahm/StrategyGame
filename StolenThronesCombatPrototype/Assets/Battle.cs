@@ -18,11 +18,12 @@ public class Battle
         while (currentState.Status == BattleStatus.Ongoing)
         {
             IEnumerable<BattalionBattleEffects> effects = currentState.GetUnitEffects().ToArray();
-            BattleState finalState = currentState.GetWithEffectsApplied(effects);
-            BattleRound round = new BattleRound(currentState, effects, finalState);
+            BattleState withEffectsApplied = currentState.GetWithEffectsApplied(effects);
+            BattleState withDefeatedRemoved = withEffectsApplied.GetWithDefeatedRemoved();
+            BattleRound round = new BattleRound(currentState, effects, withEffectsApplied, withDefeatedRemoved);
             ret.Add(round);
 
-            currentState = finalState;
+            currentState = withDefeatedRemoved;
         }
         return ret;
     }
