@@ -7,6 +7,12 @@
         Regular,
         ArmorPiercing
     }
+
+    public enum MeleeAttackType
+    {
+        Regular,
+        Charging
+    }
     
     public static BattalionAttribute GetDamageAttributeFor(DamageType damage)
     {

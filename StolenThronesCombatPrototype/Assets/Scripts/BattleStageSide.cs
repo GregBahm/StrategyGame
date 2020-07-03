@@ -18,7 +18,7 @@ public class BattleStageSide
         Rear = rear.AsReadOnly();
         Mid = mid.AsReadOnly();
         Front = front.AsReadOnly();
-        AllUnits = rear.Concat(mid).Concat(front).ToList().AsReadOnly();
+        AllUnits = front.Concat(mid).Concat(rear).ToList().AsReadOnly();
         StillFighting = GetIsStillFighting();
     }
 
