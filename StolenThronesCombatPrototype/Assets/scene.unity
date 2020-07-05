@@ -151,25 +151,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bindings:
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: 49991e1208a125e4fb2f4800fcf60885, type: 3}
     Type: 0
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: 90b628b606461ac40af343bc5ac8f71b, type: 3}
     Type: 1
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: a4aa7a4d8a0464e4d94258d54202683e, type: 3}
     Type: 2
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: c6999d5310d7230409fd5a67386aceb0, type: 3}
     Type: 3
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: e715a42adbdcc2240a3d56e60f495a1c, type: 3}
     Type: 4
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: 81a6b0b158537b546a00babe841ea48b, type: 3}
     Type: 5
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: 3151ed7ce969c674bbbde1d0cdb6f31a, type: 3}
     Type: 6
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: b44bf60816ddd674985fceb3e068ff73, type: 3}
     Type: 7
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: 8e12dd293820a4344863c1dde5500789, type: 3}
     Type: 8
-  - Sprite: {fileID: 0}
+  - Sprite: {fileID: 2800000, guid: e7212df4139544d4cbf8695b9ee843b1, type: 3}
     Type: 9
   time: 0
   battalionVisualPrefab: {fileID: 8332659531305902848, guid: 5dfda91c47e594d4cab6abb8663cb8b3,
