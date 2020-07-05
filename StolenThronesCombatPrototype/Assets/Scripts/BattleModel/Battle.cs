@@ -3,7 +3,7 @@ using System.Linq;
 
 public class Battle
 {
-    public IReadOnlyCollection<BattleRound> Progression { get; }
+    public IReadOnlyList<BattleRound> Progression { get; }
 
     public Battle(BattleStageSide left, BattleStageSide right)
     {

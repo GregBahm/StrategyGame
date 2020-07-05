@@ -30,7 +30,7 @@ public class RangedAttackEffector : BattalionEffector
         }
         else
         {
-            BattlePosition position = allies.GetPosition(self);
+            BattlePosition position = allies.GetPosition(self.Id).EffectivePosition;
             if (position == BattlePosition.Mid ||
                 (position == BattlePosition.Rear && style != RangeStyle.ShortRange))
             {
@@ -61,10 +61,10 @@ public class RangedAttackEffector : BattalionEffector
 
     private IEnumerable<BattalionState> GetSplashTargets(BattalionState target, BattleStageSide enemies)
     {
-        BattlePosition targetPos = enemies.GetPosition(target);
+        BattlePosition targetPos = enemies.GetPosition(target.Id).EffectivePosition;
         foreach (BattalionState unit in enemies.AllUnits.Where(item => item != target))
         {
-            BattlePosition unitPos = enemies.GetPosition(unit);
+            BattlePosition unitPos = enemies.GetPosition(unit.Id).EffectivePosition;
             if(unitPos == targetPos)
             {
                 yield return unit;

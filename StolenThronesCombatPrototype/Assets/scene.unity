@@ -150,6 +150,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39e5529890a059f4880c07695e909c4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bindings:
+  - Sprite: {fileID: 0}
+    Type: 0
+  - Sprite: {fileID: 0}
+    Type: 1
+  - Sprite: {fileID: 0}
+    Type: 2
+  - Sprite: {fileID: 0}
+    Type: 3
+  - Sprite: {fileID: 0}
+    Type: 4
+  - Sprite: {fileID: 0}
+    Type: 5
+  - Sprite: {fileID: 0}
+    Type: 6
+  - Sprite: {fileID: 0}
+    Type: 7
+  - Sprite: {fileID: 0}
+    Type: 8
+  - Sprite: {fileID: 0}
+    Type: 9
+  time: 0
+  battalionVisualPrefab: {fileID: 8332659531305902848, guid: 5dfda91c47e594d4cab6abb8663cb8b3,
+    type: 3}
 --- !u!4 &518643894
 Transform:
   m_ObjectHideFlags: 0

@@ -21,7 +21,7 @@ public class MeleeAttackEffector : BattalionEffector
     public override BattalionBattleEffects GetEffect(BattalionState self, BattleStageSide allies, BattleStageSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
-        if(allies.GetPosition(self) == BattlePosition.Front)
+        if(allies.GetPosition(self.Id).EffectivePosition == BattlePosition.Front)
         {
             if(attackType == MeleeAttackType.Regular)
             {
@@ -53,7 +53,7 @@ public class MeleeAttackEffector : BattalionEffector
                 yield return unit;
                 break;
             }
-            BattlePosition pos = enemies.GetPosition(unit);
+            BattlePosition pos = enemies.GetPosition(unit.Id).EffectivePosition;
             if(pos == BattlePosition.Front || pos == BattlePosition.Mid)
             {
                 yield return unit;

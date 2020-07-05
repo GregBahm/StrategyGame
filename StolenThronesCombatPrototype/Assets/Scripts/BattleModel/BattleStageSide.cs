@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 public class BattleStageSide
@@ -8,6 +9,8 @@ public class BattleStageSide
     public IReadOnlyList<BattalionState> Mid { get; }
     public IReadOnlyList<BattalionState> Front { get; }
     public IEnumerable<BattalionState> AllUnits { get; }
+
+    private readonly IReadOnlyDictionary<BattalionIdentifier, BattlePositionInfo> positionsTable;
 
     public bool StillFighting { get; }
 
@@ -20,40 +23,45 @@ public class BattleStageSide
         Front = front.AsReadOnly();
         AllUnits = front.Concat(mid).Concat(rear).ToList().AsReadOnly();
         StillFighting = GetIsStillFighting();
+        positionsTable = CreatePositionsTable();
+    }
+
+    private Dictionary<BattalionIdentifier, BattlePositionInfo> CreatePositionsTable()
+    {
+        Dictionary<BattalionIdentifier, BattlePositionInfo> ret = new Dictionary<BattalionIdentifier, BattlePositionInfo>();
+        for (int i = 0; i < Front.Count; i++)
+        {
+            BattalionState unit = Front[i];
+            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Front, BattlePosition.Front, i);
+            ret.Add(unit.Id, info);
+        }
+        for (int i = 0; i < Mid.Count; i++)
+        {
+            BattalionState unit = Mid[i];
+            BattlePosition effectivePosition = Front.Any() ? BattlePosition.Mid : BattlePosition.Front;
+            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Mid, effectivePosition, i);
+            ret.Add(unit.Id, info);
+        }
+        for (int i = 0; i < Rear.Count; i++)
+        {
+            BattalionState unit = Rear[i];
+            BattlePosition effectivePosition = Front.Any() ? (Mid.Any() ? BattlePosition.Rear : BattlePosition.Mid) : BattlePosition.Front;
+            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Rear, effectivePosition, i);
+            ret.Add(unit.Id, info);
+        }
+        return ret;
     }
 
     private bool GetIsStillFighting()
     {
         return AllUnits.Any(unit => unit.IsAlive);
     }
-
-    public BattlePosition GetPosition(BattalionState battalion)
+    
+    public BattlePositionInfo GetPosition(BattalionIdentifier battalionId)
     {
-        if(Front.Contains(battalion))
+        if(positionsTable.ContainsKey(battalionId))
         {
-            return BattlePosition.Front;
-        }
-        if(Mid.Contains(battalion))
-        {
-            if(Front.Any())
-            {
-                return BattlePosition.Mid;
-            }
-            return BattlePosition.Front;
-        }
-        if(Rear.Contains(battalion))
-        {
-            bool anyFront = Front.Any();
-            bool anyMid = Mid.Any();
-            if(anyFront && anyMid)
-            {
-                return BattlePosition.Rear;
-            }
-            if(anyFront || anyMid)
-            {
-                return BattlePosition.Mid;
-            }
-            return BattlePosition.Front;
+            return positionsTable[battalionId];
         }
         throw new InvalidOperationException("Cannot GetPosition() of battalion because battalion is not in BattleStageSide");
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using static BattalionTemplates;
 
 public class BattalionBuilder
 {
@@ -6,11 +7,11 @@ public class BattalionBuilder
     private readonly List<BattalionEffector> effectors;
     private readonly List<BattalionStateModifier> modifiers;
 
-    public BattalionBuilder(string name,
+    public BattalionBuilder(BattalionType type,
         int hitpoints,
         int moral)
     {
-        id = new BattalionIdentifier(name);
+        id = new BattalionIdentifier(type);
         effectors = new List<BattalionEffector>();
         modifiers = new List<BattalionStateModifier>();
 

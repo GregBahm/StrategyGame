@@ -1,10 +1,25 @@
 ﻿using System;
+using UnityEngine;
 
-public static class BattalionTemplates
+public class BattalionTemplates
 {
+    public enum BattalionType
+    {
+        Swordsmen,
+        Slingers,
+        Pikemen,
+        Catapults,
+        Balistas,
+        Knights,
+        Longbowmen,
+        Crossbowmen,
+        Dragon,
+        Ogres
+    }
+
     public static BattalionState GetSwordsmen()
     {
-        BattalionBuilder builder = new BattalionBuilder("Swordsmen",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Swordsmen,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 10);
@@ -13,9 +28,9 @@ public static class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetPeasants()
+    public static BattalionState GetSlinger()
     {
-        BattalionBuilder builder = new BattalionBuilder("Peasants",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Slingers,
             100,
             50);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -26,7 +41,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetPikemen()
     {
-        BattalionBuilder builder = new BattalionBuilder("Pikemen",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Pikemen,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 5);
@@ -39,7 +54,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetCatapults()
     {
-        BattalionBuilder builder = new BattalionBuilder("Catapults",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Catapults,
             50,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -51,7 +66,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetBalista()
     {
-        BattalionBuilder builder = new BattalionBuilder("Balista",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Balistas,
             50,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -66,7 +81,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetKnights()
     {
-        BattalionBuilder builder = new BattalionBuilder("Knights",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Knights,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 20);
@@ -79,7 +94,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetLongbowmen()
     {
-        BattalionBuilder builder = new BattalionBuilder("Longbowmen",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Longbowmen,
             100,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -90,7 +105,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetCrossbowmen()
     {
-        BattalionBuilder builder = new BattalionBuilder("Crossbowmen",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Crossbowmen,
             100,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -102,7 +117,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetDragon()
     {
-        BattalionBuilder builder = new BattalionBuilder("Dragon",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Dragon,
             1000,
             500);
         builder.Set(BattalionAttribute.Armor, 30);
@@ -116,7 +131,7 @@ public static class BattalionTemplates
 
     public static BattalionState GetOgres()
     {
-        BattalionBuilder builder = new BattalionBuilder("Ogres",
+        BattalionBuilder builder = new BattalionBuilder(BattalionType.Ogres,
             200,
             100);
         builder.Set(BattalionAttribute.Regeneration, 20);
