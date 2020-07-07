@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static BattalionTemplates;
 
@@ -22,6 +23,7 @@ public class MainScript : MonoBehaviour
 
     private void Start()
     {
+        bindingsDictionary = bindings.ToDictionary(item => item.Type, item => item);
         Battle battle = CreateExampleBattle();
         visualizer = new BattleVisualiser(battle, this);
     }
@@ -35,11 +37,17 @@ public class MainScript : MonoBehaviour
     {
         BattleBuilder builder = new BattleBuilder();
 
-        builder.LeftFront.Add(BattalionTemplates.GetSlinger());
-        builder.LeftMid.Add(BattalionTemplates.GetKnights());
+        builder.LeftFront.Add(BattalionTemplates.GetSwordsmen());
+        builder.LeftFront.Add(BattalionTemplates.GetKnights());
+        builder.LeftFront.Add(BattalionTemplates.GetKnights());
+        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
+        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
+        builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
         builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
         builder.LeftRear.Add(BattalionTemplates.GetCatapults());
 
+        builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
+        builder.RightFront.Add(BattalionTemplates.GetPikemen());
         builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
         builder.RightMid.Add(BattalionTemplates.GetOgres());
         builder.RightMid.Add(BattalionTemplates.GetCrossbowmen());

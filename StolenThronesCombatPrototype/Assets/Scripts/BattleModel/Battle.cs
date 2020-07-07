@@ -3,6 +3,8 @@ using System.Linq;
 
 public class Battle
 {
+    private const int BattleRoundLimit = 1000;
+
     public IReadOnlyList<BattleRound> Progression { get; }
 
     public Battle(BattleStageSide left, BattleStageSide right)
@@ -15,7 +17,7 @@ public class Battle
         BattleState currentState = new BattleState(left, right);
 
         List<BattleRound> ret = new List<BattleRound>();
-        while (currentState.Status == BattleStatus.Ongoing)
+        while (currentState.Status == BattleStatus.Ongoing && ret.Count < BattleRoundLimit)
         {
             IEnumerable<BattalionBattleEffects> effects = currentState.GetUnitEffects().ToArray();
             BattleState withEffectsApplied = currentState.GetWithEffectsApplied(effects);

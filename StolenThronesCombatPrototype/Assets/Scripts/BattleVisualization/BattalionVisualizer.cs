@@ -1,4 +1,5 @@
 ﻿using System;
+using TMPro;
 using UnityEngine;
 
 public class BattalionVisualizer : MonoBehaviour
@@ -10,7 +11,13 @@ public class BattalionVisualizer : MonoBehaviour
     [SerializeField]
     private MeshRenderer meshRenderer;
     private Material mat;
-    
+
+    [SerializeField]
+    private TextMeshPro hitpoints;
+
+    [SerializeField]
+    private TextMeshPro moral;
+
     public void Initialize(int totalRounds, Texture2D sprite)
     {
         states = new BattalionStateVisuals[totalRounds];
@@ -29,19 +36,55 @@ public class BattalionVisualizer : MonoBehaviour
         DisplayState(states[index]);
     }
 
-    private void DisplayState(BattalionStateVisuals state)
+    private void DisplayState(BattalionStateVisuals visuals)
     {
-        if(state == null)
+        if(visuals == null)
         {
             primaryVisual.SetActive(false);
             return;
         }
         primaryVisual.SetActive(true);
-        PlaceVisual(state);
+        hitpoints.text = GetHPText(visuals.State);
+        moral.text = GetMPText(visuals.State);
+        PlaceVisual(visuals);
     }
 
-    private void PlaceVisual(BattalionStateVisuals state)
+    private string GetMPText(BattalionState state)
     {
-        throw new NotImplementedException();
+        int maxMP = state.GetAttribute(BattalionAttribute.MaxMoral);
+        int currentMP = state.GetAttribute(BattalionAttribute.RemainingMoral);
+        return "MP:" + currentMP + "\\" + maxMP;
+    }
+
+    private string GetHPText(BattalionState state)
+    {
+        int maxHP = state.GetAttribute(BattalionAttribute.MaxHitpoints);
+        int currentHP = state.GetAttribute(BattalionAttribute.RemainingHitpoints);
+        return "HP:" + currentHP + "\\" + maxHP;
+    }
+
+    private void PlaceVisual(BattalionStateVisuals visuals)
+    {
+        float xPos = GetBasePositionValue(visuals.Position);
+        float sideVal = visuals.Side == BattleSide.Left ? -1 : 1;
+        xPos += (float)visuals.PositionIndex / visuals.GroupCount;
+        xPos *= sideVal;
+
+        primaryVisual.transform.localPosition = new Vector3(xPos, 0, xPos);
+        mat.SetFloat("_Flip", visuals.Side == BattleSide.Left ? 0 : 1);
+    }
+
+    private float GetBasePositionValue(BattlePosition position)
+    {
+        switch (position)
+        {
+            case BattlePosition.Rear:
+                return 3;
+            case BattlePosition.Mid:
+                return 2;
+            case BattlePosition.Front:
+            default:
+                return 1;
+        }
     }
 }

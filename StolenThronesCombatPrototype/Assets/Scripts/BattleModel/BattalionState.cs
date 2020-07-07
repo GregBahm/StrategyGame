@@ -101,8 +101,11 @@ public class BattalionState
         int damage = newAttributes.Get(BattalionAttribute.Damage);
         int apDamage = newAttributes.Get(BattalionAttribute.ArmorPiercingDamage);
         int armor = newAttributes.Get(BattalionAttribute.Armor);
+        
         newAttributes.Set(BattalionAttribute.Damage, 0);
-        int hitpointDamage = Mathf.Max(0, damage - armor - apDamage);
+        newAttributes.Set(BattalionAttribute.ArmorPiercingDamage, 0);
+
+        int hitpointDamage = Mathf.Max(0, damage - armor) + apDamage;
         newAttributes.Add(BattalionAttribute.RemainingHitpoints, -hitpointDamage);
     }
 
