@@ -2,12 +2,15 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BattalionState
 {
     private readonly IReadOnlyDictionary<BattalionAttribute, int> attributes;
 
     public BattalionIdentifier Id { get; }
+
+    public BattalionPosition Position { get; }
 
     public bool IsAlive
     {
@@ -21,25 +24,29 @@ public class BattalionState
     public IEnumerable<BattalionEffector> EffectSources { get; }
 
     private BattalionState(BattalionIdentifier id,
-        AttributesTable attributes,
+        BattalionPosition position,
+        IReadOnlyDictionary<BattalionAttribute, int> attributes,
         IEnumerable<BattalionEffector> effectSources)
     {
         Id = id;
-        this.attributes = attributes.AsReadonly();
+        Position = position;
+        this.attributes = attributes;
         EffectSources = effectSources;
     }
 
     public BattalionState(BattalionIdentifier id,
+        BattalionPosition position,
         IEnumerable<BattalionStateModifier> modifiers,
         IEnumerable<BattalionEffector> effectSources)
         : this(id,
-             GetModifiedAttributes(new Dictionary<BattalionAttribute, int>(), modifiers),
+              position,
+             GetModifiedAttributes(new Dictionary<BattalionAttribute, int>(), modifiers).AsReadonly(),
              effectSources)
     { }
 
     public int GetAttribute(BattalionAttribute attribute)
     {
-        if(attributes.ContainsKey(attribute))
+        if (attributes.ContainsKey(attribute))
         {
             return attributes[attribute];
         }
@@ -60,7 +67,19 @@ public class BattalionState
     {
         AttributesTable newAttributes = GetModifiedAttributes(attributes, modifiers);
         SelfModify(newAttributes);
-        return new BattalionState(Id, newAttributes, EffectSources);
+        return new BattalionState(Id, 
+            Position, 
+            newAttributes.AsReadonly(), 
+            EffectSources);
+    }
+
+    public BattalionState GetWithNewPosition(int newXPos, int newYPos)
+    {
+        BattalionPosition newPos = new BattalionPosition(newXPos, newYPos);
+        return new BattalionState(Id,
+            newPos,
+            attributes,
+            EffectSources);
     }
 
     public BattalionBattleEffects GetEffects(BattleStageSide allies, BattleStageSide enemies)
@@ -101,7 +120,7 @@ public class BattalionState
         int damage = newAttributes.Get(BattalionAttribute.Damage);
         int apDamage = newAttributes.Get(BattalionAttribute.ArmorPiercingDamage);
         int armor = newAttributes.Get(BattalionAttribute.Armor);
-        
+
         newAttributes.Set(BattalionAttribute.Damage, 0);
         newAttributes.Set(BattalionAttribute.ArmorPiercingDamage, 0);
 
@@ -120,7 +139,7 @@ public class BattalionState
 
         public int Get(BattalionAttribute attribute)
         {
-            if(attributesCore.ContainsKey(attribute))
+            if (attributesCore.ContainsKey(attribute))
             {
                 return attributesCore[attribute];
             }
@@ -129,7 +148,7 @@ public class BattalionState
 
         public void Add(BattalionAttribute attribute, int value)
         {
-            if(attributesCore.ContainsKey(attribute))
+            if (attributesCore.ContainsKey(attribute))
             {
                 attributesCore[attribute] += value;
             }

@@ -14,5 +14,7 @@
     AntiCharge,
     MeleeRetribution,
     RallyStrength,
-    TerrorStrength
+    TerrorStrength,
+    ExtraSize,
+    Advancing
 }

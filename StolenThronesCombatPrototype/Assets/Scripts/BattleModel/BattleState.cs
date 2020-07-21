@@ -39,8 +39,8 @@ public class BattleState
 
     internal BattleState GetWithDefeatedRemoved()
     {
-        BattleStageSide newLeftSide = LeftSide.GetWithDefeatedRemoved();
-        BattleStageSide newRightSide = RightSide.GetWithDefeatedRemoved();
+        BattleStageSide newLeftSide = LeftSide.GetRepositionedSurvivors();
+        BattleStageSide newRightSide = RightSide.GetRepositionedSurvivors();
         return new BattleState(newLeftSide, newRightSide);
     }
 

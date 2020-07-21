@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattalionTemplates
@@ -17,7 +18,7 @@ public class BattalionTemplates
         Ogres
     }
 
-    public static BattalionState GetSwordsmen()
+    public static BattalionTemplate GetSwordsmen()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Swordsmen,
             100,
@@ -28,7 +29,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetSlinger()
+    public static BattalionTemplate GetSlinger()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Slingers,
             100,
@@ -39,7 +40,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetPikemen()
+    public static BattalionTemplate GetPikemen()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Pikemen,
             100,
@@ -52,7 +53,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetCatapults()
+    public static BattalionTemplate GetCatapults()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Catapults,
             50,
@@ -64,7 +65,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetBalista()
+    public static BattalionTemplate GetBalista()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Balistas,
             50,
@@ -79,7 +80,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetKnights()
+    public static BattalionTemplate GetKnights()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Knights,
             100,
@@ -92,7 +93,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetLongbowmen()
+    public static BattalionTemplate GetLongbowmen()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Longbowmen,
             100,
@@ -103,7 +104,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetCrossbowmen()
+    public static BattalionTemplate GetCrossbowmen()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Crossbowmen,
             100,
@@ -115,7 +116,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetDragon()
+    public static BattalionTemplate GetDragon()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Dragon,
             1000,
@@ -129,7 +130,7 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetOgres()
+    public static BattalionTemplate GetOgres()
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Ogres,
             200,
@@ -143,4 +144,42 @@ public class BattalionTemplates
 
     //public static BattalionState GetLeader()
     //public static BattalionState GetAssassin() 
+
+    private class BattalionBuilder
+    {
+        private readonly BattalionIdentifier id;
+        private readonly List<BattalionEffector> effectors;
+        private readonly List<BattalionStateModifier> modifiers;
+
+        public BattalionBuilder(BattalionType type,
+            int hitpoints,
+            int moral)
+        {
+            id = new BattalionIdentifier(type);
+            effectors = new List<BattalionEffector>();
+            modifiers = new List<BattalionStateModifier>();
+
+            modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.MaxHitpoints, hitpoints));
+            modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.RemainingHitpoints, hitpoints));
+            modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.MaxMoral, moral));
+            modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.RemainingMoral, moral));
+        }
+
+        public void Set(BattalionAttribute attribute, int value)
+        {
+            this.modifiers.Add(new BattalionStateModifier(null, id, attribute, value));
+        }
+
+        public void AddEffector(BattalionEffector effector)
+        {
+            this.effectors.Add(effector);
+        }
+
+        public BattalionTemplate ToState()
+        {
+            return new BattalionTemplate(id,
+                modifiers,
+                effectors);
+        }
+    }
 }

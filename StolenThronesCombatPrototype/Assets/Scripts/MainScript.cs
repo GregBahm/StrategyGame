@@ -37,22 +37,22 @@ public class MainScript : MonoBehaviour
     {
         BattleBuilder builder = new BattleBuilder();
 
-        builder.LeftFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.LeftFront.Add(BattalionTemplates.GetKnights());
-        builder.LeftFront.Add(BattalionTemplates.GetKnights());
-        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
-        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
-        builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftRear.Add(BattalionTemplates.GetCatapults());
+        builder.AddLeft(GetKnights(), 0);
+        builder.AddLeft(GetSwordsmen(), 0);
+        builder.AddLeft(GetKnights(), 0);
+        builder.AddLeft(GetSlinger(), 1);
+        builder.AddLeft(GetSlinger(), 1);
+        builder.AddLeft(GetLongbowmen(), 1);
+        builder.AddLeft(GetLongbowmen(), 1);
+        builder.AddLeft(GetCatapults(), 2);
 
-        builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightFront.Add(BattalionTemplates.GetPikemen());
-        builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightMid.Add(BattalionTemplates.GetOgres());
-        builder.RightMid.Add(BattalionTemplates.GetCrossbowmen());
-        builder.RightRear.Add(BattalionTemplates.GetDragon());
-        builder.RightRear.Add(BattalionTemplates.GetBalista());
+        builder.AddRight(GetSwordsmen(), 0);
+        builder.AddRight(GetPikemen(), 0);
+        builder.AddRight(GetSwordsmen(), 0);
+        builder.AddRight(GetOgres(), 0);
+        builder.AddRight(GetCrossbowmen(), 1);
+        builder.AddRight(GetDragon(), 2);
+        builder.AddRight(GetBalista(), 2);
         return builder.ToBattle();
     }
 

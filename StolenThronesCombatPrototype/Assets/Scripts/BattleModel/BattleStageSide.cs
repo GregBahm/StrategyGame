@@ -2,113 +2,255 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnityEditorInternal;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BattleStageSide
 {
-    public IReadOnlyList<BattalionState> Rear { get; }
-    public IReadOnlyList<BattalionState> Mid { get; }
-    public IReadOnlyList<BattalionState> Front { get; }
     public IEnumerable<BattalionState> AllUnits { get; }
-
-    private readonly IReadOnlyDictionary<BattalionIdentifier, BattlePositionInfo> positionsTable;
 
     public bool StillFighting { get; }
 
-    public BattleStageSide(List<BattalionState> rear,
-        List<BattalionState> mid,
-        List<BattalionState> front)
+    public BattleStageSide(List<BattalionState> units)
     {
-        Rear = rear.AsReadOnly();
-        Mid = mid.AsReadOnly();
-        Front = front.AsReadOnly();
-        AllUnits = front.Concat(mid).Concat(rear).ToList().AsReadOnly();
+        AllUnits = units.AsReadOnly();
         StillFighting = GetIsStillFighting();
-        positionsTable = CreatePositionsTable();
     }
 
-    private Dictionary<BattalionIdentifier, BattlePositionInfo> CreatePositionsTable()
-    {
-        Dictionary<BattalionIdentifier, BattlePositionInfo> ret = new Dictionary<BattalionIdentifier, BattlePositionInfo>();
-        for (int i = 0; i < Front.Count; i++)
-        {
-            BattalionState unit = Front[i];
-            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Front, BattlePosition.Front, i);
-            ret.Add(unit.Id, info);
-        }
-        for (int i = 0; i < Mid.Count; i++)
-        {
-            BattalionState unit = Mid[i];
-            BattlePosition effectivePosition = Front.Any() ? BattlePosition.Mid : BattlePosition.Front;
-            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Mid, effectivePosition, i);
-            ret.Add(unit.Id, info);
-        }
-        for (int i = 0; i < Rear.Count; i++)
-        {
-            BattalionState unit = Rear[i];
-            BattlePosition effectivePosition = Front.Any() ? (Mid.Any() ? BattlePosition.Rear : BattlePosition.Mid) : BattlePosition.Front;
-            BattlePositionInfo info = new BattlePositionInfo(BattlePosition.Rear, effectivePosition, i);
-            ret.Add(unit.Id, info);
-        }
-        return ret;
-    }
 
     private bool GetIsStillFighting()
     {
         return AllUnits.Any(unit => unit.IsAlive);
     }
-    
-    public BattlePositionInfo GetPosition(BattalionIdentifier battalionId)
+
+    public BattleStageSide GetRepositionedSurvivors()
     {
-        if(positionsTable.ContainsKey(battalionId))
+        IEnumerable<BattalionState> states = AllUnits.Where(item => item.IsAlive);
+        
+        Repositioner currentRepositioner = new Repositioner(states.ToList());
+        List<Repositioner> repositioningHistory = new List<Repositioner>() { currentRepositioner };
+        while(currentRepositioner.RepositioningHappend)
         {
-            return positionsTable[battalionId];
+            currentRepositioner = currentRepositioner.GetNext();
+            repositioningHistory.Add(currentRepositioner);
         }
-        throw new InvalidOperationException("Cannot GetPosition() of battalion because battalion is not in BattleStageSide");
+        return currentRepositioner.ToBattleSide();
     }
 
-    public BattleStageSide GetWithDefeatedRemoved()
+    public class Repositioner
     {
-        List<BattalionState> newRear = Rear.Where(item => item.IsAlive).ToList();
-        List<BattalionState> newMid = Mid.Where(item => item.IsAlive).ToList();
-        List<BattalionState> newFront = Front.Where(item => item.IsAlive).ToList();
-        return new BattleStageSide(newRear, newMid, newFront);
-    }
+        private readonly BattalionState[,] grid;
+        private readonly int columns;
+        private readonly int rows;
+        private readonly IEnumerable<BattalionState> repositioners;
 
-    public BattalionState GetFirstOfRank(BattlePosition position)
-    {
-        switch (position)
+        public IEnumerable<BattalionState> RepositionedUnits { get; }
+        public bool RepositioningHappend { get; private set; }
+
+        public Repositioner(IEnumerable<BattalionState> units)
         {
-            case BattlePosition.Rear:
-                if (Rear.Any())
+            columns = units.Max(unit => unit.Position.X);
+            rows = units.Max(unit => Mathf.Abs(unit.Position.Y) * 2);
+
+            grid = CreateGrid(units);
+
+            // Step 1: If entire column is eliminated, bring all units forward.
+            CollapseEmptyColumns();
+
+            // Step 2: Move each advancer forward
+            BringAdvancersForward();
+
+            // Step 3: Move units inward
+
+            for (int x = 0; x < columns; x++)
+            {
+                BringUnitsInward(x);
+            }
+        }
+
+        private void BringUnitsInward(int column)
+        {
+            bool doLeanPositive = GetShouldLeanPositive(column);
+            List<BattalionState> states = GetStatesAsList(column);
+            int offset = GetInwardOffset(states.Count, doLeanPositive);
+            for (int y = 0; y < rows; y++)
+            {
+                grid[column, y] = null;
+            }
+            for (int i = 0; i < states.Count; i++)
+            {
+                grid[column, i + offset] = states[i];
+            }
+        }
+
+        private int GetInwardOffset(int count, bool doLeanPositive)
+        {
+            float ret = (rows - count) / 2;
+            if(doLeanPositive)
+            {
+                return Mathf.CeilToInt(ret);
+            }
+            return Mathf.FloorToInt(ret);
+        }
+
+        private List<BattalionState> GetStatesAsList(int column)
+        {
+            List<BattalionState> ret = new List<BattalionState>();
+            for (int y = 0; y < rows; y++)
+            {
+                if(grid[column, y] != null)
                 {
-                    return Rear.First();
+                    ret.Add(grid[column, y]);
                 }
-                if (Mid.Any())
+            }
+            return ret;
+        }
+
+        private bool GetShouldLeanPositive(int column)
+        {
+            int highVal = 0;
+            int lowVal = 0;
+            for (int x = 0; x < rows; x++)
+            {
+                if (grid[x, column] != null)
                 {
-                    return Mid.First();
+                    highVal = Mathf.Max(x, highVal);
+                    lowVal = Mathf.Max((rows - 1) - x, lowVal);
                 }
-                return Front.First();
-            case BattlePosition.Mid:
-                if (Mid.Any())
+            }
+            return highVal > lowVal;
+        }
+
+        private void BringAdvancersForward()
+        {
+            for (int x = 1; x < columns; x++)
+            {
+                for (int y = 0; y < rows; y++)
                 {
-                    return Mid.First();
+                    BattalionState state = grid[x, y];
+                    if(state != null && GetIsAdvancer(state))
+                    {
+                        BattalionState targetPos = grid[x - 1, y];
+                        if(targetPos == null)
+                        {
+                            grid[x, y] = null;
+                            grid[x - 1, y] = state;
+                            RepositioningHappend = true;
+                        }
+                    }
                 }
-                if (Rear.Any())
+            }
+        }
+
+        private bool GetIsAdvancer(BattalionState state)
+        {
+            int advancing = state.GetAttribute(BattalionAttribute.Advancing);
+            return advancing > 0;
+        }
+
+        private void CollapseEmptyColumns()
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                bool columnContainsUnits = GetDoesColumnContainUnits(x);
+                if(!columnContainsUnits)
                 {
-                    return Rear.First();
+                    MoveColumnsForward(x + 1);
                 }
-                return Front.First();
-            case BattlePosition.Front:
-            default:
-                if (Front.Any())
+            }
+        }
+
+        private void MoveColumnsForward(int startingColumn)
+        {
+            for (int x = startingColumn; x < columns; x++)
+            {
+                for (int y = 0; y < rows; y++)
                 {
-                    return Front.First();
+                    BattalionState state = grid[x, y];
+                    if(state != null)
+                    {
+                        grid[x, y] = null;
+                        grid[x - 1, y] = state;
+                    }
                 }
-                if (Mid.Any())
+            }
+        }
+
+        private bool GetDoesColumnContainUnits(int x)
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                if (grid[x, y] != null)
                 {
-                    return Mid.First();
+                    return true;
                 }
-                return Rear.First();
+            }
+            return false;
+        }
+
+        private BattalionState[,] CreateGrid(IEnumerable<BattalionState> units)
+        {
+            BattalionState[,] ret = new BattalionState[columns, rows];
+            foreach (BattalionState unit in units)
+            {
+                int absoluteRow = GetAbsoluteRow(unit.Position.Y);
+                ret[unit.Position.X, absoluteRow] = unit;
+            }
+            return ret;
+        }
+
+        internal BattleStageSide ToBattleSide()
+        {
+            List<BattalionState> newStates = new List<BattalionState>();
+
+            for (int x = 0; x < columns; x++)
+            {
+                for (int y = 0; y < rows; y++)
+                {
+                    BattalionState oldState = grid[x, y];
+                    if(oldState != null)
+                    {
+                        BattalionState newState = GetRepositionedState(oldState, x, y);
+                        newStates.Add(newState);
+                    }
+                }
+            }
+            return new BattleStageSide(newStates);
+        }
+
+        private BattalionState GetRepositionedState(BattalionState oldState, int newXPos, int newYPos)
+        {
+            int actualYPos = GetOffsetRow(newYPos);
+            if(oldState.Position.X == newXPos && oldState.Position.Y == actualYPos)
+            {
+                return oldState;
+            }
+            return oldState.GetWithNewPosition(newXPos, actualYPos);
+        }
+
+        private int GetAbsoluteRow(int relativeRowPosition)
+        {
+            if(relativeRowPosition > 0)
+            {
+                relativeRowPosition --;
+            }
+            return relativeRowPosition + (rows / 2);
+        }
+
+        private int GetOffsetRow(int absoluteRowPosition)
+        {
+            int ret = absoluteRowPosition - (rows / 2);
+            if(ret >= 0) // 
+            {
+                ret ++;
+            }
+            return ret;
+        }
+
+        internal Repositioner GetNext()
+        {
+            return new Repositioner(ToBattleSide().AllUnits);
         }
     }
 }
