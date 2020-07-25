@@ -8,7 +8,6 @@ Shader "Unlit/BattalionModelShader"
         _SubsurfaceColor("Subsurface Color", Color) = (1,1,1,1)
         _LowColor("Low Color", Color) = (1,1,1,1)
         _Ramp("Ramp", Float) = 1
-        _Test("Test", Float) = 1
     }
     SubShader
     {
@@ -37,7 +36,7 @@ Shader "Unlit/BattalionModelShader"
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
-                float3 worldSpace : TEXCOORD1;
+                float3 displayVolumeSpace : TEXCOORD1;
                 float3 normal : NORMAL;
                 float3 viewDir : VIEWDIR;
                 float4 _ShadowCoord : TEXCOORD2;
@@ -49,14 +48,15 @@ Shader "Unlit/BattalionModelShader"
             float3 _SubsurfaceColor;
             float _Ramp;
 
-            float _Test;
+            float4x4 _DisplayVolume;
 
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
-                o.worldSpace = mul(unity_ObjectToWorld, v.vertex);
+                float3 worldSpace = mul(unity_ObjectToWorld, v.vertex);
+                o.displayVolumeSpace = mul(_DisplayVolume, float4(worldSpace, 1));
                 o.normal = mul(unity_ObjectToWorld, v.normal);
                 o.viewDir = WorldSpaceViewDir(v.vertex);
 
@@ -71,7 +71,7 @@ Shader "Unlit/BattalionModelShader"
                 float3 halfAngle = normalize(viewDir + float3(0, 1, 0));
                 float specBase = dot(norm, halfAngle);
 
-                float param = pow(saturate(i.worldSpace.y * .5), _Ramp);
+                float param = pow(saturate(i.displayVolumeSpace.y * .5), _Ramp);
                 float3 baseCol = lerp(_HighColor, _LowColor, param);
                 float normLight = (norm.y + 1) * .5;
                 normLight = pow(normLight, .5);
@@ -84,11 +84,7 @@ Shader "Unlit/BattalionModelShader"
                 col = lerp(col, _SpecColor, saturate(specB * 5) * .2);
 
                 float shadowness = SHADOW_ATTENUATION(i);
-                float subScatter = 1 - abs(pow(shadowness, 2) - .5) * 2;
-                //col += _SubsurfaceColor * subScatter;
-                //shadowness = pow(shadowness, .5);
-
-                //shadowness *= .1;
+                
                 float3 shadowColor = _LowColor;
                 col = lerp(baseCol, col, shadowness);
 
