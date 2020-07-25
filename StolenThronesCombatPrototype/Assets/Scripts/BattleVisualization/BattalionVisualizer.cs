@@ -65,12 +65,13 @@ public class BattalionVisualizer : MonoBehaviour
 
     private void PlaceVisual(BattalionStateVisuals visuals)
     {
-        float xPos = GetBasePositionValue(visuals.Position);
+        float xPos = visuals.State.Position.X;
         float sideVal = visuals.Side == BattleSide.Left ? -1 : 1;
-        xPos += (float)visuals.PositionIndex / visuals.GroupCount;
+        xPos += .5f;
         xPos *= sideVal;
-
-        primaryVisual.transform.localPosition = new Vector3(xPos, 0, xPos);
+        float zPos = visuals.State.Position.Y;
+        zPos -= zPos > 0 ? .5f : -.5f;
+        primaryVisual.transform.localPosition = new Vector3(xPos, zPos, 0);
         mat.SetFloat("_Flip", visuals.Side == BattleSide.Left ? 0 : 1);
     }
 

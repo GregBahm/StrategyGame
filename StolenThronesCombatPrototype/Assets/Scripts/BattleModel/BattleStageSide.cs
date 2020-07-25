@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,36 +7,73 @@ using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class BattleStageSide
+public class BattleStageSide : IEnumerable<BattalionState>
 {
-    public IEnumerable<BattalionState> AllUnits { get; }
-
+    private const int RepositioningLimit = 1000;
+    private readonly IEnumerable<BattalionState> units;
     public bool StillFighting { get; }
 
-    public BattleStageSide(List<BattalionState> units)
+    public BattleStageSide(IEnumerable<BattalionState> units)
     {
-        AllUnits = units.AsReadOnly();
+        this.units = units.ToList();
         StillFighting = GetIsStillFighting();
     }
 
 
     private bool GetIsStillFighting()
     {
-        return AllUnits.Any(unit => unit.IsAlive);
+        return units.Any(unit => unit.IsAlive);
     }
 
     public BattleStageSide GetRepositionedSurvivors()
     {
-        IEnumerable<BattalionState> states = AllUnits.Where(item => item.IsAlive);
+        IEnumerable<BattalionState> survivors = units.Where(item => item.IsAlive);
+        if(!survivors.Any())
+        {
+            throw new InvalidOperationException("Can't get repositioned survivors if there are no survivors");
+        }
         
-        Repositioner currentRepositioner = new Repositioner(states.ToList());
+        Repositioner currentRepositioner = new Repositioner(survivors.ToList());
         List<Repositioner> repositioningHistory = new List<Repositioner>() { currentRepositioner };
         while(currentRepositioner.RepositioningHappend)
         {
+            if(repositioningHistory.Count < RepositioningLimit)
+            {
+                throw new Exception("Repositioning limit exceeded. Probably headed for an infinit loop");
+            }
             currentRepositioner = currentRepositioner.GetNext();
             repositioningHistory.Add(currentRepositioner);
         }
         return currentRepositioner.ToBattleSide();
+    }
+
+    internal BattalionState GetTargetFor(BattalionPosition AttackerPosition)
+    {
+        IEnumerable<BattalionState> frontLine = units.Where(unit => unit.Position.IsFrontLine);
+        BattalionState matchingRow = frontLine.FirstOrDefault(unit => unit.Position.Y == AttackerPosition.Y);
+        if(matchingRow != null)
+        {
+            return matchingRow;
+        }
+        IOrderedEnumerable<BattalionState> orderedFrontline = frontLine.OrderBy(unit => unit.Position.Y);
+        if (AttackerPosition.Y > 0)
+        {
+            return orderedFrontline.First();
+        }
+        else
+        {
+            return orderedFrontline.Last();
+        }
+    }
+
+    public IEnumerator<BattalionState> GetEnumerator()
+    {
+        return units.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return (IEnumerator)GetEnumerator();
     }
 
     public class Repositioner
@@ -50,7 +88,7 @@ public class BattleStageSide
 
         public Repositioner(IEnumerable<BattalionState> units)
         {
-            columns = units.Max(unit => unit.Position.X);
+            columns = units.Max(unit => unit.Position.X + 1);
             rows = units.Max(unit => Mathf.Abs(unit.Position.Y) * 2);
 
             grid = CreateGrid(units);
@@ -111,12 +149,12 @@ public class BattleStageSide
         {
             int highVal = 0;
             int lowVal = 0;
-            for (int x = 0; x < rows; x++)
+            for (int y = 0; y < rows; y++)
             {
-                if (grid[x, column] != null)
+                if (grid[column, y] != null)
                 {
-                    highVal = Mathf.Max(x, highVal);
-                    lowVal = Mathf.Max((rows - 1) - x, lowVal);
+                    highVal = Mathf.Max(y, highVal);
+                    lowVal = Mathf.Max((rows - 1) - y, lowVal);
                 }
             }
             return highVal > lowVal;
@@ -248,9 +286,9 @@ public class BattleStageSide
             return ret;
         }
 
-        internal Repositioner GetNext()
+        public Repositioner GetNext()
         {
-            return new Repositioner(ToBattleSide().AllUnits);
+            return new Repositioner(ToBattleSide());
         }
     }
 }

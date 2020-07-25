@@ -19,7 +19,7 @@ public class BattleVisualiser
         for (int i = 0; i < battle.Progression.Count; i++)
         {
             BattleRound round = battle.Progression[i];
-            IEnumerable<BattalionState> allUnits = round.InitialState.LeftSide.AllUnits.Concat(round.InitialState.RightSide.AllUnits);
+            IEnumerable<BattalionState> allUnits = round.InitialState.LeftSide.Concat(round.InitialState.RightSide);
             foreach (BattalionState unitState in allUnits)
             {
                 if (!ret.ContainsKey(unitState.Id))

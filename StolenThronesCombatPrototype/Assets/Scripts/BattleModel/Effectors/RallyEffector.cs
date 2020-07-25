@@ -4,7 +4,7 @@
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
         int rallyStrength = self.GetAttribute(BattalionAttribute.RallyStrength);
-        foreach (BattalionState item in allies.AllUnits)
+        foreach (BattalionState item in allies)
         {
             builder.Add(item.Id, BattalionAttribute.RemainingMoral, rallyStrength);
         }

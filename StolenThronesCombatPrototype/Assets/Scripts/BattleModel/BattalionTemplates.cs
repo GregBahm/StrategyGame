@@ -61,7 +61,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.Strength, 10);
         builder.Set(BattalionAttribute.ReloadingSpeed, 2);
         builder.AddEffector(new MeleeAttackEffector(5));
-        builder.AddEffector(new RangedAttackEffector(100, RangedAttackEffector.RangeStyle.Bombard));
+        builder.AddEffector(new RangedAttackEffector(100, 10));
         return builder.ToState();
     }
 
@@ -74,7 +74,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.ReloadingSpeed, 2);
         builder.AddEffector(new MeleeAttackEffector(5));
         builder.AddEffector(new RangedAttackEffector(10, 
-            RangedAttackEffector.RangeStyle.ShortRange,
+            10,
             BattalionEffector.DamageType.ArmorPiercing,
             10));
         return builder.ToState();
@@ -100,7 +100,7 @@ public class BattalionTemplates
             100);
         builder.Set(BattalionAttribute.Strength, 10);
         builder.AddEffector(new MeleeAttackEffector(5));
-        builder.AddEffector(new RangedAttackEffector(20, RangedAttackEffector.RangeStyle.Bombard));
+        builder.AddEffector(new RangedAttackEffector(20, 6));
         return builder.ToState();
     }
 
@@ -112,7 +112,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.Strength, 10);
         builder.Set(BattalionAttribute.ReloadingSpeed, 1);
         builder.AddEffector(new MeleeAttackEffector(5));
-        builder.AddEffector(new RangedAttackEffector(20, damageType: BattalionEffector.DamageType.ArmorPiercing));
+        builder.AddEffector(new RangedAttackEffector(20, 4, damageType: BattalionEffector.DamageType.ArmorPiercing));
         return builder.ToState();
     }
 
@@ -138,7 +138,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.Regeneration, 20);
         builder.Set(BattalionAttribute.Strength, 20);
         builder.AddEffector(new MeleeAttackEffector(0));
-        builder.AddEffector(new RangedAttackEffector(20, RangedAttackEffector.RangeStyle.ShortRange));
+        builder.AddEffector(new RangedAttackEffector(20, 2));
         return builder.ToState();
     }
 

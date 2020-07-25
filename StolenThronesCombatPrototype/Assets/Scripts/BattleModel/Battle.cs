@@ -17,15 +17,22 @@ public class Battle
         BattleState currentState = new BattleState(left, right);
 
         List<BattleRound> ret = new List<BattleRound>();
-        while (currentState.Status == BattleStatus.Ongoing && ret.Count < BattleRoundLimit)
+        while (ret.Count < BattleRoundLimit)
         {
             IEnumerable<BattalionBattleEffects> effects = currentState.GetUnitEffects().ToArray();
             BattleState withEffectsApplied = currentState.GetWithEffectsApplied(effects);
-            BattleState withDefeatedRemoved = withEffectsApplied.GetWithDefeatedRemoved();
-            BattleRound round = new BattleRound(currentState, effects, withEffectsApplied, withDefeatedRemoved);
-            ret.Add(round);
-
-            currentState = withDefeatedRemoved;
+            if(withEffectsApplied.Status == BattleStatus.Ongoing)
+            {
+                BattleState withDefeatedRemoved = withEffectsApplied.GetWithDefeatedRemoved();
+                BattleRound round = new BattleRound(currentState, effects, withEffectsApplied, withDefeatedRemoved);
+                ret.Add(round);
+                currentState = withDefeatedRemoved;
+            }else
+            {
+                BattleRound round = new BattleRound(currentState, effects, withEffectsApplied, withEffectsApplied);
+                ret.Add(round);
+                break;
+            }
         }
         return ret;
     }

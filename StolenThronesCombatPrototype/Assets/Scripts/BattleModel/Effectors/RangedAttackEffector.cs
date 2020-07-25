@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 
 public class RangedAttackEffector : BattalionEffector
 {
-    private readonly RangeStyle style;
+    private readonly int range;
     private readonly int weaponStrength;
     private readonly int splashDamage;
     private readonly DamageType damageType;
 
     public RangedAttackEffector(int weaponStrength, 
-        RangeStyle style = RangeStyle.Regular,
+        int range = 1,
         DamageType damageType = DamageType.Regular,
         int splashDamage = 0)
     {
         this.weaponStrength = weaponStrength;
-        this.style = style;
+        this.range = range;
         this.damageType = damageType;
         this.splashDamage = splashDamage;
     }
@@ -30,9 +31,7 @@ public class RangedAttackEffector : BattalionEffector
         }
         else
         {
-            BattlePosition position = allies.GetPosition(self.Id).EffectivePosition;
-            if (position == BattlePosition.Mid ||
-                (position == BattlePosition.Rear && style != RangeStyle.ShortRange))
+            if(IsWithinAttackingRange(self.Position))
             {
                 DoAttack(builder, self, enemies);
             }
@@ -40,18 +39,23 @@ public class RangedAttackEffector : BattalionEffector
         return builder.ToEffects();
     }
 
+    private bool IsWithinAttackingRange(BattalionPosition position)
+    {
+        return position.X < range;
+    }
+
     private void DoAttack(BattalionEffectsBuilder builder, BattalionState self, BattleStageSide enemies)
     {
-        BattalionState target = GetTarget(enemies);
+        BattalionState target = enemies.GetTargetFor(self.Position);
         BattalionAttribute damageAttribute = GetDamageAttributeFor(damageType);
         builder.Add(target.Id, damageAttribute, weaponStrength);
 
         if(splashDamage > 0)
         {
-            IEnumerable<BattalionState> splashTargets = GetSplashTargets(target, enemies);
-            foreach (var item in splashTargets)
+            IEnumerable<BattalionState> splashTargets = GetSplashTargets(target, enemies).ToArray();
+            foreach (BattalionState splashTarget in splashTargets)
             {
-                builder.Add(target.Id, damageAttribute, splashDamage);
+                builder.Add(splashTarget.Id, damageAttribute, splashDamage);
             }
         }
 
@@ -61,30 +65,17 @@ public class RangedAttackEffector : BattalionEffector
 
     private IEnumerable<BattalionState> GetSplashTargets(BattalionState target, BattleStageSide enemies)
     {
-        BattlePosition targetPos = enemies.GetPosition(target.Id).EffectivePosition;
-        foreach (BattalionState unit in enemies.AllUnits.Where(item => item != target))
+        IEnumerable<BattalionPosition> positions = target.Position.GetAdjacentPositions().ToArray();
+        HashSet<BattalionPosition> set = new HashSet<BattalionPosition>(positions);
+        List<BattalionState> ret = new List<BattalionState>();
+        foreach (var item in enemies)
         {
-            BattlePosition unitPos = enemies.GetPosition(unit.Id).EffectivePosition;
-            if(unitPos == targetPos)
+            if(set.Contains(item.Position))
             {
-                yield return unit;
+                ret.Add(item);
             }
         }
+        return ret;
     }
 
-    private BattalionState GetTarget(BattleStageSide enemies)
-    {
-        if(style == RangeStyle.Bombard)
-        {
-            return enemies.GetFirstOfRank(BattlePosition.Mid);
-        }
-        return enemies.GetFirstOfRank(BattlePosition.Front);
-    }
-
-    public enum RangeStyle
-    {
-        ShortRange, // Can Attack from Mid, Targets Front
-        Regular, // Can attack from Rear or Mid, Targets Front
-        Bombard // Can attack from Rear or Mid, Targets Mid
-    }
 }

@@ -21,19 +21,19 @@ public class MeleeAttackEffector : BattalionEffector
     public override BattalionBattleEffects GetEffect(BattalionState self, BattleStageSide allies, BattleStageSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
-        if(allies.GetPosition(self.Id).EffectivePosition == BattlePosition.Front)
+        if(self.Position.X == 0)
         {
-            if(attackType == MeleeAttackType.Regular)
+            BattalionState target = enemies.GetTargetFor(self.Position);
+            if (attackType == MeleeAttackType.Regular || attackType == MeleeAttackType.Charging)
             {
-                BattalionState target = enemies.GetFirstOfRank(BattlePosition.Front);
                 DoMeleeAttack(builder, self, target);
             }
-            if(attackType == MeleeAttackType.Charging)
+            if (attackType == MeleeAttackType.Charging)
             {
-                IEnumerable<BattalionState> chargeTargets = GetChargeTargets(enemies);
-                foreach (BattalionState target in chargeTargets)
+                IEnumerable<BattalionState> chargeTargets = GetChargeTargets(enemies, target);
+                foreach (BattalionState chargeTarget in chargeTargets)
                 {
-                    DoMeleeAttack(builder, self, target);
+                    DoMeleeAttack(builder, self, chargeTarget);
                 }
             }
         }
@@ -41,24 +41,24 @@ public class MeleeAttackEffector : BattalionEffector
     }
 
     /// <summary>
-    /// Returns all front and mid units until a unit has anticharge
+    /// Returns all front units until a unit has anticharge
     /// </summary>
-    private IEnumerable<BattalionState> GetChargeTargets(BattleStageSide enemies)
+    private IEnumerable<BattalionState> GetChargeTargets(BattleStageSide enemies, BattalionState regularTarget)
     {
-        foreach (BattalionState unit in enemies.AllUnits)
+        IEnumerable<BattalionState> frontLineUnits = enemies.Where(unit => unit.Position.IsFrontLine);
+        if(frontLineUnits.Any(IsAntiCharge))
         {
-            bool antiCharge = unit.GetAttribute(BattalionAttribute.AntiCharge) > 0;
-            if(antiCharge)
-            {
-                yield return unit;
-                break;
-            }
-            BattlePosition pos = enemies.GetPosition(unit.Id).EffectivePosition;
-            if(pos == BattlePosition.Front || pos == BattlePosition.Mid)
-            {
-                yield return unit;
-            }
+            return new BattalionState[0];
         }
+        else
+        {
+            return frontLineUnits.Where(unit => unit != regularTarget);
+        }
+    }
+
+    private static bool IsAntiCharge(BattalionState state)
+    {
+        return state.GetAttribute(BattalionAttribute.AntiCharge) > 0;
     }
 
     private void DoMeleeAttack(BattalionEffectsBuilder builder, BattalionState self, BattalionState target)

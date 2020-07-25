@@ -51,6 +51,7 @@ public class MainScript : MonoBehaviour
         builder.AddRight(GetSwordsmen(), 0);
         builder.AddRight(GetOgres(), 0);
         builder.AddRight(GetCrossbowmen(), 1);
+        builder.AddRight(GetCrossbowmen(), 1);
         builder.AddRight(GetDragon(), 2);
         builder.AddRight(GetBalista(), 2);
         return builder.ToBattle();

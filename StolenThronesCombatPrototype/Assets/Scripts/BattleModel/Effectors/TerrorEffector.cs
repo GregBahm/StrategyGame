@@ -4,7 +4,7 @@
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
         int terrorStrength = self.GetAttribute(BattalionAttribute.TerrorStrength);
-        foreach (BattalionState item in enemies.AllUnits)
+        foreach (BattalionState item in enemies)
         {
             builder.Add(item.Id, BattalionAttribute.RemainingMoral, -terrorStrength);
         }

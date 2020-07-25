@@ -23,7 +23,7 @@ public class BattleBuilder
     public void AddLeft(BattalionTemplate template, int column)
     {
         int row = GetNextRow(leftUnits, column);
-        BattalionPosition pos = new BattalionPosition(column, row);
+        BattalionPosition pos = new BattalionPosition(column, row + 1);
         BattalionState state = new BattalionState(template.Id, pos, template.Modifiers, template.EffectSources);
         leftUnits[column, row] = state;
         leftUnitsList.Add(state);
@@ -32,7 +32,7 @@ public class BattleBuilder
     public void AddRight(BattalionTemplate template, int column)
     {
         int row = GetNextRow(rightUnits, column);
-        BattalionPosition pos = new BattalionPosition(column, row);
+        BattalionPosition pos = new BattalionPosition(column, row + 1);
         BattalionState state = new BattalionState(template.Id, pos, template.Modifiers, template.EffectSources);
         rightUnits[column, row] = state;
         rightUnitsList.Add(state);

@@ -175,4 +175,9 @@ public class BattalionState
             return new ReadOnlyDictionary<BattalionAttribute, int>(attributesCore);
         }
     }
+
+    public override string ToString()
+    {
+        return Id.Type.ToString() + " at " + Position.X + "," + Position.Y;
+    }
 }

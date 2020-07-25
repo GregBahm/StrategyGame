@@ -27,11 +27,11 @@ public class BattleState
     
     public IEnumerable<BattalionBattleEffects> GetUnitEffects()
     {
-        foreach (var item in LeftSide.AllUnits)
+        foreach (BattalionState item in LeftSide)
         {
             yield return item.GetEffects(LeftSide, RightSide);
         }
-        foreach (var item in RightSide.AllUnits)
+        foreach (BattalionState item in RightSide)
         {
             yield return item.GetEffects(RightSide, LeftSide);
         }
@@ -86,38 +86,24 @@ public class BattleState
 
     private class ModifiedSideSorter
     {
-        Dictionary<BattalionIdentifier, BattalionState> frontDictionary;
-        Dictionary<BattalionIdentifier, BattalionState> midDictionary;
-        Dictionary<BattalionIdentifier, BattalionState> rearDictionary;
+        Dictionary<BattalionIdentifier, BattalionState> unitsDictionary;
 
         public ModifiedSideSorter(BattleStageSide basis)
         {
-            frontDictionary = basis.Front.ToDictionary(item => item.Id);
-            midDictionary = basis.Mid.ToDictionary(item => item.Id);
-            rearDictionary = basis.Rear.ToDictionary(item => item.Id);
+            unitsDictionary = basis.ToDictionary(item => item.Id);
         }
 
         public BattleStageSide ToSide()
         {
-            List<BattalionState> front = frontDictionary.Values.Where(item => item != null).ToList();
-            List<BattalionState> mid = midDictionary.Values.Where(item => item != null).ToList();
-            List<BattalionState> rear = rearDictionary.Values.Where(item => item != null).ToList();
-            return new BattleStageSide(rear, mid, front);
+            List<BattalionState> units = unitsDictionary.Values.Where(item => item != null).ToList();
+            return new BattleStageSide(units);
         }
 
         internal void Incorporate(BattalionState state)
         {
-            if(frontDictionary.ContainsKey(state.Id))
+            if(unitsDictionary.ContainsKey(state.Id))
             {
-                frontDictionary[state.Id] = state;
-            }
-            if (midDictionary.ContainsKey(state.Id))
-            {
-                midDictionary[state.Id] = state;
-            }
-            if (rearDictionary.ContainsKey(state.Id))
-            {
-                rearDictionary[state.Id] = state;
+                unitsDictionary[state.Id] = state;
             }
         }
     }
@@ -148,8 +134,8 @@ public class BattleState
     {
         Dictionary<BattalionIdentifier, EffectsBuilder> ret = new Dictionary<BattalionIdentifier, EffectsBuilder>();
 
-        List<BattalionState> units = LeftSide.AllUnits.ToList();
-        units.AddRange(RightSide.AllUnits);
+        List<BattalionState> units = LeftSide.ToList();
+        units.AddRange(RightSide);
         foreach (BattalionState unit in units)
         {
             ret.Add(unit.Id, new EffectsBuilder(unit));
