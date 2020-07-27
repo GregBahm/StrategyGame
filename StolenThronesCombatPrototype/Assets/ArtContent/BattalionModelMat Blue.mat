@@ -78,8 +78,8 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _HighColor: {r: 0.5188679, g: 0.5188679, b: 0.5188679, a: 1}
-    - _LowColor: {r: 0, g: 0.45850563, b: 1, a: 1}
+    - _HighColor: {r: 0, g: 0, b: 0, a: 1}
+    - _LowColor: {r: 0.5188679, g: 0.5188679, b: 0.5188679, a: 1}
     - _OutlineColor: {r: 0, g: 0.49056602, b: 0.37849653, a: 1}
     - _SpecColor: {r: 0.7075472, g: 0.66167194, b: 0.49728552, a: 1}
     - _SubsurfaceColor: {r: 0.1792453, g: 0.108695395, b: 0, a: 1}
