@@ -7,7 +7,9 @@ using UnityEngine;
 public class BattleStageSide : IEnumerable<BattalionState>
 {
     private const int RepositioningLimit = 1000;
+    
     private readonly IEnumerable<BattalionState> units;
+
     public bool StillFighting { get; }
 
     public BattleStageSide(IEnumerable<BattalionState> units)
@@ -15,7 +17,6 @@ public class BattleStageSide : IEnumerable<BattalionState>
         this.units = units.ToList();
         StillFighting = GetIsStillFighting();
     }
-
 
     private bool GetIsStillFighting()
     {
