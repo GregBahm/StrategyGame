@@ -63,19 +63,17 @@ public class BattalionState
         return new BattalionState(Id, newAttributes, EffectSources);
     }
 
-    public BattalionBattleEffects GetEffects(BattleStageSide allies, BattleStageSide enemies)
+    public BattalionBattleEffects GetEffects(BattleStateSide allies, BattleStateSide enemies)
     {
         List<BattalionStateModifier> modifiers = new List<BattalionStateModifier>();
-        List<BattalionSpawnEffect> spawns = new List<BattalionSpawnEffect>();
 
         foreach (BattalionEffector attack in EffectSources)
         {
             var effects = attack.GetEffect(this, allies, enemies);
             modifiers.AddRange(effects.UnitModifications);
-            spawns.AddRange(effects.UnitSpawns);
 
         }
-        return new BattalionBattleEffects(modifiers, spawns);
+        return new BattalionBattleEffects(modifiers);
     }
 
     private void SelfModify(AttributesTable newAttributes)

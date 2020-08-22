@@ -37,22 +37,22 @@ public class MainScript : MonoBehaviour
     {
         BattleBuilder builder = new BattleBuilder();
 
-        builder.LeftFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.LeftFront.Add(BattalionTemplates.GetKnights());
-        builder.LeftFront.Add(BattalionTemplates.GetKnights());
-        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
-        builder.LeftMid.Add(BattalionTemplates.GetSlinger());
-        builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftMid.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftRear.Add(BattalionTemplates.GetCatapults());
+        builder.LeftUnits.Add(BattalionTemplates.GetSwordsmen());
+        builder.LeftUnits.Add(BattalionTemplates.GetKnights());
+        builder.LeftUnits.Add(BattalionTemplates.GetKnights());
+        builder.LeftUnits.Add(BattalionTemplates.GetSlinger());
+        builder.LeftUnits.Add(BattalionTemplates.GetSlinger());
+        builder.LeftUnits.Add(BattalionTemplates.GetLongbowmen());
+        builder.LeftUnits.Add(BattalionTemplates.GetLongbowmen());
+        builder.LeftUnits.Add(BattalionTemplates.GetCatapults());
 
-        builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightFront.Add(BattalionTemplates.GetPikemen());
-        builder.RightFront.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightMid.Add(BattalionTemplates.GetOgres());
-        builder.RightMid.Add(BattalionTemplates.GetCrossbowmen());
-        builder.RightRear.Add(BattalionTemplates.GetDragon());
-        builder.RightRear.Add(BattalionTemplates.GetBalista());
+        builder.RightUnits.Add(BattalionTemplates.GetSwordsmen());
+        builder.RightUnits.Add(BattalionTemplates.GetPikemen());
+        builder.RightUnits.Add(BattalionTemplates.GetSwordsmen());
+        builder.RightUnits.Add(BattalionTemplates.GetOgres());
+        builder.RightUnits.Add(BattalionTemplates.GetCrossbowmen());
+        builder.RightUnits.Add(BattalionTemplates.GetDragon());
+        builder.RightUnits.Add(BattalionTemplates.GetBalista());
         return builder.ToBattle();
     }
 

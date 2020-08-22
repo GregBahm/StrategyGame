@@ -3,12 +3,9 @@
 public class BattalionBattleEffects
 {
     public IEnumerable<BattalionStateModifier> UnitModifications { get; }
-    public IEnumerable<BattalionSpawnEffect> UnitSpawns { get; }
 
-    public BattalionBattleEffects(IEnumerable<BattalionStateModifier> unitModifications, 
-        IEnumerable<BattalionSpawnEffect> unitSpawns)
+    public BattalionBattleEffects(IEnumerable<BattalionStateModifier> unitModifications)
     {
         UnitModifications = unitModifications;
-        UnitSpawns = unitSpawns;
     }
 }

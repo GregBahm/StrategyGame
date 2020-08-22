@@ -1,20 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.IMGUI.Controls;
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 public class BattleState
 {
-    public BattleStageSide LeftSide { get; }
-    public BattleStageSide RightSide { get; }
-
+    public BattleStateSide LeftSide { get; }
+    
+    public BattleStateSide RightSide { get; }
+    
     public BattleStatus Status { get; }
 
-    public BattleState(BattleStageSide leftSide, BattleStageSide rightSide)
+    private readonly Dictionary<BattalionIdentifier, BattleSide> sideLookup;
+
+    public BattleState(BattleStateSide leftSide, BattleStateSide rightSide)
     {
         LeftSide = leftSide;
         RightSide = rightSide;
         Status = GetStatus();
+        sideLookup = GetSideLookup();
+    }
+
+    private Dictionary<BattalionIdentifier, BattleSide> GetSideLookup()
+    {
+        Dictionary<BattalionIdentifier, BattleSide> ret = new Dictionary<BattalionIdentifier, BattleSide>();
+        foreach (BattalionState item in LeftSide)
+        {
+            ret.Add(item.Id, BattleSide.Left);
+        }
+        foreach (BattalionState item in RightSide)
+        {
+            ret.Add(item.Id, BattleSide.Right);
+        }
+        return ret;
     }
 
     private BattleStatus GetStatus()
@@ -24,14 +43,19 @@ public class BattleState
         if (!LeftSide.StillFighting && RightSide.StillFighting) return BattleStatus.RightWins;
         return BattleStatus.Draw;
     }
-    
+
+    internal BattleSide GetSide(BattalionIdentifier id)
+    {
+        return sideLookup[id];
+    }
+
     public IEnumerable<BattalionBattleEffects> GetUnitEffects()
     {
-        foreach (var item in LeftSide.AllUnits)
+        foreach (var item in LeftSide)
         {
             yield return item.GetEffects(LeftSide, RightSide);
         }
-        foreach (var item in RightSide.AllUnits)
+        foreach (var item in RightSide)
         {
             yield return item.GetEffects(RightSide, LeftSide);
         }
@@ -39,8 +63,8 @@ public class BattleState
 
     internal BattleState GetWithDefeatedRemoved()
     {
-        BattleStageSide newLeftSide = LeftSide.GetWithDefeatedRemoved();
-        BattleStageSide newRightSide = RightSide.GetWithDefeatedRemoved();
+        BattleStateSide newLeftSide = LeftSide.GetWithDefeatedRemoved();
+        BattleStateSide newRightSide = RightSide.GetWithDefeatedRemoved();
         return new BattleState(newLeftSide, newRightSide);
     }
 
@@ -52,11 +76,10 @@ public class BattleState
             dictionary[item.Target].Add(item);
         }
         List<BattalionState> modifiedUnits = dictionary.Values.Select(item => item.GetNewState()).ToList();
-        IEnumerable<BattalionSpawnEffect> spawns = effects.SelectMany(item => item.UnitSpawns).ToList();
-        return GetNewBattleState(modifiedUnits, spawns);
+        return GetNewBattleState(modifiedUnits);
     }
 
-    private BattleState GetNewBattleState(IEnumerable<BattalionState> modifiedUnits, IEnumerable<BattalionSpawnEffect> spawns)
+    private BattleState GetNewBattleState(IEnumerable<BattalionState> modifiedUnits)
     {
         ModifiedSideSorter leftSideSorter = new ModifiedSideSorter(LeftSide);
         ModifiedSideSorter rightSideSorter = new ModifiedSideSorter(RightSide);
@@ -67,57 +90,31 @@ public class BattleState
             rightSideSorter.Incorporate(battalionState);
         }
 
-        foreach (BattalionSpawnEffect spawn in spawns)
-        {
-            IncorporateSpawn(spawn, leftSideSorter, rightSideSorter);
-        }
-
-        BattleStageSide left = leftSideSorter.ToSide();
-        BattleStageSide right = rightSideSorter.ToSide();
+        BattleStateSide left = leftSideSorter.ToSide();
+        BattleStateSide right = rightSideSorter.ToSide();
         return new BattleState(left, right);
-    }
-
-    private void IncorporateSpawn(BattalionSpawnEffect spawn, 
-        ModifiedSideSorter leftSideSorter, 
-        ModifiedSideSorter rightSideSorter)
-    {
-        //TODO: Get the spawns spawning here
     }
 
     private class ModifiedSideSorter
     {
-        Dictionary<BattalionIdentifier, BattalionState> frontDictionary;
-        Dictionary<BattalionIdentifier, BattalionState> midDictionary;
-        Dictionary<BattalionIdentifier, BattalionState> rearDictionary;
+        readonly Dictionary<BattalionIdentifier, BattalionState> sorter;
 
-        public ModifiedSideSorter(BattleStageSide basis)
+        public ModifiedSideSorter(BattleStateSide basis)
         {
-            frontDictionary = basis.Front.ToDictionary(item => item.Id);
-            midDictionary = basis.Mid.ToDictionary(item => item.Id);
-            rearDictionary = basis.Rear.ToDictionary(item => item.Id);
+            sorter = basis.ToDictionary(item => item.Id, item => item);
         }
 
-        public BattleStageSide ToSide()
+        public BattleStateSide ToSide()
         {
-            List<BattalionState> front = frontDictionary.Values.Where(item => item != null).ToList();
-            List<BattalionState> mid = midDictionary.Values.Where(item => item != null).ToList();
-            List<BattalionState> rear = rearDictionary.Values.Where(item => item != null).ToList();
-            return new BattleStageSide(rear, mid, front);
+            List<BattalionState> newSide = sorter.Values.ToList();
+            return new BattleStateSide(newSide);
         }
 
         internal void Incorporate(BattalionState state)
         {
-            if(frontDictionary.ContainsKey(state.Id))
+            if(sorter.ContainsKey(state.Id))
             {
-                frontDictionary[state.Id] = state;
-            }
-            if (midDictionary.ContainsKey(state.Id))
-            {
-                midDictionary[state.Id] = state;
-            }
-            if (rearDictionary.ContainsKey(state.Id))
-            {
-                rearDictionary[state.Id] = state;
+                sorter[state.Id] = state;
             }
         }
     }
@@ -148,8 +145,8 @@ public class BattleState
     {
         Dictionary<BattalionIdentifier, EffectsBuilder> ret = new Dictionary<BattalionIdentifier, EffectsBuilder>();
 
-        List<BattalionState> units = LeftSide.AllUnits.ToList();
-        units.AddRange(RightSide.AllUnits);
+        List<BattalionState> units = LeftSide.ToList();
+        units.AddRange(RightSide);
         foreach (BattalionState unit in units)
         {
             ret.Add(unit.Id, new EffectsBuilder(unit));

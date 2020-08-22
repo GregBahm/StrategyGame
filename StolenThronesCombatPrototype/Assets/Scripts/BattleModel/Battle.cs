@@ -7,12 +7,12 @@ public class Battle
 
     public IReadOnlyList<BattleRound> Progression { get; }
 
-    public Battle(BattleStageSide left, BattleStageSide right)
+    public Battle(BattleStateSide left, BattleStateSide right)
     {
         Progression = GetProgression(left, right).AsReadOnly();
     }
 
-    private List<BattleRound> GetProgression(BattleStageSide left, BattleStageSide right)
+    private List<BattleRound> GetProgression(BattleStateSide left, BattleStateSide right)
     {
         BattleState currentState = new BattleState(left, right);
 

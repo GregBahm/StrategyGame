@@ -27,7 +27,11 @@ public class BattalionVisualizer : MonoBehaviour
 
     internal void InsertState(BattalionState state, BattleRound battleRound, int index)
     {
-        states[index] = new BattalionStateVisuals(state, battleRound);
+        BattleState battleState = battleRound.InitialState;
+        BattleSide side = battleState.GetSide(state.Id);
+        BattleStateSide stateSide = side == BattleSide.Left ? battleState.LeftSide : battleState.RightSide;
+        int position = stateSide.GetPosition(state.Id);
+        states[index] = new BattalionStateVisuals(state, position, side);
     }
 
     public void Dispay(float normalizedTime)
@@ -65,26 +69,10 @@ public class BattalionVisualizer : MonoBehaviour
 
     private void PlaceVisual(BattalionStateVisuals visuals)
     {
-        float xPos = GetBasePositionValue(visuals.Position);
-        float sideVal = visuals.Side == BattleSide.Left ? -1 : 1;
-        xPos += (float)visuals.PositionIndex / visuals.GroupCount;
-        xPos *= sideVal;
+        float xPos = visuals.Position + 1;
+        xPos *= visuals.Side == BattleSide.Left ? -1 : 1;
 
         primaryVisual.transform.localPosition = new Vector3(xPos, 0, xPos);
         mat.SetFloat("_Flip", visuals.Side == BattleSide.Left ? 0 : 1);
-    }
-
-    private float GetBasePositionValue(BattlePosition position)
-    {
-        switch (position)
-        {
-            case BattlePosition.Rear:
-                return 3;
-            case BattlePosition.Mid:
-                return 2;
-            case BattlePosition.Front:
-            default:
-                return 1;
-        }
     }
 }

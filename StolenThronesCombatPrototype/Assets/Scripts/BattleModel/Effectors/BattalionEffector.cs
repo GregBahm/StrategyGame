@@ -1,6 +1,6 @@
 ﻿public abstract class BattalionEffector
 {
-    public abstract BattalionBattleEffects GetEffect(BattalionState self, BattleStageSide allies, BattleStageSide enemies);
+    public abstract BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies);
 
     public enum DamageType
     {

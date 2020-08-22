@@ -18,47 +18,22 @@ public class MeleeAttackEffector : BattalionEffector
         this.damageType = damageType;
     }
 
-    public override BattalionBattleEffects GetEffect(BattalionState self, BattleStageSide allies, BattleStageSide enemies)
+    public override BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
-        if(allies.GetPosition(self.Id).EffectivePosition == BattlePosition.Front)
+        if(allies.GetPosition(self.Id) == 0)
         {
             if(attackType == MeleeAttackType.Regular)
             {
-                BattalionState target = enemies.GetFirstOfRank(BattlePosition.Front);
+                BattalionState target = enemies.First();
                 DoMeleeAttack(builder, self, target);
             }
             if(attackType == MeleeAttackType.Charging)
             {
-                IEnumerable<BattalionState> chargeTargets = GetChargeTargets(enemies);
-                foreach (BattalionState target in chargeTargets)
-                {
-                    DoMeleeAttack(builder, self, target);
-                }
+                //TODO: Implement this
             }
         }
         return builder.ToEffects();
-    }
-
-    /// <summary>
-    /// Returns all front and mid units until a unit has anticharge
-    /// </summary>
-    private IEnumerable<BattalionState> GetChargeTargets(BattleStageSide enemies)
-    {
-        foreach (BattalionState unit in enemies.AllUnits)
-        {
-            bool antiCharge = unit.GetAttribute(BattalionAttribute.AntiCharge) > 0;
-            if(antiCharge)
-            {
-                yield return unit;
-                break;
-            }
-            BattlePosition pos = enemies.GetPosition(unit.Id).EffectivePosition;
-            if(pos == BattlePosition.Front || pos == BattlePosition.Mid)
-            {
-                yield return unit;
-            }
-        }
     }
 
     private void DoMeleeAttack(BattalionEffectsBuilder builder, BattalionState self, BattalionState target)

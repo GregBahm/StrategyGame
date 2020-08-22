@@ -2,18 +2,14 @@
 
 public class BattleBuilder
 {
-    public List<BattalionState> LeftFront { get; } = new List<BattalionState>();
-    public List<BattalionState> LeftMid { get; } = new List<BattalionState>();
-    public List<BattalionState> LeftRear { get; } = new List<BattalionState>();
+    public List<BattalionState> LeftUnits { get; } = new List<BattalionState>();
 
-    public List<BattalionState> RightFront { get; } = new List<BattalionState>();
-    public List<BattalionState> RightMid { get; } = new List<BattalionState>();
-    public List<BattalionState> RightRear { get; } = new List<BattalionState>();
+    public List<BattalionState> RightUnits { get; } = new List<BattalionState>();
 
     public Battle ToBattle()
     {
-        BattleStageSide leftSide = new BattleStageSide(LeftRear, LeftMid, LeftFront);
-        BattleStageSide rightSide = new BattleStageSide(RightRear, RightMid, RightFront);
+        BattleStateSide leftSide = new BattleStateSide(LeftUnits);
+        BattleStateSide rightSide = new BattleStateSide(RightUnits);
         return new Battle(leftSide, rightSide);
     }
 }
