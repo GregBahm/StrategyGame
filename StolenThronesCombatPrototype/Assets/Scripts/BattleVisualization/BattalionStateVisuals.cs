@@ -2,9 +2,9 @@
 {
     public BattalionState State { get; }
     public int Position { get; }
-    public BattleSide Side { get; }
+    public BattleSideIdentifier Side { get; }
 
-    public BattalionStateVisuals(BattalionState state, int position, BattleSide side)
+    public BattalionStateVisuals(BattalionState state, int position, BattleSideIdentifier side)
     {
         State = state;
         Position = position;

@@ -19,7 +19,7 @@ public class RangedAttackEffector : BattalionEffector
         this.damageType = damageType;
         this.splashDamage = splashDamage;
     }
-    public override BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
+    public override IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
 
@@ -41,21 +41,22 @@ public class RangedAttackEffector : BattalionEffector
 
     private void DoAttack(BattalionEffectsBuilder builder, BattalionState self, BattleStateSide enemies)
     {
-        BattalionState target = enemies.First();
+        BattleRank target = enemies.First();
         BattalionAttribute damageAttribute = GetDamageAttributeFor(damageType);
-        builder.Add(target.Id, damageAttribute, weaponStrength);
+        throw new NotImplementedException(); //
+        //builder.Add(target.Id, damageAttribute, weaponStrength);
 
-        if(splashDamage > 0)
-        {
-            IEnumerable<BattalionState> splashTargets = GetSplashTargets(target, enemies);
-            foreach (var item in splashTargets)
-            {
-                builder.Add(target.Id, damageAttribute, splashDamage);
-            }
-        }
+        //if(splashDamage > 0)
+        //{
+        //    IEnumerable<BattalionState> splashTargets = GetSplashTargets(target, enemies);
+        //    foreach (var item in splashTargets)
+        //    {
+        //        builder.Add(target.Id, damageAttribute, splashDamage);
+        //    }
+        //}
 
-        int reloadingSpeed = self.GetAttribute(BattalionAttribute.ReloadingSpeed);
-        builder.Add(self.Id, BattalionAttribute.ReloadingState, reloadingSpeed);
+        //int reloadingSpeed = self.GetAttribute(BattalionAttribute.ReloadingSpeed);
+        //builder.Add(self.Id, BattalionAttribute.ReloadingState, reloadingSpeed);
     }
 
     private IEnumerable<BattalionState> GetSplashTargets(BattalionState target, BattleStateSide enemies)

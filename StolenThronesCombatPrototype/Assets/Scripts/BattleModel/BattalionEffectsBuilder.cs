@@ -17,8 +17,8 @@ public class BattalionEffectsBuilder
         modifiers.Add(new BattalionStateModifier(source, id, attribute, value));
     }
 
-    public BattalionBattleEffects ToEffects()
+    public IEnumerable<BattalionStateModifier> ToEffects()
     {
-        return new BattalionBattleEffects(modifiers);
+        return modifiers;
     }
 }

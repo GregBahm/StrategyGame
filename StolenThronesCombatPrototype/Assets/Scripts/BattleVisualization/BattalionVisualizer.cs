@@ -28,8 +28,8 @@ public class BattalionVisualizer : MonoBehaviour
     internal void InsertState(BattalionState state, BattleRound battleRound, int index)
     {
         BattleState battleState = battleRound.InitialState;
-        BattleSide side = battleState.GetSide(state.Id);
-        BattleStateSide stateSide = side == BattleSide.Left ? battleState.LeftSide : battleState.RightSide;
+        BattleSideIdentifier side = battleState.GetSide(state.Id);
+        BattleStateSide stateSide = side == BattleSideIdentifier.Left ? battleState.LeftSide : battleState.RightSide;
         int position = stateSide.GetPosition(state.Id);
         states[index] = new BattalionStateVisuals(state, position, side);
     }
@@ -70,9 +70,9 @@ public class BattalionVisualizer : MonoBehaviour
     private void PlaceVisual(BattalionStateVisuals visuals)
     {
         float xPos = visuals.Position + 1;
-        xPos *= visuals.Side == BattleSide.Left ? -1 : 1;
+        xPos *= visuals.Side == BattleSideIdentifier.Left ? -1 : 1;
 
         primaryVisual.transform.localPosition = new Vector3(xPos, 0, xPos);
-        mat.SetFloat("_Flip", visuals.Side == BattleSide.Left ? 0 : 1);
+        mat.SetFloat("_Flip", visuals.Side == BattleSideIdentifier.Left ? 0 : 1);
     }
 }

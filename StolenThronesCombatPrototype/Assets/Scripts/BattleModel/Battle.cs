@@ -19,7 +19,7 @@ public class Battle
         List<BattleRound> ret = new List<BattleRound>();
         while (currentState.Status == BattleStatus.Ongoing && ret.Count < BattleRoundLimit)
         {
-            IEnumerable<BattalionBattleEffects> effects = currentState.GetUnitEffects().ToArray();
+            IEnumerable<BattalionStateModifier> effects = currentState.GetUnitEffects().ToArray();
             BattleState withEffectsApplied = currentState.GetWithEffectsApplied(effects);
             BattleState withDefeatedRemoved = withEffectsApplied.GetWithDefeatedRemoved();
             BattleRound round = new BattleRound(currentState, effects, withEffectsApplied, withDefeatedRemoved);

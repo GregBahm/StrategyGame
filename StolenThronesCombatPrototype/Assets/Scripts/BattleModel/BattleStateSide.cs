@@ -4,21 +4,23 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-public class BattleStateSide : IReadOnlyList<BattalionState>
+public class BattleStateSide : IReadOnlyList<BattleRank>
 {
-    private readonly IReadOnlyList<BattalionState> list;
+    private readonly IReadOnlyList<BattleRank> ranks;
 
     public bool StillFighting { get; }
 
-    public int Count => list.Count;
+    public IEnumerable<BattalionState> AllUnits { get { return ranks.SelectMany(item => item); } }
 
-    public BattalionState this[int index] => list[index];
+    public int Count => ranks.Count;
+
+    public BattleRank this[int index] => ranks[index];
 
     private readonly IReadOnlyDictionary<BattalionIdentifier, int> positionsTable;
 
-    public BattleStateSide(List<BattalionState> battalions)
+    public BattleStateSide(List<BattleRank> battalions)
     {
-        list = battalions.AsReadOnly();
+        ranks = battalions.AsReadOnly();
         StillFighting = GetIsStillFighting();
         positionsTable = GetPositionsTable();
     }
@@ -26,9 +28,12 @@ public class BattleStateSide : IReadOnlyList<BattalionState>
     private IReadOnlyDictionary<BattalionIdentifier, int> GetPositionsTable()
     {
         var ret = new Dictionary<BattalionIdentifier, int>();
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < ranks.Count; i++)
         {
-            ret.Add(list[i].Id, i);
+            foreach (BattalionState item in ranks[i])
+            {
+                ret.Add(item.Id, i);
+            }
         }
         return ret;
     }
@@ -40,21 +45,21 @@ public class BattleStateSide : IReadOnlyList<BattalionState>
 
     private bool GetIsStillFighting()
     {
-        return list.Any(unit => unit.IsAlive);
+        return ranks.Any(unit => unit.StillFighting);
     }
     
     public BattleStateSide GetWithDefeatedRemoved()
     {
-        return new BattleStateSide(list.Where(item => item.IsAlive).ToList());
+        return new BattleStateSide(ranks.Where(item => item.StillFighting).Select(item => item.GetWithDefeatedRemoved()).ToList());
     }
 
-    public IEnumerator<BattalionState> GetEnumerator()
+    public IEnumerator<BattleRank> GetEnumerator()
     {
-        return list.GetEnumerator();
+        return ranks.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return list.GetEnumerator();
+        return ranks.GetEnumerator();
     }
 }

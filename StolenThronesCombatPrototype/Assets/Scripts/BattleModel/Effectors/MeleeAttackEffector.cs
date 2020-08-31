@@ -18,15 +18,15 @@ public class MeleeAttackEffector : BattalionEffector
         this.damageType = damageType;
     }
 
-    public override BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
+    public override IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
         if(allies.GetPosition(self.Id) == 0)
         {
             if(attackType == MeleeAttackType.Regular)
             {
-                BattalionState target = enemies.First();
-                DoMeleeAttack(builder, self, target);
+                BattleRank target = enemies.First();
+                //DoMeleeAttack(builder, self, target);
             }
             if(attackType == MeleeAttackType.Charging)
             {

@@ -1,6 +1,8 @@
-﻿public abstract class BattalionEffector
+﻿using System.Collections.Generic;
+
+public abstract class BattalionEffector
 {
-    public abstract BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies);
+    public abstract IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies);
 
     public enum DamageType
     {

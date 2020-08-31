@@ -1,10 +1,12 @@
-﻿public class RallyEffector : BattalionEffector
+﻿using System.Collections.Generic;
+
+public class RallyEffector : BattalionEffector
 {
-    public override BattalionBattleEffects GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
+    public override IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
         int rallyStrength = self.GetAttribute(BattalionAttribute.RallyStrength);
-        foreach (BattalionState item in allies)
+        foreach (BattalionState item in allies.AllUnits)
         {
             builder.Add(item.Id, BattalionAttribute.RemainingMoral, rallyStrength);
         }
