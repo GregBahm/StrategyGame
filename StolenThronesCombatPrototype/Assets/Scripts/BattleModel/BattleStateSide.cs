@@ -4,62 +4,33 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-public class BattleStateSide : IReadOnlyList<BattleRank>
+public class BattleStateSide
 {
-    private readonly IReadOnlyList<BattleRank> ranks;
-
     public bool StillFighting { get; }
 
-    public IEnumerable<BattalionState> AllUnits { get { return ranks.SelectMany(item => item); } }
-
-    public int Count => ranks.Count;
-
-    public BattleRank this[int index] => ranks[index];
-
-    private readonly IReadOnlyDictionary<BattalionIdentifier, int> positionsTable;
-
-    public BattleStateSide(List<BattleRank> battalions)
+    public IEnumerable<BattalionBattleState> Units { get; }
+    
+    public BattleStateSide(List<List<BattalionState>> battalions)
     {
-        ranks = battalions.AsReadOnly();
+        Units = GetUnits();
         StillFighting = GetIsStillFighting();
-        positionsTable = GetPositionsTable();
     }
 
-    private IReadOnlyDictionary<BattalionIdentifier, int> GetPositionsTable()
+    private IEnumerable<BattalionBattleState> GetUnits()
     {
-        var ret = new Dictionary<BattalionIdentifier, int>();
-        for (int i = 0; i < ranks.Count; i++)
-        {
-            foreach (BattalionState item in ranks[i])
-            {
-                ret.Add(item.Id, i);
-            }
-        }
-        return ret;
-    }
-
-    public int GetPosition(BattalionIdentifier id)
-    {
-        return positionsTable[id];
+        throw new NotImplementedException();
     }
 
     private bool GetIsStillFighting()
     {
-        return ranks.Any(unit => unit.StillFighting);
+        return Units.Any(unit => unit.IsAlive);
     }
     
     public BattleStateSide GetWithDefeatedRemoved()
     {
-        return new BattleStateSide(ranks.Where(item => item.StillFighting).Select(item => item.GetWithDefeatedRemoved()).ToList());
-    }
-
-    public IEnumerator<BattleRank> GetEnumerator()
-    {
-        return ranks.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ranks.GetEnumerator();
+        IEnumerable<BattalionBattleState> survivingRanks = Units.Where(item => item.IsAlive);
+        IEnumerable<IGrouping<int, BattalionBattleState>> grouped = survivingRanks.GroupBy(item => item.Position);
+        List<List<BattalionState>> listed = grouped.Select(item => item.Select(unit => (BattalionState)unit).ToList()).ToList();
+        return new BattleStateSide(listed);
     }
 }

@@ -19,7 +19,7 @@ public class RangedAttackEffector : BattalionEffector
         this.damageType = damageType;
         this.splashDamage = splashDamage;
     }
-    public override IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies)
+    public override IEnumerable<BattalionStateModifier> GetEffect(BattalionBattleState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
 
@@ -30,8 +30,7 @@ public class RangedAttackEffector : BattalionEffector
         }
         else
         {
-            int position = allies.GetPosition(self.Id);
-            if (position <= range)
+            if (self.Position <= range)
             {
                 DoAttack(builder, self, enemies);
             }
@@ -39,10 +38,8 @@ public class RangedAttackEffector : BattalionEffector
         return builder.ToEffects();
     }
 
-    private void DoAttack(BattalionEffectsBuilder builder, BattalionState self, BattleStateSide enemies)
+    private void DoAttack(BattalionEffectsBuilder builder, BattalionBattleState self, BattleStateSide enemies)
     {
-        BattleRank target = enemies.First();
-        BattalionAttribute damageAttribute = GetDamageAttributeFor(damageType);
         throw new NotImplementedException(); //
         //builder.Add(target.Id, damageAttribute, weaponStrength);
 

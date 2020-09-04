@@ -2,7 +2,7 @@
 
 public abstract class BattalionEffector
 {
-    public abstract IEnumerable<BattalionStateModifier> GetEffect(BattalionState self, BattleStateSide allies, BattleStateSide enemies);
+    public abstract IEnumerable<BattalionStateModifier> GetEffect(BattalionBattleState self, BattleStateSide allies, BattleStateSide enemies);
 
     public enum DamageType
     {

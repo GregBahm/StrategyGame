@@ -31,8 +31,7 @@ public class BattleBuilder
         }
         public BattleStateSide ToSide()
         {
-            List<BattleRank> list = units.Select(item => new BattleRank(item)).ToList();
-            return new BattleStateSide(list);
+            return new BattleStateSide(units);
         }
     }
 }

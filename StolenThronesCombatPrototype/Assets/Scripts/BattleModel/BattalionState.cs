@@ -20,12 +20,12 @@ public class BattalionState
 
     public IEnumerable<BattalionEffector> EffectSources { get; }
 
-    private BattalionState(BattalionIdentifier id,
-        AttributesTable attributes,
+    protected BattalionState(BattalionIdentifier id,
+        IReadOnlyDictionary<BattalionAttribute, int> attributes,
         IEnumerable<BattalionEffector> effectSources)
     {
         Id = id;
-        this.attributes = attributes.AsReadonly();
+        this.attributes = attributes;
         EffectSources = effectSources;
     }
 
@@ -33,7 +33,7 @@ public class BattalionState
         IEnumerable<BattalionStateModifier> modifiers,
         IEnumerable<BattalionEffector> effectSources)
         : this(id,
-             GetModifiedAttributes(new Dictionary<BattalionAttribute, int>(), modifiers),
+             GetModifiedAttributes(new Dictionary<BattalionAttribute, int>(), modifiers).AsReadonly(),
              effectSources)
     { }
 
@@ -60,19 +60,7 @@ public class BattalionState
     {
         AttributesTable newAttributes = GetModifiedAttributes(attributes, modifiers);
         SelfModify(newAttributes);
-        return new BattalionState(Id, newAttributes, EffectSources);
-    }
-
-    public IEnumerable<BattalionStateModifier> GetEffects(BattleStateSide allies, BattleStateSide enemies)
-    {
-        List<BattalionStateModifier> modifiers = new List<BattalionStateModifier>();
-
-        foreach (BattalionEffector attack in EffectSources)
-        {
-            IEnumerable<BattalionStateModifier> effects = attack.GetEffect(this, allies, enemies);
-            modifiers.AddRange(effects);
-        }
-        return modifiers;
+        return new BattalionState(Id, newAttributes.AsReadonly(), EffectSources);
     }
 
     private void SelfModify(AttributesTable newAttributes)
@@ -152,5 +140,13 @@ public class BattalionState
         {
             return new ReadOnlyDictionary<BattalionAttribute, int>(attributesCore);
         }
+    }
+
+    public BattalionBattleState ToBattleState(List<List<BattalionState>> battleSide)
+    {
+        return new BattalionBattleState(Id,
+            attributes,
+            EffectSources,
+            battleSide);
     }
 }

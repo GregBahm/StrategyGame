@@ -25,13 +25,12 @@ public class BattalionVisualizer : MonoBehaviour
         mat.SetTexture("_MainTex", sprite);
     }
 
-    internal void InsertState(BattalionState state, BattleRound battleRound, int index)
+    internal void InsertState(BattalionBattleState state, BattleRound battleRound, int index)
     {
         BattleState battleState = battleRound.InitialState;
         BattleSideIdentifier side = battleState.GetSide(state.Id);
         BattleStateSide stateSide = side == BattleSideIdentifier.Left ? battleState.LeftSide : battleState.RightSide;
-        int position = stateSide.GetPosition(state.Id);
-        states[index] = new BattalionStateVisuals(state, position, side);
+        states[index] = new BattalionStateVisuals(state, side);
     }
 
     public void Dispay(float normalizedTime)

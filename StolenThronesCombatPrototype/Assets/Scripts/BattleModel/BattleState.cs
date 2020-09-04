@@ -25,11 +25,11 @@ public class BattleState
     private Dictionary<BattalionIdentifier, BattleSideIdentifier> GetSideLookup()
     {
         Dictionary<BattalionIdentifier, BattleSideIdentifier> ret = new Dictionary<BattalionIdentifier, BattleSideIdentifier>();
-        foreach (BattalionState item in LeftSide.SelectMany(item => item))
+        foreach (BattalionBattleState item in LeftSide.Units)
         {
             ret.Add(item.Id, BattleSideIdentifier.Left);
         }
-        foreach (BattalionState item in RightSide.SelectMany(item => item))
+        foreach (BattalionBattleState item in RightSide.Units)
         {
             ret.Add(item.Id, BattleSideIdentifier.Right);
         }
@@ -51,7 +51,7 @@ public class BattleState
 
     public IEnumerable<BattalionStateModifier> GetUnitEffects()
     {
-        foreach (BattalionState item in LeftSide.AllUnits)
+        foreach (BattalionBattleState item in LeftSide.Units)
         {
             IEnumerable<BattalionStateModifier> ret = item.GetEffects(LeftSide, RightSide);
             foreach (var effect in ret)
@@ -59,7 +59,7 @@ public class BattleState
                 yield return effect;
             }
         }
-        foreach (BattalionState item in RightSide.AllUnits)
+        foreach (BattalionBattleState item in RightSide.Units)
         {
             IEnumerable<BattalionStateModifier> ret = item.GetEffects(RightSide, LeftSide);
             foreach (var effect in ret)
@@ -106,42 +106,37 @@ public class BattleState
     private class ModifiedSideSorter
     {
         private readonly BattleStateSide basis;
-        readonly Dictionary<BattalionIdentifier, BattalionState> sorter;
+        readonly Dictionary<BattalionIdentifier, SorterItem> sorter;
 
         public ModifiedSideSorter(BattleStateSide basis)
         {
             this.basis = basis;
-            sorter = basis.SelectMany(item => item).ToDictionary(item => item.Id, item => item);
+            sorter = basis.Units.ToDictionary(item => item.Id, item => new SorterItem(item.Position));
         }
 
         public BattleStateSide ToSide()
         {
-            List<BattalionState>[] rankBuilders = GetRankBuilders();
-            List<BattalionState> newStates = sorter.Values.ToList();
-            foreach (var item in newStates)
-            {
-                int pos = basis.GetPosition(item.Id);
-                rankBuilders[pos].Add(item);
-            }
-            List<BattleRank> ranks = rankBuilders.Select(item => new BattleRank(item)).ToList();
-            return new BattleStateSide(ranks);
+            IOrderedEnumerable<IGrouping<int, SorterItem>> ordered = sorter.Values.GroupBy(item => item.Position).OrderBy(item => item.Key);
+            List<List<BattalionState>> lists =ordered.Select(item => item.Select(sorter => sorter.NewState).ToList()).ToList();
+            return new BattleStateSide(lists);
         }
 
-        private List<BattalionState>[] GetRankBuilders()
+        internal void Incorporate(BattalionState battalionState)
         {
-            List<BattalionState>[] ret = new List<BattalionState>[basis.Count];
-            for (int i = 0; i < basis.Count; i++)
+            if(sorter.ContainsKey(battalionState.Id))
             {
-                ret[i] = new List<BattalionState>();
+                sorter[battalionState.Id].NewState = battalionState;
             }
-            return ret;
         }
 
-        internal void Incorporate(BattalionState state)
+        private class SorterItem
         {
-            if(sorter.ContainsKey(state.Id))
+            public int Position { get; }
+            public BattalionState NewState { get; set; }
+
+            public SorterItem(int position)
             {
-                sorter[state.Id] = state;
+                Position = position;
             }
         }
     }
@@ -171,9 +166,9 @@ public class BattleState
     {
         Dictionary<BattalionIdentifier, EffectsBuilder> ret = new Dictionary<BattalionIdentifier, EffectsBuilder>();
 
-        List<BattalionState> units = LeftSide.AllUnits.ToList();
-        units.AddRange(RightSide.AllUnits);
-        foreach (BattalionState unit in units)
+        List<BattalionBattleState> units = LeftSide.Units.ToList();
+        units.AddRange(RightSide.Units);
+        foreach (BattalionBattleState unit in units)
         {
             ret.Add(unit.Id, new EffectsBuilder(unit));
         }
