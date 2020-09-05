@@ -1,12 +1,15 @@
 ﻿public enum BattalionAttribute
 {
-    MaxHitpoints,
-    MaxMoral,
+    HitpointsPerUnit,
+    ExtraUnitSize,
+    MaxUnits,
     RemainingHitpoints,
+    MaxMoral,
     RemainingMoral,
     Armor,
     Damage,
     ArmorPiercingDamage,
+    ChargingDamage,
     Regeneration,
     ReloadingSpeed,
     ReloadingState,

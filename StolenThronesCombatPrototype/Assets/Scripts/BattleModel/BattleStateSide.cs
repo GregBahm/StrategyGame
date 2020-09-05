@@ -8,17 +8,29 @@ public class BattleStateSide
 {
     public bool StillFighting { get; }
 
+    public IReadOnlyList<IEnumerable<BattalionBattleState>> Ranks { get; }
+
     public IEnumerable<BattalionBattleState> Units { get; }
     
     public BattleStateSide(List<List<BattalionState>> battalions)
     {
-        Units = GetUnits();
+        Units = GetUnits(battalions).ToList();
+        Ranks = GetRanks();
         StillFighting = GetIsStillFighting();
     }
 
-    private IEnumerable<BattalionBattleState> GetUnits()
+    private IReadOnlyList<IReadOnlyList<BattalionBattleState>> GetRanks()
     {
-        throw new NotImplementedException();
+        IOrderedEnumerable<IGrouping<int, BattalionBattleState>> ordered = Units.GroupBy(item => item.Position).OrderBy(item => item.Key);
+        return ordered.Select(item => item.ToList()).ToList().AsReadOnly();
+    }
+
+    private IEnumerable<BattalionBattleState> GetUnits(List<List<BattalionState>> battalions)
+    {
+        foreach (var item in battalions.SelectMany(rank => rank))
+        {
+            yield return item.ToBattleState(battalions);
+        }
     }
 
     private bool GetIsStillFighting()

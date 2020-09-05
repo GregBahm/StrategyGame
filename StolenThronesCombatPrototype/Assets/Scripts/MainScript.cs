@@ -36,23 +36,21 @@ public class MainScript : MonoBehaviour
     private Battle CreateExampleBattle()
     {
         BattleBuilder builder = new BattleBuilder();
+        // 
 
-        builder.LeftSide.Add(BattalionTemplates.GetSwordsmen());
-        builder.LeftSide.Add(BattalionTemplates.GetKnights());
-        builder.LeftSide.Add(BattalionTemplates.GetKnights());
-        builder.LeftSide.Add(BattalionTemplates.GetSlinger());
-        builder.LeftSide.Add(BattalionTemplates.GetSlinger());
-        builder.LeftSide.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftSide.Add(BattalionTemplates.GetLongbowmen());
-        builder.LeftSide.Add(BattalionTemplates.GetCatapults());
+        builder.LeftSide.Add(BattalionTemplates.GetSwordsmen(40));
+        builder.LeftSide.Add(BattalionTemplates.GetKnights(10));
+        builder.LeftSide.AddToNextRank(BattalionTemplates.GetSlingers(10));
+        builder.LeftSide.Add(BattalionTemplates.GetLongbowmen(10));
+        builder.LeftSide.AddToNextRank(BattalionTemplates.GetCatapults(4));
 
-        builder.RightSide.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightSide.Add(BattalionTemplates.GetPikemen());
-        builder.RightSide.Add(BattalionTemplates.GetSwordsmen());
-        builder.RightSide.Add(BattalionTemplates.GetOgres());
-        builder.RightSide.Add(BattalionTemplates.GetCrossbowmen());
-        builder.RightSide.Add(BattalionTemplates.GetDragon());
-        builder.RightSide.Add(BattalionTemplates.GetBalista());
+        builder.RightSide.Add(BattalionTemplates.GetSwordsmen(10));
+        builder.RightSide.Add(BattalionTemplates.GetOgres(8));
+        builder.RightSide.Add(BattalionTemplates.GetPikemen(20));
+        builder.RightSide.AddToNextRank(BattalionTemplates.GetPikemen(10));
+        builder.RightSide.Add(BattalionTemplates.GetCrossbowmen(10));
+        builder.RightSide.AddToNextRank(BattalionTemplates.GetDragon(1));
+        builder.RightSide.Add(BattalionTemplates.GetBalistas(2));
         return builder.ToBattle();
     }
 

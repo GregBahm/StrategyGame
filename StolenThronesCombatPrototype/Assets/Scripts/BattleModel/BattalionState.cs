@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
@@ -17,6 +18,9 @@ public class BattalionState
                 && GetAttribute(BattalionAttribute.RemainingMoral) > 0;
         }
     }
+    public int RemainingUnits { get; }
+
+    public int Presence { get; }
 
     public IEnumerable<BattalionEffector> EffectSources { get; }
 
@@ -27,7 +31,10 @@ public class BattalionState
         Id = id;
         this.attributes = attributes;
         EffectSources = effectSources;
+        RemainingUnits = GetRemainingUnits();
+        Presence = GetPresence();
     }
+
 
     public BattalionState(BattalionIdentifier id,
         IEnumerable<BattalionStateModifier> modifiers,
@@ -44,6 +51,18 @@ public class BattalionState
             return attributes[attribute];
         }
         return 0;
+    }
+    private int GetPresence()
+    {
+        int size = attributes[BattalionAttribute.ExtraUnitSize] + 1;
+        return RemainingUnits * size;
+    }
+
+    private int GetRemainingUnits()
+    {
+        int hp = attributes[BattalionAttribute.RemainingHitpoints];
+        int hpPerUnit = attributes[BattalionAttribute.HitpointsPerUnit];
+        return Mathf.CeilToInt(hp / hpPerUnit);
     }
 
     private static AttributesTable GetModifiedAttributes(IReadOnlyDictionary<BattalionAttribute, int> attributes, IEnumerable<BattalionStateModifier> modifiers)
@@ -75,7 +94,7 @@ public class BattalionState
         if (hitpoints > 0) // Can't heal the dead
         {
             int regeneration = newAttributes.Get(BattalionAttribute.Regeneration);
-            int maxHitpoints = newAttributes.Get(BattalionAttribute.MaxHitpoints);
+            int maxHitpoints = newAttributes.Get(BattalionAttribute.MaxUnits) * newAttributes.Get(BattalionAttribute.HitpointsPerUnit);
             int newHitpoints = Mathf.Min(maxHitpoints, hitpoints + regeneration);
             newAttributes.Set(BattalionAttribute.RemainingHitpoints, newHitpoints);
         }

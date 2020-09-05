@@ -17,9 +17,10 @@ public class BattalionTemplates
         Ogres
     }
 
-    public static BattalionState GetSwordsmen()
+    public static BattalionState GetSwordsmen(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Swordsmen,
+            count,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 10);
@@ -28,9 +29,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetSlinger()
+    public static BattalionState GetSlingers(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Slingers,
+            count,
             100,
             50);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -39,9 +41,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetPikemen()
+    public static BattalionState GetPikemen(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Pikemen,
+            count,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 5);
@@ -52,9 +55,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetCatapults()
+    public static BattalionState GetCatapults(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Catapults,
+            count,
             50,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -64,9 +68,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetBalista()
+    public static BattalionState GetBalistas(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Balistas,
+            count,
             50,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -79,9 +84,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetKnights()
+    public static BattalionState GetKnights(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Knights,
+            count,
             100,
             100);
         builder.Set(BattalionAttribute.Armor, 20);
@@ -92,9 +98,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetLongbowmen()
+    public static BattalionState GetLongbowmen(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Longbowmen,
+            count,
             100,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -103,9 +110,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetCrossbowmen()
+    public static BattalionState GetCrossbowmen(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Crossbowmen,
+            count,
             100,
             100);
         builder.Set(BattalionAttribute.Strength, 10);
@@ -115,9 +123,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetDragon()
+    public static BattalionState GetDragon(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Dragon,
+            count,
             1000,
             500);
         builder.Set(BattalionAttribute.Armor, 30);
@@ -129,9 +138,10 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetOgres()
+    public static BattalionState GetOgres(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Ogres,
+            count,
             200,
             100);
         builder.Set(BattalionAttribute.Regeneration, 20);

@@ -13,7 +13,7 @@ public abstract class BattalionEffector
     public enum MeleeAttackType
     {
         Regular,
-        Charging
+        Flanking
     }
     
     public static BattalionAttribute GetDamageAttributeFor(DamageType damage)

@@ -21,29 +21,46 @@ public class MeleeAttackEffector : BattalionEffector
     public override IEnumerable<BattalionStateModifier> GetEffect(BattalionBattleState self, BattleStateSide allies, BattleStateSide enemies)
     {
         BattalionEffectsBuilder builder = new BattalionEffectsBuilder(this);
-        if(self.Position == 0)
+
+        bool canAttack = GetCanAttack(self);
+        if (self.Position == 0)
         {
             if(attackType == MeleeAttackType.Regular)
             {
-                //DoMeleeAttack(builder, self, target);
-            }
-            if(attackType == MeleeAttackType.Charging)
-            {
-                //TODO: Implement this
+                IEnumerable<BattalionBattleState> targets = enemies.Ranks[0];
+                foreach (BattalionBattleState target in targets)
+                {
+                    DoMeleeAttack(builder, self, target);
+                }
             }
         }
         return builder.ToEffects();
     }
 
-    private void DoMeleeAttack(BattalionEffectsBuilder builder, BattalionState self, BattalionState target)
+    private bool GetCanAttack(BattalionBattleState self)
+    {
+        switch (attackType)
+        {
+            case MeleeAttackType.Regular:
+                return self.Position == 0;
+            case MeleeAttackType.Flanking:
+            default:
+                return true;
+        }
+    }
+
+    private void DoMeleeAttack(BattalionEffectsBuilder builder, BattalionBattleState self, BattalionBattleState target)
     {
         int strength = self.GetAttribute(BattalionAttribute.Strength);
+        int baseDamage = strength + weaponStrength;
         BattalionAttribute damageAttribute = GetDamageAttributeFor(damageType);
-        builder.Add(target.Id, damageAttribute, strength + weaponStrength);
+        int damage = (int)(baseDamage * target.PresenceWithinRank);
+        builder.Add(target.Id, damageAttribute, damage);
 
         int retributionDamage = target.GetAttribute(BattalionAttribute.MeleeRetribution);
-        if(retributionDamage > 0)
+        if (retributionDamage > 0)
         {
+            int damageBack = (int)(retributionDamage * target.Presence);
             builder.Add(self.Id, BattalionAttribute.Damage, retributionDamage);
         }
     }

@@ -8,15 +8,17 @@ public class BattalionBuilder
     private readonly List<BattalionStateModifier> modifiers;
 
     public BattalionBuilder(BattalionType type,
-        int hitpoints,
+        int unitCount,
+        int hitpointsPerUnit,
         int moral)
     {
         id = new BattalionIdentifier(type);
         effectors = new List<BattalionEffector>();
         modifiers = new List<BattalionStateModifier>();
 
-        modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.MaxHitpoints, hitpoints));
-        modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.RemainingHitpoints, hitpoints));
+        modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.HitpointsPerUnit, hitpointsPerUnit));
+        modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.RemainingHitpoints, hitpointsPerUnit * unitCount));
+        modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.MaxUnits, unitCount));
         modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.MaxMoral, moral));
         modifiers.Add(new BattalionStateModifier(null, id, BattalionAttribute.RemainingMoral, moral));
     }

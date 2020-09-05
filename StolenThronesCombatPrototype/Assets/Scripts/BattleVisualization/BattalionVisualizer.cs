@@ -61,9 +61,8 @@ public class BattalionVisualizer : MonoBehaviour
 
     private string GetHPText(BattalionState state)
     {
-        int maxHP = state.GetAttribute(BattalionAttribute.MaxHitpoints);
         int currentHP = state.GetAttribute(BattalionAttribute.RemainingHitpoints);
-        return "HP:" + currentHP + "\\" + maxHP;
+        return "HP:" + currentHP;
     }
 
     private void PlaceVisual(BattalionStateVisuals visuals)
