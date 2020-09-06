@@ -49,8 +49,7 @@ public class MainScript : MonoBehaviour
         builder.RightSide.Add(BattalionTemplates.GetPikemen(20));
         builder.RightSide.AddToNextRank(BattalionTemplates.GetPikemen(10));
         builder.RightSide.Add(BattalionTemplates.GetCrossbowmen(10));
-        builder.RightSide.AddToNextRank(BattalionTemplates.GetDragon(1));
-        builder.RightSide.Add(BattalionTemplates.GetBalistas(2));
+        builder.RightSide.AddToNextRank(BattalionTemplates.GetDragon(3));
         return builder.ToBattle();
     }
 

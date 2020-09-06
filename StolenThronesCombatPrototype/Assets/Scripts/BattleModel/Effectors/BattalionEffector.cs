@@ -7,19 +7,22 @@ public abstract class BattalionEffector
     public enum DamageType
     {
         Regular,
-        ArmorPiercing
+        ArmorPiercing,
+        Charge
     }
 
     public enum MeleeAttackType
     {
         Regular,
-        Flanking
+        
     }
     
     public static BattalionAttribute GetDamageAttributeFor(DamageType damage)
     {
         switch (damage)
         {
+            case DamageType.Charge:
+                return BattalionAttribute.ChargingDamage;
             case DamageType.ArmorPiercing:
                 return BattalionAttribute.ArmorPiercingDamage;
             case DamageType.Regular:

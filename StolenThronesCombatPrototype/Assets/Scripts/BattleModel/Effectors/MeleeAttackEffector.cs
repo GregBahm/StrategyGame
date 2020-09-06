@@ -42,10 +42,8 @@ public class MeleeAttackEffector : BattalionEffector
         switch (attackType)
         {
             case MeleeAttackType.Regular:
-                return self.Position == 0;
-            case MeleeAttackType.Flanking:
             default:
-                return true;
+                return self.Position == 0;
         }
     }
 
@@ -53,8 +51,9 @@ public class MeleeAttackEffector : BattalionEffector
     {
         int strength = self.GetAttribute(BattalionAttribute.Strength);
         int baseDamage = strength + weaponStrength;
+        int fullDamage = baseDamage * self.RemainingUnits;
         BattalionAttribute damageAttribute = GetDamageAttributeFor(damageType);
-        int damage = (int)(baseDamage * target.PresenceWithinRank);
+        int damage = (int)(fullDamage * target.PresenceWithinRank);
         builder.Add(target.Id, damageAttribute, damage);
 
         int retributionDamage = target.GetAttribute(BattalionAttribute.MeleeRetribution);

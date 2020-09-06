@@ -49,8 +49,8 @@ public class BattalionTemplates
             100);
         builder.Set(BattalionAttribute.Armor, 5);
         builder.Set(BattalionAttribute.Strength, 10);
-        builder.Set(BattalionAttribute.AntiCharge, 1);
         builder.Set(BattalionAttribute.MeleeRetribution, 10);
+        builder.Set(BattalionAttribute.ChargeDefense, 20);
         builder.AddEffector(new MeleeAttackEffector(5));
         return builder.ToState();
     }
@@ -68,22 +68,6 @@ public class BattalionTemplates
         return builder.ToState();
     }
 
-    public static BattalionState GetBalistas(int count)
-    {
-        BattalionBuilder builder = new BattalionBuilder(BattalionType.Balistas,
-            count,
-            50,
-            100);
-        builder.Set(BattalionAttribute.Strength, 10);
-        builder.Set(BattalionAttribute.ReloadingSpeed, 2);
-        builder.AddEffector(new MeleeAttackEffector(5));
-        builder.AddEffector(new RangedAttackEffector(10, 
-            4,
-            BattalionEffector.DamageType.ArmorPiercing,
-            10));
-        return builder.ToState();
-    }
-
     public static BattalionState GetKnights(int count)
     {
         BattalionBuilder builder = new BattalionBuilder(BattalionType.Knights,
@@ -93,7 +77,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.Armor, 20);
         builder.Set(BattalionAttribute.Strength, 10);
         builder.Set(BattalionAttribute.RallyStrength, 2);
-        builder.AddEffector(new MeleeAttackEffector(10, BattalionEffector.MeleeAttackType.Charging));
+        builder.AddEffector(new MeleeAttackEffector(50, damageType: BattalionEffector.DamageType.Charge));
         builder.AddEffector(new RallyEffector());
         return builder.ToState();
     }
@@ -132,7 +116,7 @@ public class BattalionTemplates
         builder.Set(BattalionAttribute.Armor, 30);
         builder.Set(BattalionAttribute.Strength, 30);
         builder.Set(BattalionAttribute.TerrorStrength, 2);
-        builder.AddEffector(new MeleeAttackEffector(30, BattalionEffector.MeleeAttackType.Charging));
+        builder.AddEffector(new MeleeAttackEffector(30, damageType: BattalionEffector.DamageType.Charge));
         // TODO: fire fire breath attacks
         builder.AddEffector(new TerrorEffector());
         return builder.ToState();

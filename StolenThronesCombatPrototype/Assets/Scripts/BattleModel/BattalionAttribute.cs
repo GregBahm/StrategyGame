@@ -14,7 +14,7 @@
     ReloadingSpeed,
     ReloadingState,
     Strength,
-    AntiCharge,
+    ChargeDefense,
     MeleeRetribution,
     RallyStrength,
     TerrorStrength
