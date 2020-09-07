@@ -54,14 +54,14 @@ public class BattalionState
     }
     private int GetPresence()
     {
-        int size = attributes[BattalionAttribute.ExtraUnitSize] + 1;
+        int size = GetAttribute(BattalionAttribute.ExtraUnitSize) + 1;
         return RemainingUnits * size;
     }
 
     private int GetRemainingUnits()
     {
-        int hp = attributes[BattalionAttribute.RemainingHitpoints];
-        int hpPerUnit = attributes[BattalionAttribute.HitpointsPerUnit];
+        int hp = GetAttribute(BattalionAttribute.RemainingHitpoints);
+        int hpPerUnit = GetAttribute(BattalionAttribute.HitpointsPerUnit);
         return Mathf.CeilToInt(hp / hpPerUnit);
     }
 
@@ -104,12 +104,12 @@ public class BattalionState
     {
         int damage = newAttributes.Get(BattalionAttribute.Damage);
         int apDamage = newAttributes.Get(BattalionAttribute.ArmorPiercingDamage);
-        int armor = newAttributes.Get(BattalionAttribute.Armor);
+        int defense = newAttributes.Get(BattalionAttribute.Defense) * RemainingUnits;
         
         newAttributes.Set(BattalionAttribute.Damage, 0);
         newAttributes.Set(BattalionAttribute.ArmorPiercingDamage, 0);
 
-        int hitpointDamage = Mathf.Max(0, damage - armor) + apDamage;
+        int hitpointDamage = Mathf.Max(0, damage - defense) + apDamage;
         newAttributes.Add(BattalionAttribute.RemainingHitpoints, -hitpointDamage);
     }
 

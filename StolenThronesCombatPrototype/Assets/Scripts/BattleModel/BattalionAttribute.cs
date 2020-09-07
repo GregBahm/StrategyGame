@@ -6,7 +6,7 @@
     RemainingHitpoints,
     MaxMoral,
     RemainingMoral,
-    Armor,
+    Defense,
     Damage,
     ArmorPiercingDamage,
     ChargingDamage,
