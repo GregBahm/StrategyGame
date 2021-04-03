@@ -8,24 +8,16 @@ using static BattalionTemplates;
 public class MainScript : MonoBehaviour
 {
     [SerializeField]
-    private ArtBinding[] bindings;
-
-    private Dictionary<BattalionType, ArtBinding> bindingsDictionary;
-
-    [SerializeField]
     [Range(0, 1)]
     private float time;
-
+    
     [SerializeField]
-    private GameObject battalionVisualPrefab;
-
     private BattleVisualiser visualizer;
 
     private void Start()
     {
-        bindingsDictionary = bindings.ToDictionary(item => item.Type, item => item);
         Battle battle = CreateExampleBattle();
-        visualizer = new BattleVisualiser(battle, this);
+        visualizer.Initialize(battle, this);
     }
 
     private void Update()
@@ -36,8 +28,7 @@ public class MainScript : MonoBehaviour
     private Battle CreateExampleBattle()
     {
         BattleBuilder builder = new BattleBuilder();
-        // 
-
+        
         builder.LeftSide.Add(BattalionTemplates.GetSwordsmen(40));
         builder.LeftSide.Add(BattalionTemplates.GetKnights(10));
         builder.LeftSide.AddToNextRank(BattalionTemplates.GetSlingers(10));
@@ -51,13 +42,5 @@ public class MainScript : MonoBehaviour
         builder.RightSide.Add(BattalionTemplates.GetCrossbowmen(10));
         builder.RightSide.AddToNextRank(BattalionTemplates.GetDragon(3));
         return builder.ToBattle();
-    }
-
-    public BattalionVisualizer CreateVisualsFor(BattalionType type, int totalRounds)
-    {
-        GameObject retObj = Instantiate(battalionVisualPrefab);
-        BattalionVisualizer ret = retObj.GetComponent<BattalionVisualizer>();
-        ret.Initialize(totalRounds, bindingsDictionary[type].Sprite);
-        return ret;
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BattalionVisualizer : MonoBehaviour
 {
+    public BattalionIdentifier Id { get; private set; }
     private BattalionStateVisuals[] states;
 
     [SerializeField]
@@ -18,19 +19,18 @@ public class BattalionVisualizer : MonoBehaviour
     [SerializeField]
     private TextMeshPro moral;
 
-    public void Initialize(int totalRounds, Texture2D sprite)
+    public void Initialize(int totalRounds, Texture2D sprite, BattalionIdentifier id)
     {
         states = new BattalionStateVisuals[totalRounds];
         mat = meshRenderer.material;
         mat.SetTexture("_MainTex", sprite);
+        Id = id;
     }
 
     internal void InsertState(BattalionBattleState state, BattleRound battleRound, int index)
     {
         BattleState battleState = battleRound.InitialState;
-        BattleSideIdentifier side = battleState.GetSide(state.Id);
-        BattleStateSide stateSide = side == BattleSideIdentifier.Left ? battleState.LeftSide : battleState.RightSide;
-        states[index] = new BattalionStateVisuals(state, side);
+        states[index] = new BattalionStateVisuals(state);
     }
 
     public void Dispay(float normalizedTime)
@@ -49,7 +49,8 @@ public class BattalionVisualizer : MonoBehaviour
         primaryVisual.SetActive(true);
         hitpoints.text = GetHPText(visuals.State);
         moral.text = GetMPText(visuals.State);
-        PlaceVisual(visuals);
+
+        //mat.SetFloat("_Flip", visuals.Side == BattleSideIdentifier.Left ? 0 : 1); TODO: Reflipification
     }
 
     private string GetMPText(BattalionState state)
@@ -63,14 +64,5 @@ public class BattalionVisualizer : MonoBehaviour
     {
         int currentHP = state.GetAttribute(BattalionAttribute.RemainingHitpoints);
         return "HP:" + currentHP;
-    }
-
-    private void PlaceVisual(BattalionStateVisuals visuals)
-    {
-        float xPos = visuals.Position + 1;
-        xPos *= visuals.Side == BattleSideIdentifier.Left ? -1 : 1;
-
-        primaryVisual.transform.localPosition = new Vector3(xPos, 0, xPos);
-        mat.SetFloat("_Flip", visuals.Side == BattleSideIdentifier.Left ? 0 : 1);
     }
 }

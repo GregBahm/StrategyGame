@@ -5,16 +5,16 @@ public class BattalionTemplates
 {
     public enum BattalionType
     {
-        Swordsmen,
-        Slingers,
-        Pikemen,
-        Catapults,
         Balistas,
-        Knights,
-        Longbowmen,
+        Catapults,
         Crossbowmen,
         Dragon,
-        Ogres
+        Knights,
+        Longbowmen,
+        Ogres,
+        Pikemen,
+        Slingers,
+        Swordsmen,
     }
 
     public static BattalionState GetSwordsmen(int count)
