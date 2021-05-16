@@ -164,7 +164,7 @@ public class OrderIndicator : MonoBehaviour
         ArrowMat.SetBuffer("_StrokeSegmentsBuffer", _strokeSegmentsBuffer);
         ArrowMat.SetBuffer("_ArrowShapeBuffer", _arrowShapeBuffer);
         ArrowMat.SetPass(0);
-        Graphics.DrawProcedural(MeshTopology.Points, 1, Resolution -1);
+        Graphics.DrawProceduralNow(MeshTopology.Points, 1, Resolution -1);
     }
 
 }
